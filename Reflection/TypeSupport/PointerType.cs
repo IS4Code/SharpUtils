@@ -1,0 +1,37 @@
+﻿/* Date: 3.12.2014, Time: 16:06 */
+using System;
+using System.Reflection;
+using System.Reflection.Emit;
+using IllidanS4.SharpUtils.Reflection.Emit;
+
+namespace IllidanS4.SharpUtils.Reflection.TypeSupport
+{
+	public class PointerType : TypeAppendConstruct
+	{
+		public PointerType(Type elementType) : base(elementType, UnderlyingPointerType(elementType))
+		{
+			
+		}
+		
+		protected override string Append(string name)
+		{
+			return name+"*";
+		}
+		
+		private static Type UnderlyingPointerType(Type elementType)
+		{
+			if(elementType is FunctionPointerType)
+			{
+				return Types.FnPtrPointer;
+			}else{
+				return elementType.UnderlyingSystemType.MakePointerType();
+			}
+		}
+		
+		protected override void AddSignature(SignatureHelper signature)
+		{
+			signature.AddElementType(CorElementType.Ptr);
+			signature.AddArgumentSignature(ElementType);
+		}
+	}
+}

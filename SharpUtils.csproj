@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectGuid>{3527963D-1EF3-45A9-A303-33264EE426DE}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>IllidanS4.SharpUtils</RootNamespace>
+    <AssemblyName>SharpUtils</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <SourceAnalysisOverrideSettingsFile>C:\Documents and Settings\Illidan\Data aplikací\ICSharpCode/SharpDevelop4\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <RunSourceAnalysis>False</RunSourceAnalysis>
+    <CodeAnalysisRules>-Microsoft.Design#CA1000;-Microsoft.Design#CA1001;-Microsoft.Design#CA1002;-Microsoft.Design#CA1003;-Microsoft.Design#CA1004;-Microsoft.Design#CA1005;-Microsoft.Design#CA1006;-Microsoft.Design#CA1007;-Microsoft.Design#CA1008;-Microsoft.Design#CA1009;-Microsoft.Design#CA1010;-Microsoft.Design#CA1011;-Microsoft.Design#CA1012;-Microsoft.Design#CA1013;-Microsoft.Design#CA1019;-Microsoft.Design#CA1020;-Microsoft.Design#CA1021;-Microsoft.Design#CA1023;-Microsoft.Design#CA1024;-Microsoft.Design#CA1025;-Microsoft.Design#CA1026;-Microsoft.Design#CA1027;-Microsoft.Design#CA1028;-Microsoft.Design#CA1030;-Microsoft.Design#CA1034;-Microsoft.Design#CA1035;-Microsoft.Design#CA1036;-Microsoft.Design#CA1038;-Microsoft.Design#CA1039;-Microsoft.Design#CA1040;-Microsoft.Design#CA1041;-Microsoft.Design#CA1043;-Microsoft.Design#CA1045;-Microsoft.Design#CA1046;-Microsoft.Design#CA1047;-Microsoft.Design#CA1048;-Microsoft.Design#CA1049;-Microsoft.Design#CA1050;-Microsoft.Design#CA1051;-Microsoft.Design#CA1052;-Microsoft.Design#CA1053;-Microsoft.Design#CA1054;-Microsoft.Design#CA1055;-Microsoft.Design#CA1056;-Microsoft.Design#CA1057;-Microsoft.Design#CA1060;-Microsoft.Design#CA1061;-Microsoft.Design#CA2210</CodeAnalysisRules>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <StartAction>Project</StartAction>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\SharpUtils.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Accessing\Accessing.cs" />
+    <Compile Include="Accessing\AccessorGenerator.cs" />
+    <Compile Include="Accessing\DefinedReadAccessor.cs" />
+    <Compile Include="Accessing\DefinedReadWriteAccessor.cs" />
+    <Compile Include="Accessing\DefinedWriteAccessor.cs" />
+    <Compile Include="Accessing\FieldAccessor.cs" />
+    <Compile Include="Accessing\IIndexable.cs" />
+    <Compile Include="Accessing\OutputAccessor.cs" />
+    <Compile Include="Accessing\ReferenceAccessor.cs" />
+    <Compile Include="COM\IDispatch.cs" />
+    <Compile Include="COM\IStreamWrapper.cs" />
+    <Compile Include="COM\StreamToIStreamMarshaler.cs" />
+    <Compile Include="COM\StreamWrapper.cs" />
+    <Compile Include="Coroutines\Coroutine.cs" />
+    <Compile Include="Coroutines\CoroutineStatus.cs" />
+    <Compile Include="Empty.cs" />
+    <Compile Include="EmptyManager.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="FloatPtr.cs" />
+    <Compile Include="Globalization\Term.cs" />
+    <Compile Include="Interop\ArgListMark.cs" />
+    <Compile Include="Interop\BitUtils.cs" />
+    <Compile Include="Interop\InteropTools.cs" />
+    <Compile Include="Interop\ReferenceHelper.cs" />
+    <Compile Include="Interop\TypedReferenceConvert.cs" />
+    <Compile Include="Interop\VarArgsDelegateGenerator.cs" />
+    <Compile Include="Math\Extensions.cs" />
+    <Compile Include="Metadata\DataAttribute.cs" />
+    <Compile Include="Metadata\IIdentifiable.cs" />
+    <Compile Include="Metadata\NeverAttribute.cs" />
+    <Compile Include="Metadata\ThrowsAttribute.cs" />
+    <Compile Include="Metadata\UnsafeAttribute.cs" />
+    <Compile Include="NonNullable.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\AnonymousTypeFactory.cs" />
+    <Compile Include="Reflection\Cpp\CppEnvironment.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppManagedArrayType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppConstType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppDataType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppDerivedType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppFixedArrayType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppHandleType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppManagedReferenceType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppPointerType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppQualifiedType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppTemplateType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppUnmanagedReferenceType.cs" />
+    <Compile Include="Reflection\Cpp\TypeModel\CppVolatileType.cs" />
+    <Compile Include="Reflection\CSharp\AnonymousMethodTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\AnonymousTypeTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\DynamicMethodInfo.cs">
+      <DependentUpon>DynamicTypeDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\DynamicMethodInfoParameter.cs">
+      <DependentUpon>DynamicMethodInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\DynamicMethodInfoReturnParameter.cs">
+      <DependentUpon>DynamicMethodInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\DynamicPropertyInfo.cs">
+      <DependentUpon>DynamicTypeDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\DynamicTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\EventTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\FieldTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\LambdaExpressionTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\LanguageType.cs" />
+    <Compile Include="Reflection\CSharp\MethodGroupTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\MethodTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\NullTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\PropertyTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\TypeParameterTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\TypeTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\VariableTypeDescription.cs">
+      <DependentUpon>LanguageType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\Emit\BuilderTools.cs" />
+    <Compile Include="Reflection\Emit\CorElementType.cs" />
+    <Compile Include="Reflection\Emit\ISignatureElement.cs" />
+    <Compile Include="Reflection\Emit\MdSigCallingConvention.cs" />
+    <Compile Include="Reflection\Emit\MethodSignature.cs" />
+    <Compile Include="Reflection\Emit\SignatureTools.cs" />
+    <Compile Include="Reflection\FunctionPointerType.cs" />
+    <Compile Include="Reflection\TypeModifier.cs" />
+    <Compile Include="Reflection\Types.cs" />
+    <Compile Include="Reflection\Emit\TypeEmitGenerator.cs" />
+    <Compile Include="Reflection\Emit\ITypeEmitDescriptor.cs" />
+    <Compile Include="Reflection\Emit\MethodTargetAttribute.cs" />
+    <Compile Include="Reflection\ReflectionTools.cs" />
+    <Compile Include="Reflection\methodof.cs" />
+    <Compile Include="Reflection\ModifiedType.cs" />
+    <Compile Include="Reflection\ModifiedTypeExtensions.cs" />
+    <Compile Include="Reflection\NamedArgument.cs" />
+    <Compile Include="Reflection\Namespace.cs" />
+    <Compile Include="Reflection\Property.cs" />
+    <Compile Include="Reflection\CustomTypeModifier.cs" />
+    <Compile Include="Reflection\TypeModifierCollection.cs" />
+    <Compile Include="Reflection\TypeSupport\ArrayType.cs" />
+    <Compile Include="Reflection\TypeSupport\ByRefType.cs" />
+    <Compile Include="Reflection\TypeSupport\GenericType.cs" />
+    <Compile Include="Reflection\TypeSupport\PointerType.cs" />
+    <Compile Include="Reflection\TypeSupport\TypeAppendConstruct.cs" />
+    <Compile Include="Reflection\TypeSupport\TypeConstruct.cs" />
+    <Compile Include="Reflection\VarArgsGenerator.cs" />
+    <Compile Include="Reflection\VarArgsInvoker.cs" />
+    <Compile Include="Resources.cs" />
+    <Compile Include="Serialization\Serialization.cs" />
+    <Compile Include="Streaming\BitStream.cs" />
+    <Compile Include="Streaming\StreamExtensions.cs" />
+    <Compile Include="Streaming\IObjectReader.cs" />
+    <Compile Include="Streaming\IObjectWriter.cs" />
+    <Compile Include="Streaming\StreamEnumerable.cs" />
+    <Compile Include="Streaming\TerminalWriter.cs" />
+    <Compile Include="Streaming\TextToStreamWrapper.cs" />
+    <Compile Include="Templates\BindNameAttribute.cs" />
+    <Compile Include="Templates\IParseable.cs" />
+    <Compile Include="Templates\IRanged.cs" />
+    <Compile Include="Templates\ISingleton.cs" />
+    <Compile Include="Templates\IStaticComparer.cs" />
+    <Compile Include="Templates\IStaticEqualityComparer.cs" />
+    <Compile Include="Templates\ITemplate.cs" />
+    <Compile Include="Templates\Template.cs" />
+    <Compile Include="Templates\StaticTypeAttribute.cs" />
+    <Compile Include="Templates\TemplateAttribute.cs" />
+    <Compile Include="Templates\TemplateDynamicMetaObject.cs">
+      <DependentUpon>Template.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\TSingleton.cs" />
+    <Compile Include="Templates\TStaticComparer.cs" />
+    <Compile Include="Templates\TStaticEqualityComparer.cs" />
+    <Compile Include="Templates\TParseable.cs" />
+    <Compile Include="Templates\TRanged.cs" />
+    <Compile Include="Templates\TStaticSingleTypeComparer.cs" />
+    <Compile Include="Templates\TStaticSingleTypeEqualityComparer.cs" />
+    <Compile Include="Threads\Async.cs" />
+    <Compile Include="Tmp.cs" />
+    <Compile Include="TypeOf.cs" />
+    <Compile Include="Unsafe\Chameleon.cs" />
+    <Compile Include="Unsafe\DummyObject.cs" />
+    <Compile Include="Unsafe\IPointer.cs" />
+    <Compile Include="Unsafe\ObjectHandle.cs" />
+    <Compile Include="Unsafe\Pointer.cs" />
+    <Compile Include="Unsafe\UnmanagedInstance.cs" />
+    <Compile Include="Unsafe\UnsafeTools.cs" />
+    <Compile Include="VariadicUnion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Coroutines" />
+    <Folder Include="Globalization" />
+    <Folder Include="Accessing" />
+    <Folder Include="Metadata" />
+    <Folder Include="COM" />
+    <Folder Include="Interop" />
+    <Folder Include="Math" />
+    <Folder Include="Reflection\Cpp\TypeModel" />
+    <Folder Include="Reflection\Cpp\TypeModel\PrimitiveTypes" />
+    <Folder Include="Reflection\Emit" />
+    <Folder Include="Reflection\Cpp" />
+    <Folder Include="Reflection\CSharp" />
+    <Folder Include="Reflection\TypeSupport" />
+    <Folder Include="Threads" />
+    <Folder Include="Streaming" />
+    <Folder Include="Reflection" />
+    <Folder Include="Templates" />
+    <Folder Include="Serialization" />
+    <Folder Include="Unsafe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+</Project>

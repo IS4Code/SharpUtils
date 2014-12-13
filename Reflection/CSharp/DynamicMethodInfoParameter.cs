@@ -1,0 +1,76 @@
+﻿using System;
+using System.Reflection;
+
+namespace IllidanS4.SharpUtils.Reflection
+{
+	partial class LanguageType
+	{
+		partial class DynamicTypeDescription
+		{
+			partial class DynamicMethodInfo
+			{
+				private class DynamicMethodInfoParameter : ParameterInfo
+				{
+					private readonly DynamicMethodInfo dynamicmethod;
+					
+					public DynamicMethodInfoParameter(DynamicMethodInfo dynamicmethod)
+					{
+						this.dynamicmethod = dynamicmethod;
+					}
+					
+					public override string Name{
+						get{
+							return "args";
+						}
+					}
+					
+					public override Type ParameterType{
+						get{
+							return typeof(object[]);
+						}
+					}
+					
+					public override bool IsDefined(Type attributeType, bool inherit)
+					{
+						return typeof(ParamArrayAttribute).Equals(attributeType);
+					}
+					
+					public override object[] GetCustomAttributes(bool inherit)
+					{
+						return new object[]{new ParamArrayAttribute()};
+					}
+					
+					public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+					{
+						if(!typeof(ParamArrayAttribute).Equals(attributeType))return new object[0];
+						return GetCustomAttributes(inherit);
+					}
+					
+					public override bool HasDefaultValue{
+						get{
+							return true;
+						}
+					}
+					
+					public override object DefaultValue{
+						get{
+							return new object[0];
+						}
+					}
+					
+					public override ParameterAttributes Attributes{
+						get{
+							return ParameterAttributes.In;
+						}
+					}
+					
+					public override MemberInfo Member{
+						get{
+							return dynamicmethod;
+						}
+					}
+				}
+			}
+		}
+	}
+}
