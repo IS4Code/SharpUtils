@@ -101,12 +101,12 @@ namespace IllidanS4.SharpUtils.Coroutines
 			object[] initArgs = new object[initParams.Length];
 			for(int i = 0; i < args.Length && i < initParams.Length; i++)
 			{
-				if(initParams[i].ParameterType == TypeOf<IReadWriteAccessor<T>>.TypeID)
+				/*if(initParams[i].ParameterType == TypeOf<IReadWriteAccessor<T>>.TypeID) //TODO
 				{
 					initArgs[i] = new ReferenceAccessor<T>(ref args[i]);
-				}else{
+				}else{*/
 					initArgs[i] = args[i];
-				}
+				//}
 			}
 			enumerable = initFunc.DynamicInvoke(initArgs) as IEnumerable;
 		}

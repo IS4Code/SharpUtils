@@ -4,11 +4,12 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Interop;
+using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Unsafe
 {
 	/// <summary>
-	/// Many methods in this class operate directly with memory. Use at your own risk.
+	/// Many methods in this class operate directly with object memory layout. Use at your own risk.
 	/// </summary>
 	public static class UnsafeTools
 	{
@@ -81,53 +82,25 @@ namespace IllidanS4.SharpUtils.Unsafe
 			_SizeOf = (Func<Type,uint>)Delegate.CreateDelegate(TypeOf<Func<Type,uint>>.TypeID, null, mi);
 			mi = typeof(Marshal).GetMethod("SizeOfHelper", BindingFlags.Static | BindingFlags.NonPublic, null, new[]{TypeOf<Type>.TypeID, TypeOf<bool>.TypeID}, null);
 			_UnmanagedSizeOf = (Func<Type,bool,int>)Delegate.CreateDelegate(TypeOf<Func<Type,bool,int>>.TypeID, null, mi);
-			DynamicMethod dm;
-			ILGenerator il;
-			
-			/*dm = new DynamicMethod("TRBoxer", TypeOf<object>.TypeID, new[]{typeof(TypedReference)}, thisType, true);
-			il = dm.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Box, TypeOf<TR>.TypeID);
-			il.Emit(OpCodes.Dup);
-			il.Emit(OpCodes.Ldc_I8, (long)typeof(TypedReference).TypeHandle.Value);
-			il.Emit(OpCodes.Conv_I);
-			il.Emit(OpCodes.Stobj, TypeOf<IntPtr>.TypeID);
-			il.Emit(OpCodes.Ret);
-			TRBoxer = (TRBox)dm.CreateDelegate(TypeOf<TRBox>.TypeID);
-			
-			dm = new DynamicMethod("RAHBoxer", TypeOf<object>.TypeID, new[]{typeof(RuntimeArgumentHandle)}, thisType, true);
-			il = dm.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Box, TypeOf<RAH>.TypeID);
-			il.Emit(OpCodes.Dup);
-			il.Emit(OpCodes.Ldc_I8, (long)typeof(RuntimeArgumentHandle).TypeHandle.Value);
-			il.Emit(OpCodes.Conv_I);
-			il.Emit(OpCodes.Stobj, TypeOf<IntPtr>.TypeID);
-			il.Emit(OpCodes.Ret);
-			RAHBoxer = (RAHBox)dm.CreateDelegate(TypeOf<RAHBox>.TypeID);
-			
-			dm = new DynamicMethod("AIBoxer", TypeOf<object>.TypeID, new[]{typeof(ArgIterator)}, thisType, true);
-			il = dm.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Box, TypeOf<AI>.TypeID);
-			il.Emit(OpCodes.Dup);
-			il.Emit(OpCodes.Ldc_I8, (long)typeof(ArgIterator).TypeHandle.Value);
-			il.Emit(OpCodes.Conv_I);
-			il.Emit(OpCodes.Stobj, TypeOf<IntPtr>.TypeID);
-			il.Emit(OpCodes.Ret);
-			AIBoxer = (AIBox)dm.CreateDelegate(TypeOf<AIBox>.TypeID);*/
-			
-			dm = new DynamicMethod("GetO", TypeOf<object>.TypeID, new[]{TypeOf<IntPtr>.TypeID}, thisType, true);
-			il = dm.GetILGenerator();
+		}
+		
+		private static readonly Func<object,IntPtr> GetPtr = CreateUnsafeCast<object,IntPtr>();
+		private static readonly Func<IntPtr,object> GetO = CreateUnsafeCast<IntPtr,object>();
+		
+		public static Func<TFrom,TTo> CreateUnsafeCast<TFrom,TTo>()
+		{
+			var dm = new DynamicMethod("Cast", TypeOf<TTo>.TypeID, new[]{TypeOf<TFrom>.TypeID}, thisType, true);
+			var il = dm.GetILGenerator();
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ret);
-			GetO = dm.CreateDelegate(TypeOf<GetO_d>.TypeID) as GetO_d;
-			
-			dm = new DynamicMethod("GetPtr", TypeOf<IntPtr>.TypeID, new[]{TypeOf<object>.TypeID}, thisType, true);
-			il = dm.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Ret);
-			GetPtr = dm.CreateDelegate(TypeOf<GetPtr_d>.TypeID) as GetPtr_d;
+			return (Func<TFrom,TTo>)dm.CreateDelegate(TypeOf<Func<TFrom,TTo>>.TypeID);
+		}
+		
+		public static unsafe IntPtr GetDataPointer(ValueType obj)
+		{
+			TypedReference tr;
+			TypedReferenceTools.MakeTypedReference(&tr, obj);
+			return tr.ToPointer();
 		}
 		
 		/// <summary>
@@ -161,22 +134,18 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return GetO((IntPtr)address);
 		}
 		
-		private delegate IntPtr GetPtr_d(object obj);
-		private delegate object GetO_d(IntPtr ptr);
-		private static readonly GetPtr_d GetPtr;
-		private static readonly GetO_d GetO;
-		
 		/// <summary>
 		/// Boxes a <see cref="System.TypedReference"/>.
 		/// </summary>
 		/// <param name="arg">The value to box.</param>
 		/// <returns>The boxed value.</returns>
 		[CLSCompliant(false)]
+		[return: Boxed(typeof(TypedReference))]
 		public static unsafe ValueType Box(TypedReference arg)
 		{
 			ValueType empty = (ValueType)FormatterServices.GetUninitializedObject(typeof(TypedReference));
 			TypedReference innerRef; //TypedReference to a TypedReference...
-			InteropTools.MakeTypedReference(&innerRef, empty);
+			TypedReferenceTools.MakeTypedReference(&innerRef, empty);
 			__refvalue(innerRef, TypedReference) = arg;
 			return empty;
 		}
@@ -186,11 +155,12 @@ namespace IllidanS4.SharpUtils.Unsafe
 		/// </summary>
 		/// <param name="arg">The value to box.</param>
 		/// <returns>The boxed value.</returns>
+		[return: Boxed(typeof(RuntimeArgumentHandle))]
 		public static unsafe ValueType Box(RuntimeArgumentHandle arg)
 		{
 			ValueType empty = (ValueType)FormatterServices.GetUninitializedObject(typeof(RuntimeArgumentHandle));
 			TypedReference innerRef;
-			InteropTools.MakeTypedReference(&innerRef, empty);
+			TypedReferenceTools.MakeTypedReference(&innerRef, empty);
 			__refvalue(innerRef, RuntimeArgumentHandle) = arg;
 			return empty;
 		}
@@ -200,11 +170,12 @@ namespace IllidanS4.SharpUtils.Unsafe
 		/// </summary>
 		/// <param name="arg">The value to box.</param>
 		/// <returns>The boxed value.</returns>
+		[return: Boxed(typeof(ArgIterator))]
 		public static unsafe ValueType Box(ArgIterator arg)
 		{
 			ValueType empty = (ValueType)FormatterServices.GetUninitializedObject(typeof(ArgIterator));
 			TypedReference innerRef;
-			InteropTools.MakeTypedReference(&innerRef, empty);
+			TypedReferenceTools.MakeTypedReference(&innerRef, empty);
 			__refvalue(innerRef, ArgIterator) = arg;
 			return empty;
 		}
@@ -214,9 +185,10 @@ namespace IllidanS4.SharpUtils.Unsafe
 		/// </summary>
 		/// <param name="nullable">The nullable value to box.</param>
 		/// <returns>The boxed value.</returns>
+		[return: Boxed(typeof(Nullable<>))]
 		public static unsafe ValueType Box<T>(T? nullable) where T : struct
 		{
-			ValueType scam = new N<T>(nullable);
+			ValueType scam = new NullableContainer<T>(nullable);
 			TypedReference tr = __makeref(scam);
 			IntPtr typehandle = TypeOf<Nullable<T>>.TypeID.TypeHandle.Value;
 			IntPtr* trstruct = (IntPtr*)&tr;
@@ -234,54 +206,14 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return arg;
 		}
 		
-		/*public static object Box(ValueType arg)
+		private struct NullableContainer<T> where T : struct
 		{
-			return arg;
-		}*/
-		
-		/*private delegate object TRBox(TypedReference arg);
-		private delegate object RAHBox(RuntimeArgumentHandle arg);
-		private delegate object AIBox(ArgIterator arg);
-		
-		private static readonly TRBox TRBoxer;
-		private static readonly RAHBox RAHBoxer;
-		private static readonly AIBox AIBoxer;
-		
-		#pragma warning disable 169
-		private struct TR
-		{
-	        private IntPtr Value;
-	        private IntPtr Type;
-		}
-		
-		private struct RAH
-		{
-        	private IntPtr m_ptr;
-		}
-		
-		private struct AI
-		{
-	        private IntPtr ArgCookie;
-	        private IntPtr ArgPtr;
-	        private int RemainingArgs;
-	        private IntPtr sigPtr;
-	        private IntPtr sigPtrLen;
-		}*/
-		
-		private struct N<T> where T : struct
-		{
-			public readonly bool hasValue;
-			private readonly T value;
+			public readonly T? Value;
 			
-			public N(T? nullable) : this()
+			public NullableContainer(T? nullable)
 			{
-				if(nullable.HasValue)
-				{
-					hasValue = true;
-					value = nullable.Value;
-				}
+				Value = nullable;
 			}
 		}
-		//#pragma warning restore 169
 	}
 }

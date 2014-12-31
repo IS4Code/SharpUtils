@@ -5,7 +5,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Read-write accessor that uses a getter and setter method.
 	/// </summary>
-	public class DefinedReadWriteAccessor<T> : IReadWriteAccessor<T>
+	public class DefinedReadWriteAccessor<T> : IReadAccessor<T>, IWriteAccessor<T>
 	{
 		Func<T> getter;
 		Action<T> setter;

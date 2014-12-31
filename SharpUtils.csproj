@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Accessing\Accessing.cs" />
     <Compile Include="Accessing\AccessorGenerator.cs" />
+    <Compile Include="Accessing\AtomicContainer.cs" />
     <Compile Include="Accessing\DefinedReadAccessor.cs" />
     <Compile Include="Accessing\DefinedReadWriteAccessor.cs" />
     <Compile Include="Accessing\DefinedWriteAccessor.cs" />
@@ -82,16 +83,21 @@
     <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
     <Compile Include="EmptyManager.cs" />
+    <Compile Include="EnumTools.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FloatPtr.cs" />
     <Compile Include="Globalization\Term.cs" />
     <Compile Include="Interop\ArgListMark.cs" />
     <Compile Include="Interop\BitUtils.cs" />
     <Compile Include="Interop\InteropTools.cs" />
+    <Compile Include="Interop\IPointer.cs" />
+    <Compile Include="Interop\Pointer.cs" />
     <Compile Include="Interop\ReferenceHelper.cs" />
-    <Compile Include="Interop\TypedReferenceConvert.cs" />
+    <Compile Include="Interop\TypedReferenceTools.cs" />
     <Compile Include="Interop\VarArgsDelegateGenerator.cs" />
+    <Compile Include="Linq\LinqEmit.cs" />
     <Compile Include="Math\Extensions.cs" />
+    <Compile Include="Metadata\BoxedAttribute.cs" />
     <Compile Include="Metadata\DataAttribute.cs" />
     <Compile Include="Metadata\IIdentifiable.cs" />
     <Compile Include="Metadata\NeverAttribute.cs" />
@@ -194,7 +200,9 @@
     <Compile Include="Reflection\TypeSupport\TypeAppendConstruct.cs" />
     <Compile Include="Reflection\TypeSupport\TypeConstruct.cs" />
     <Compile Include="Reflection\VarArgsGenerator.cs" />
+    <Compile Include="Reflection\VarArgsInvoke.cs" />
     <Compile Include="Reflection\VarArgsInvoker.cs" />
+    <Compile Include="Reflection\VoidValueType.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Serialization\Serialization.cs" />
     <Compile Include="Streaming\BitStream.cs" />
@@ -229,9 +237,7 @@
     <Compile Include="TypeOf.cs" />
     <Compile Include="Unsafe\Chameleon.cs" />
     <Compile Include="Unsafe\DummyObject.cs" />
-    <Compile Include="Unsafe\IPointer.cs" />
     <Compile Include="Unsafe\ObjectHandle.cs" />
-    <Compile Include="Unsafe\Pointer.cs" />
     <Compile Include="Unsafe\UnmanagedInstance.cs" />
     <Compile Include="Unsafe\UnsafeTools.cs" />
     <Compile Include="VariadicUnion.cs" />
@@ -244,6 +250,7 @@
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Math" />
+    <Folder Include="Linq" />
     <Folder Include="Reflection\Cpp\TypeModel" />
     <Folder Include="Reflection\Cpp\TypeModel\PrimitiveTypes" />
     <Folder Include="Reflection\Emit" />

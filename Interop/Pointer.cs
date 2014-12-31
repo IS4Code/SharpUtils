@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Accessing;
 using IllidanS4.SharpUtils.Metadata;
+using IllidanS4.SharpUtils.Unsafe;
 
-namespace IllidanS4.SharpUtils.Unsafe
+namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
 	/// Generic equivalent of <see cref="System.IntPtr"/>.
 	/// </summary>
 	[Unsafe]
-	public unsafe struct Pointer<T> : IPointer, IReadWriteAccessor<T> where T : struct
+	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T> where T : struct
 	{
 		void* ptr;
 		private static readonly Type ptrType = TypeOf<T>.TypeID;
@@ -32,7 +34,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		[CLSCompliant(false)]
 		public Pointer(TypedReference reference)
 		{
-			ptr = *(void**)(&reference);
+			ptr = (void*)reference.ToPointer();
 		}
 		
 		public IntPtr ToIntPtr()
@@ -53,19 +55,31 @@ namespace IllidanS4.SharpUtils.Unsafe
 			}
 		}
 		
+		[CLSCompliant(false)]
+		public void GetReference([Out]TypedReference* tr)
+		{
+			var tptr = (IntPtr*)tr;
+			tptr[0] = ToIntPtr();
+			tptr[1] = ptrType.TypeHandle.Value;
+		}
+		
+		[return: Boxed(typeof(TypedReference))]
+		public ValueType GetReference()
+		{
+			TypedReference tr;
+			GetReference(&tr);
+			return UnsafeTools.Box(tr);
+		}
+		
 		public T Value{
 			get{
-				TypedReference tr = default(TypedReference);
-				var tptr = (void**)(&tr);
-				tptr[0] = ptr;
-				tptr[1] = (void*)ptrType.TypeHandle.Value;
+				TypedReference tr;
+				GetReference(&tr);
 				return __refvalue(tr, T);
 			}
 			set{
-				TypedReference tr = default(TypedReference);
-				var tptr = (void**)(&tr);
-				tptr[0] = ptr;
-				tptr[1] = (void*)ptrType.TypeHandle.Value;
+				TypedReference tr;
+				GetReference(&tr);
 				__refvalue(tr, T) = value;
 			}
 		}

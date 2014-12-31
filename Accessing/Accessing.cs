@@ -17,11 +17,12 @@ namespace IllidanS4.SharpUtils.Accessing
 		T Value{set;}
 	}
 	
+	/*
 	/// <summary>
 	/// The interface for both "get" and "set" accessors.
 	/// </summary>
 	public interface IReadWriteAccessor<T> : IReadAccessor<T>, IWriteAccessor<T>
 	{
 		
-	}
+	}*/
 }

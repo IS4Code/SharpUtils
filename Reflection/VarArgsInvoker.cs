@@ -58,7 +58,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		private static readonly Expression<Func<MethodInfo,IntPtr>> GetFnptr = (m) => InteropTools.GetFunctionPointer(m);
+		private static readonly Expression<Func<MethodInfo,IntPtr>> GetFnptr = (m) => m.MethodHandle.GetFunctionPointer();
 		private static readonly Expression<Func<MethodInfo,bool>> IsVoid = (m) => m.ReturnType == typeof(void);
 		
 		public static LambdaExpression CreateDynamicInvoker(Type returnType, Type[] fixtypes, Type[] vartypes)

@@ -27,7 +27,7 @@ namespace IllidanS4.SharpUtils
 		/// </summary>
 		/// <param name="elem">The one element in this enumerable.</param>
 		/// <returns>The enumerable.</returns>
-		public static IEnumerable<TElement> One<TElement>(TElement elem)
+		public static IEnumerable<TElement> Once<TElement>(TElement elem)
 		{
 			yield return elem;
 		}
@@ -191,6 +191,11 @@ namespace IllidanS4.SharpUtils
 		public static IEnumerable Enumerate(this RuntimeArgumentHandle arglist)
 		{
 			return new ArgIterator(arglist).ToIEnumerable();
+		}
+		
+		public static TTo FastCast<TFrom,TTo>(TFrom arg)
+		{
+			return __refvalue(__makeref(arg), TTo);
 		}
 		
 		public static void Fill<T>(out T variable)

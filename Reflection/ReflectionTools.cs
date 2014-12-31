@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection
@@ -50,6 +51,9 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		private unsafe delegate Type FieldSignatureGetter(void* sigptr, int siglength, Type declaringType);
+		private static readonly FieldSignatureGetter GetFieldSignature = CreateGetFieldSignature();
+		
 		public static unsafe Type GetTypeFromFieldSignature(byte[] signature, Type declaringType = null)
 		{
 			declaringType = declaringType ?? typeof(object);
@@ -58,9 +62,26 @@ namespace IllidanS4.SharpUtils.Reflection
 			var ctor = sigtype.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new[]{typeof(void*), typeof(int), rtype}, null);
 			fixed(byte* ptr = signature)
 			{
-				object sigobj = ctor.Invoke(new object[]{(IntPtr)ptr, signature.Length, declaringType});
-				return (Type)sigtype.InvokeMember("FieldType", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty, null, sigobj, null);
+				return GetFieldSignature.Invoke(ptr, signature.Length, declaringType);
 			}
+		}
+		
+		private static FieldSignatureGetter CreateGetFieldSignature()
+		{
+			Type sigtype = Types.Signature;
+			Type rtype = Types.RuntimeType;
+			PropertyInfo fieldType = sigtype.GetProperty("FieldType", BindingFlags.NonPublic | BindingFlags.Instance);
+			var ctor = sigtype.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new[]{typeof(void*), typeof(int), rtype}, null);
+			DynamicMethod dyn = new DynamicMethod("GetFieldSignature", typeof(Type), new[]{typeof(void*), typeof(int), typeof(Type)}, typeof(ReflectionTools).Module, true);
+			var il = dyn.GetILGenerator();
+			il.Emit(SysEmit.OpCodes.Ldarg_0);
+			il.Emit(SysEmit.OpCodes.Ldarg_1);
+			il.Emit(SysEmit.OpCodes.Ldarg_2);
+			il.Emit(SysEmit.OpCodes.Castclass, rtype);
+			il.Emit(SysEmit.OpCodes.Newobj, ctor);
+			il.Emit(SysEmit.OpCodes.Callvirt, fieldType.GetGetMethod(true));
+			il.Emit(SysEmit.OpCodes.Ret);
+			return (FieldSignatureGetter)dyn.CreateDelegate(typeof(FieldSignatureGetter));
 		}
 		
 		public static void SetValue<T>(this FieldInfo fi, ref T obj, object value)

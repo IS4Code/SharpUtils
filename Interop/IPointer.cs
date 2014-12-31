@@ -1,5 +1,5 @@
 ﻿using System;
-namespace IllidanS4.SharpUtils.Unsafe
+namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
 	/// Non-generic base of <see cref="Pointer&lt;T&gt;"/>.

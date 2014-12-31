@@ -18,7 +18,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			
 		}
 		
-		public FunctionPointerType(MethodCallSite signature) : base(Types.FnPtr)
+		public FunctionPointerType(MethodCallSite signature) : base(Types.Generated.FnPtr)
 		{
 			if(signature == null) throw new ArgumentNullException("signature");
 			Signature = signature;

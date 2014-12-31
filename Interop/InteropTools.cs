@@ -1,10 +1,13 @@
 ﻿/* Date: 14.11.2014, Time: 12:27 */
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection;
+using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Interop
 {
@@ -25,7 +28,7 @@ namespace IllidanS4.SharpUtils.Interop
 		private static readonly Func<Type,bool,int> SizeOfHelper_f = (Func<Type,bool,int>)Delegate.CreateDelegate(typeof(Func<Type,bool,int>), typeof(Marshal).GetMethod("SizeOfHelper", flags));
 		
 		/// <summary>
-		/// Stores a structure in the memory.
+		/// Stores a structure in the unmanaged memory.
 		/// </summary>
 		/// <param name="structure">A reference to the structure to be stored in the memory.</param>
 		/// <param name="ptr">The pointer to the memory location.</param>
@@ -35,37 +38,73 @@ namespace IllidanS4.SharpUtils.Interop
 			StructureToPtrNative(structure, (byte*)ptr, unchecked((uint)size));
 		}
 		
+		/// <summary>
+		/// Stores a structure in the unmanaged memory.
+		/// </summary>
+		/// <param name="structure">A reference to the structure to be stored in the memory.</param>
+		/// <param name="ptr">The pointer to the memory location.</param>
 		public static void StructureToPtrDirect(TypedReference structure, IntPtr ptr)
 		{
 			StructureToPtrDirect(structure, ptr, SizeOf(__reftype(structure)));
 		}
 		
+		/// <summary>
+		/// Stores a structure in the unmanaged memory.
+		/// </summary>
+		/// <param name="structure">The sturecture to be stored in the memory.</param>
+		/// <param name="ptr">The pointer to the memory location.</param>
 		public static void StructureToPtr<T>(ref T structure, IntPtr ptr)
 		{
 			StructureToPtrDirect(__makeref(structure), ptr);
 		}
 		
+		/// <summary>
+		/// Stores a structure in the unmanaged memory.
+		/// </summary>
+		/// <param name="structure">The sturcture to be stored in the memory.</param>
+		/// <param name="ptr">The pointer to the memory location.</param>
 		public static void StructureToPtr<T>(T structure, IntPtr ptr)
 		{
 			StructureToPtrDirect(__makeref(structure), ptr);
 		}
 		
+		/// <summary>
+		/// Reads a structure from the unmanaged memory.
+		/// </summary>
+		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
+		/// <param name="structure">Variable in which the structure will be stored.</param>
+		/// <param name="size">The size of the structure.</param>
 		public unsafe static void PtrToStructureDirect(IntPtr ptr, TypedReference structure, int size)
 		{
 			PtrToStructureNative((byte*)ptr, structure, unchecked((uint)size));
 		}
 		
+		/// <summary>
+		/// Reads a structure from the unmanaged memory.
+		/// </summary>
+		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
+		/// <param name="structure">Variable in which the structure will be stored.</param>
 		public static void PtrToStructureDirect(IntPtr ptr, TypedReference structure)
 		{
 			PtrToStructureDirect(ptr, structure, SizeOf(__reftype(structure)));
 		}
 		
+		/// <summary>
+		/// Reads a structure from the unmanaged memory.
+		/// </summary>
+		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
+		/// <param name="structure">Variable in which the structure will be stored.</param>
 		public static void PtrToStructure<T>(IntPtr ptr, out T structure)
 		{
 			structure = default(T);
 			PtrToStructureDirect(ptr, __makeref(structure));
 		}
 		
+		/// <summary>
+		/// Reads a structure from the unmanaged memory.
+		/// </summary>
+		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
+		/// <returns>The structure in the memory.</returns>
 		public static T PtrToStructure<T>(IntPtr ptr)
 		{
 			T obj;
@@ -73,138 +112,48 @@ namespace IllidanS4.SharpUtils.Interop
 			return obj;
 		}
 		
+		/// <summary>
+		/// Returns the size of a structure.
+		/// </summary>
+		/// <param name="structure">The structure.</param>
+		/// <returns>Its size.</returns>
 		public static int SizeOf<T>(T structure)
 		{
 			return SizeOf<T>();
 		}
 		
+		/// <summary>
+		/// Returns the size of a type.
+		/// </summary>
+		/// <returns>The size.</returns>
 		public static int SizeOf<T>()
 		{
 			return SizeOf(typeof(T));
 		}
 		
+		/// <summary>
+		/// Returns the size of a type.
+		/// </summary>
+		/// <param name="t">The type.</param>
+		/// <returns>The size.</returns>
 		public static int SizeOf(Type t)
 		{
 			return SizeOfHelper_f(t, true);
 		}
 		#endregion
 		
-		#region Comparing typedref
-		public unsafe static bool Equals(this TypedReference tr, TypedReference other)
-		{
-			IntPtr* a = ((IntPtr*)&tr);
-			IntPtr* b = ((IntPtr*)&other);
-			return a[0] == b[0] && a[1] == b[1];
-		}
-		
+		/// <summary>
+		/// Compares two references for equality.
+		/// </summary>
+		/// <param name="a">The first reference.</param>
+		/// <param name="b">The second reference.</param>
+		/// <returns>true if they are equal (point to the same location).</returns>
 		public static bool Equals<T>(ref T a, ref T b)
 		{
 			return __makeref(a).Equals(__makeref(b));
 		}
-		#endregion
 		
-		#region Field typedref
-		//private delegate void InternalMakeTypedReferenceDelegate(void* result, object target, IntPtr[] flds, Type lastFieldType);
-		//private static readonly InternalMakeTypedReferenceDelegate InternalMakeTypedReference = (InternalMakeTypedReferenceDelegate)Delegate.CreateDelegate(typeof(InternalMakeTypedReferenceDelegate), typeof(TypedReference).GetMethod("InternalMakeTypedReference", BindingFlags.NonPublic | BindingFlags.Static));
-		
-		private unsafe delegate void InternalMakeTypedReferenceDelegate(void* result, object target, IntPtr[] flds, Type lastFieldType);
-		private static readonly Type RuntimeTypeType = typeof(Type).Module.GetType("System.RuntimeType");
-		private static readonly InternalMakeTypedReferenceDelegate InternalMakeTypedReference = GetInternalMakeTypedReference();
-		private static InternalMakeTypedReferenceDelegate GetInternalMakeTypedReference()
-		{
-			MethodInfo mi = typeof(TypedReference).GetMethod("InternalMakeTypedReference", flags);
-			DynamicMethod method = new DynamicMethod("InternalMakeTypedReference", typeof(void), new[]{typeof(void*), typeof(object), typeof(IntPtr[]), typeof(Type)}, RuntimeTypeType.Module, true);
-			var il = method.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Ldarg_1);
-			il.Emit(OpCodes.Ldarg_2);
-			il.Emit(OpCodes.Ldarg_3);
-			il.Emit(OpCodes.Castclass, RuntimeTypeType);
-			il.EmitCall(OpCodes.Call, mi, null);
-			il.Emit(OpCodes.Ret);
-			return (InternalMakeTypedReferenceDelegate)method.CreateDelegate(typeof(InternalMakeTypedReferenceDelegate));
-		}
-		
-		public unsafe static void MakeTypedReference([Out]TypedReference* result, object target, params FieldInfo[] fields)
-		{
-			if(target == null)
-			{
-				MakeStaticTypedReference(result, fields);
-				return;
-			}
-			IntPtr[] flds = new IntPtr[fields.Length];
-			Type lastType = target.GetType();
-			for(int i = 0; i < fields.Length; i++)
-			{
-				var field = fields[i];
-				if(field.IsStatic)
-				{
-					throw new ArgumentException("Field cannot be static.", "fields");
-				}
-				flds[i] = field.FieldHandle.Value;
-				lastType = field.FieldType;
-			}
-			InternalMakeTypedReference(result, target, flds, lastType);
-		}
-		
-		private unsafe delegate void FieldTypedRef(void* result);
-		private unsafe static void MakeStaticTypedReference([Out]TypedReference* result, params FieldInfo[] fields)
-		{
-			DynamicMethod mb = new DynamicMethod("GetStaticTypedReference", typeof(void), new[]{typeof(void*)}, typeof(InteropTools).Module, true);
-			var il = mb.GetILGenerator();
-			il.Emit(OpCodes.Ldarg_0);
-			Type ftype = null;
-			foreach(var field in fields)
-			{
-				OpCode opcode;
-				if(ftype == null)
-				{
-					opcode = OpCodes.Ldsflda;
-					if(!field.IsStatic)
-					{
-						throw new ArgumentException("First field must be static.", "fields");
-					}
-				}else{
-					opcode = OpCodes.Ldflda;
-					if(field.IsStatic)
-					{
-						throw new ArgumentException("Next field cannot be static.", "fields");
-					}
-				}
-				ftype = field.FieldType;
-				il.Emit(opcode, field);
-			}
-			il.Emit(OpCodes.Mkrefany, ftype);
-			il.Emit(OpCodes.Stobj, typeof(TypedReference));
-			il.Emit(OpCodes.Ret);
-			FieldTypedRef del = (FieldTypedRef)mb.CreateDelegate(typeof(FieldTypedRef));
-			del.Invoke(result);
-		}
-		#endregion
-		
-		#region Object typedref
-		
-		/*private static class TypedRefBox<T>
-		{
-			public delegate 
-		}
-		
-		private static readonly MethodInfo MakeObjectTypedReferenceMethod = typeof(InteropTools).GetMethod("MakeObjectTypedReference", BindingFlags.Public | BindingFlags.Static);
-		
-		public static void MakeObjectTypedReference([Out]TypedReference* tr, ValueType boxed)
-		{
-			if(boxed == null) throw new ArgumentNullException("boxed");
-			Type t = boxed.GetType();
-			MakeObjectTypedReferenceMethod.MakeGenericMethod(t).Invoke(null,new[]{boxed});
-		}
-		
-		public static void MakeObjectTypedReference<T>([Out]TypedReference* tr, ValueType boxed)
-		{
-			if(boxed == null) throw new ArgumentNullException("boxed");
-		}*/
-		
-		#endregion
-		
+		[Obsolete("Use System.RuntimeMethodHandle.GetFunctionPointer.")]
 		public static IntPtr GetFunctionPointer(MethodInfo method)
 		{
 			DynamicMethod dyn = new DynamicMethod("Ldftn", typeof(IntPtr), Type.EmptyTypes, method.Module);

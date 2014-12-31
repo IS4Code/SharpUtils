@@ -36,7 +36,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 		{
 			if(elementType is FunctionPointerType)
 			{
-				return Types.FnPtrSZArray;
+				return Types.Generated.FnPtrSZArray;
 			}else{
 				return elementType.UnderlyingSystemType.MakeArrayType();
 			}
@@ -46,7 +46,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 		{
 			if(elementType is FunctionPointerType)
 			{
-				return Types.FnPtrMDArray[rank];
+				return Types.Generated.FnPtrMDArray[rank];
 			}else{
 				return elementType.UnderlyingSystemType.MakeArrayType(rank);
 			}

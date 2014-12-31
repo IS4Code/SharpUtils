@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public sealed class FieldAccessor<T> : IReadWriteAccessor<T>
+	public sealed class FieldAccessor<T> : IReadAccessor<T>, IWriteAccessor<T>
 	{
 		readonly Action<T> setter;
 		readonly Func<T> getter;
