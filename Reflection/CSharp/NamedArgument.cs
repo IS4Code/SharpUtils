@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Reflection.CSharp
 {
 	[Serializable]
 	public class NamedArgument

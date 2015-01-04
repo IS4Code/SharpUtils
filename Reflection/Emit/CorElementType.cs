@@ -41,7 +41,10 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		U8 = 11,
 		ValueType = 0x11,
 		Var = 0x13,
-		Void = 1
+		Void = 1,
+		
+		//Added
+		R = 0x1a
 	}
 	
 	public static class CorElementType_Extensions

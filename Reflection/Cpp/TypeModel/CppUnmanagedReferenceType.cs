@@ -15,7 +15,7 @@ namespace IllidanS4.SharpUtils.Reflection.Cpp
 		
 		public override Type ManagedType{
 			get{
-				return null;
+				return new ModifiedType(ElementType.ManagedType.MakePointerType(), new CustomTypeModifier(CustomTypeModifier.IsImplicitlyDereferenced));
 			}
 		}
 	}

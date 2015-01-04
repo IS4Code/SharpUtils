@@ -10,6 +10,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection.Emit;
+using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
 namespace IllidanS4.SharpUtils.Reflection
 {
@@ -17,7 +18,10 @@ namespace IllidanS4.SharpUtils.Reflection
 	
 	public static class ReflectionTools
 	{
-		private static readonly FieldInfo CallSiteBinder_Cache = typeof(CallSiteBinder).GetField("Cache", BindingFlags.NonPublic | BindingFlags.Instance);
+		private const BindingFlags sflags = BindingFlags.Static | BindingFlags.NonPublic;
+		private const BindingFlags iflags = BindingFlags.Instance | BindingFlags.NonPublic;
+		
+		private static readonly FieldInfo CallSiteBinder_Cache = typeof(CallSiteBinder).GetField("Cache", iflags);
     	public static Type GetBindingType(this CallSiteBinder binder)
 		{
 	    	IDictionary<Type,object> cache = (IDictionary<Type,object>)CallSiteBinder_Cache.GetValue(binder);
@@ -30,7 +34,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		}
     	
     	private static readonly Type DelegateHelpersType = typeof(Expression).Assembly.GetType("System.Linq.Expressions.Compiler.DelegateHelpers");
-    	private static readonly Func<Type[],Type> MakeNewCustomDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewCustomDelegate", BindingFlags.NonPublic | BindingFlags.Static));
+    	private static readonly Func<Type[],Type> MakeNewCustomDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewCustomDelegate", sflags));
 		public static Type NewCustomDelegateType(Type ret, params Type[] parameters)
 		{
 			Type[] args = new Type[parameters.Length+1];
@@ -38,7 +42,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			args[args.Length-1] = ret;
 			return MakeNewCustomDelegate(args);
 		}
-    	private static readonly Func<Type[],Type> MakeNewDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewDelegate", BindingFlags.NonPublic | BindingFlags.Static));
+    	private static readonly Func<Type[],Type> MakeNewDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewDelegate", sflags));
 		public static Type GetDelegateType(Type ret, params Type[] parameters)
 		{
 			Type[] args = new Type[parameters.Length+1];
@@ -96,6 +100,28 @@ namespace IllidanS4.SharpUtils.Reflection
 		
 		public static readonly Func<IntPtr,Type> GetTypeFromHandle = (Func<IntPtr,Type>)Delegate.CreateDelegate(typeof(Func<IntPtr,Type>), typeof(Type).GetMethod("GetTypeFromHandleUnsafe", BindingFlags.Static | BindingFlags.NonPublic));
 		
+		public static CorElementType GetCorElementType(this Type type)
+		{
+			TypeConstruct tc = type as TypeConstruct;
+			if(tc != null)
+			{
+				return tc.CorElementType;
+			}else{
+				return GetCorElType.Invoke(type);
+			}
+		}
+		
+		private delegate CorElementType GetCorElementTypeDelegate(Type type);
+		private static readonly GetCorElementTypeDelegate GetCorElType = CreateGetCorElType();
+		private static GetCorElementTypeDelegate CreateGetCorElType()
+		{
+			MethodInfo mi = typeof(RuntimeTypeHandle).GetMethod("GetCorElementType", sflags);
+			ParameterExpression p1 = Expression.Parameter(typeof(Type));
+			var exp = Expression.Convert(Expression.Call(mi, Expression.Convert(p1, Types.RuntimeType)), typeof(CorElementType));
+			var lam = Expression.Lambda<GetCorElementTypeDelegate>(exp, p1);
+			return lam.Compile();
+		}
+		
 		public static byte[] GetSignature(this FieldInfo fld)
 		{
 			var rmtype = fld.Module.GetType();
@@ -108,6 +134,8 @@ namespace IllidanS4.SharpUtils.Reflection
 			Marshal.Copy(ptr, data, 0, len);
 			return data;
 		}
+		
+		#region OpCodes
 		
 		public static void EmitLdarg(this ILGenerator il, int index)
 		{
@@ -122,7 +150,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		public static void EmitCalli(this ILGenerator il, OpCode opcode, MethodCallSite signature)
+		public static void EmitCalli(this ILGenerator il, OpCode opcode, MethodSignature signature)
 		{
 			if(signature.IsUnmanaged)
 			{
@@ -195,6 +223,60 @@ namespace IllidanS4.SharpUtils.Reflection
 				SysEmit.OpCodes.Stloc_2,
 				SysEmit.OpCodes.Stloc_3,
 			};
+		}
+		
+		#endregion
+		
+		public static Type GetTypeFromElementType(CorElementType elementType)
+		{
+			switch(elementType)
+			{
+				case CorElementType.SzArray:
+				case CorElementType.Array:
+					return TypeOf<Array>.TypeID;
+				case CorElementType.Boolean:
+					return TypeOf<bool>.TypeID;
+				case CorElementType.FnPtr:
+					return Types.Generated.FnPtr;
+				case CorElementType.Char:
+					return TypeOf<char>.TypeID;
+				case CorElementType.I:
+					return TypeOf<IntPtr>.TypeID;
+				case CorElementType.I1:
+					return TypeOf<sbyte>.TypeID;
+				case CorElementType.I2:
+					return TypeOf<short>.TypeID;
+				case CorElementType.I4:
+					return TypeOf<int>.TypeID;
+				case CorElementType.I8:
+					return TypeOf<long>.TypeID;
+				case CorElementType.Object:
+					return TypeOf<object>.TypeID;
+				case CorElementType.Ptr:
+					return typeof(void*);
+				case CorElementType.R:
+					return null;
+				case CorElementType.R4:
+					return TypeOf<float>.TypeID;
+				case CorElementType.R8:
+					return TypeOf<double>.TypeID;
+				case CorElementType.String:
+					return TypeOf<string>.TypeID;
+				case CorElementType.TypedByRef:
+					return typeof(TypedReference);
+				case CorElementType.U:
+					return TypeOf<UIntPtr>.TypeID;
+				case CorElementType.U1:
+					return TypeOf<byte>.TypeID;
+				case CorElementType.U2:
+					return TypeOf<ushort>.TypeID;
+				case CorElementType.U4:
+					return TypeOf<uint>.TypeID;
+				case CorElementType.U8:
+					return TypeOf<ulong>.TypeID;
+				default:
+					return null;
+			}
 		}
 	}
 }

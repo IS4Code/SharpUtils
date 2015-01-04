@@ -8,6 +8,12 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
 	public class PointerType : TypeAppendConstruct
 	{
+		public override CorElementType CorElementType{
+			get{
+				return CorElementType.Ptr;
+			}
+		}
+		
 		public PointerType(Type elementType) : base(elementType, UnderlyingPointerType(elementType))
 		{
 			

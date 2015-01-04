@@ -12,6 +12,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 	public abstract class TypeConstruct : TypeDelegator, ISignatureElement
 	{
 		public Type ElementType{get; private set;}
+		public abstract CorElementType CorElementType{get;}
 		
 		public TypeConstruct(Type delegatingType) : this(null, delegatingType)
 		{
@@ -93,10 +94,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 				return base.ToString();
 		}
 		
-		protected virtual void AddSignature(SignatureHelper signature)
-		{
-			throw new NotImplementedException();
-		}
+		protected abstract void AddSignature(SignatureHelper signature);
 		
 		void ISignatureElement.AddSignature(SignatureHelper signature)
 		{

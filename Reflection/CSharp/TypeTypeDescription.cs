@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Reflection.CSharp
 {
 	partial class LanguageType
 	{

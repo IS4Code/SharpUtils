@@ -8,6 +8,12 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
 	public class ByRefType : TypeAppendConstruct
 	{
+		public override CorElementType CorElementType{
+			get{
+				return CorElementType.ByRef;
+			}
+		}
+		
 		public ByRefType(Type elementType) : base(elementType, UnderlyingByRefType(elementType))
 		{
 			

@@ -11,6 +11,11 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 	{
 		private readonly Type[] typeArgs;
 		private readonly Type typeDef;
+		public override CorElementType CorElementType{
+			get{
+				return CorElementType.GenericInst;
+			}
+		}
 		
 		public GenericType(Type genericTypeDef, params Type[] typeArguments) : this(genericTypeDef, (IEnumerable<Type>)typeArguments)
 		{

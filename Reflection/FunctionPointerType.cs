@@ -11,14 +11,19 @@ namespace IllidanS4.SharpUtils.Reflection
 	/// </summary>
 	public class FunctionPointerType : TypeConstruct
 	{
-		public MethodCallSite Signature{get; private set;}
+		public MethodSignature Signature{get; private set;}
+		public override CorElementType CorElementType{
+			get{
+				return CorElementType.FnPtr;
+			}
+		}
 		
-		public FunctionPointerType() : this(new MethodCallSite())
+		public FunctionPointerType() : this(new MethodSignature())
 		{
 			
 		}
 		
-		public FunctionPointerType(MethodCallSite signature) : base(Types.Generated.FnPtr)
+		public FunctionPointerType(MethodSignature signature) : base(Types.Generated.FnPtr)
 		{
 			if(signature == null) throw new ArgumentNullException("signature");
 			Signature = signature;

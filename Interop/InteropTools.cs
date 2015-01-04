@@ -170,5 +170,65 @@ namespace IllidanS4.SharpUtils.Interop
 			il.Emit(OpCodes.Ret);
 			return (IntPtr)dyn.Invoke(null,null);
 		}
+		
+		private static Action<IntPtr,IntPtr,uint> cpblk = Create_cpblk();
+		private static Action<IntPtr,IntPtr,uint> Create_cpblk()
+		{
+			DynamicMethod dyn = new DynamicMethod("Cpblk", null, new[]{typeof(IntPtr), typeof(IntPtr), typeof(uint)}, typeof(InteropTools), true);
+			var il = dyn.GetILGenerator();
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Ldarg_2);
+			il.Emit(OpCodes.Cpblk);
+			il.Emit(OpCodes.Ret);
+			return (Action<IntPtr,IntPtr,uint>)dyn.CreateDelegate(typeof(Action<IntPtr,IntPtr,uint>));
+		}
+		
+		private static Action<IntPtr,byte,uint> initblk = Create_initblk();
+		private static Action<IntPtr,byte,uint> Create_initblk()
+		{
+			DynamicMethod dyn = new DynamicMethod("Initblk", null, new[]{typeof(IntPtr), typeof(byte), typeof(uint)}, typeof(InteropTools), true);
+			var il = dyn.GetILGenerator();
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Ldarg_2);
+			il.Emit(OpCodes.Initblk);
+			il.Emit(OpCodes.Ret);
+			return (Action<IntPtr,byte,uint>)dyn.CreateDelegate(typeof(Action<IntPtr,byte,uint>));
+		}
+		
+		[CLSCompliant(false)]
+		public static void CopyBlock(IntPtr destination, IntPtr source, uint size)
+		{
+			cpblk(destination, source, size);
+		}
+		
+		public static void CopyBlock(IntPtr destination, IntPtr source, int size)
+		{
+			cpblk(destination, source, unchecked((uint)size));
+		}
+		
+		[CLSCompliant(false)]
+		public static unsafe void CopyBlock(void* destination, void* source, uint size)
+		{
+			cpblk((IntPtr)destination, (IntPtr)source, size);
+		}
+		
+		[CLSCompliant(false)]
+		public static void InitBlock(IntPtr destination, byte initValue, uint size)
+		{
+			initblk(destination, initValue, size);
+		}
+		
+		public static void InitBlock(IntPtr destination, byte initValue, int size)
+		{
+			initblk(destination, initValue, unchecked((uint)size));
+		}
+		
+		[CLSCompliant(false)]
+		public static unsafe void InitBlock(void* destination, byte initValue, uint size)
+		{
+			initblk((IntPtr)destination, initValue, size);
+		}
 	}
 }

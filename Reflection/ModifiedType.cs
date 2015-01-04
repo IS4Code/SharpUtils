@@ -23,6 +23,11 @@ namespace IllidanS4.SharpUtils.Reflection
 	public class ModifiedType : TypeAppendConstruct
 	{
 		public TypeModifierCollection Modifiers{get; private set;}
+		public override CorElementType CorElementType{
+			get{
+				return ElementType.GetCorElementType();
+			}
+		}
 		
 		private ModifiedType(Type baseType) : base(baseType, baseType.UnderlyingSystemType)
 		{
@@ -73,53 +78,16 @@ namespace IllidanS4.SharpUtils.Reflection
 			return Equals(o as Type);
 		}
 		
-		/*public override string Name{
-			get{
-				return base.Name;
-			}
-		}*/
-		
 		public static bool operator ==(ModifiedType a, ModifiedType b)
 		{
-			if(a==null)return b==null;
-			if(b==null)return false;
-			return a.Equals(b);
+			if(Object.ReferenceEquals(a, b)) return true;
+			else if(Object.ReferenceEquals(a, null)) return false;
+			else return a.Equals(b);
 		}
 		
 		public static bool operator !=(ModifiedType a, ModifiedType b)
 		{
-			if(a==null)return b!=null;
-			if(b==null)return true;
-			return !a.Equals(b);
-		}
-		
-		public static bool operator ==(Type a, ModifiedType b)
-		{
-			if(a==null)return b==null;
-			if(b==null)return false;
-			return b.Equals(a);
-		}
-		
-		
-		public static bool operator !=(Type a, ModifiedType b)
-		{
-			if(a==null)return b!=null;
-			if(b==null)return true;
-			return !b.Equals(a);
-		}
-		
-		public static bool operator ==(ModifiedType a, Type b)
-		{
-			if(a==null)return b==null;
-			if(b==null)return false;
-			return a.Equals(b);
-		}
-		
-		public static bool operator !=(ModifiedType a, Type b)
-		{
-			if(a==null)return b!=null;
-			if(b==null)return true;
-			return !a.Equals(b);
+			return !(a == b);
 		}
 		
 		public override int GetHashCode()

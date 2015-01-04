@@ -6,11 +6,11 @@ namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
 	public class CppEnvironment
 	{
-		public Assembly Assembly{get; private set;}
+		public Module Module{get; private set;}
 		
-		public CppEnvironment(Assembly assembly)
+		public CppEnvironment(Module module)
 		{
-			Assembly = assembly;
+			Module = module;
 		}
 		
 		public CppType GetType(string name)

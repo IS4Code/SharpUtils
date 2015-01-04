@@ -106,6 +106,7 @@
     <Compile Include="NonNullable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\AnonymousTypeFactory.cs" />
+    <Compile Include="Reflection\BuilderTools.cs" />
     <Compile Include="Reflection\Cpp\CppEnvironment.cs" />
     <Compile Include="Reflection\Cpp\TypeModel\CppManagedArrayType.cs" />
     <Compile Include="Reflection\Cpp\TypeModel\CppConstType.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Reflection\CSharp\MethodTypeDescription.cs">
       <DependentUpon>LanguageType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Reflection\CSharp\NamedArgument.cs" />
     <Compile Include="Reflection\CSharp\NullTypeDescription.cs">
       <DependentUpon>LanguageType.cs</DependentUpon>
     </Compile>
@@ -172,13 +174,14 @@
     <Compile Include="Reflection\CSharp\VariableTypeDescription.cs">
       <DependentUpon>LanguageType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Reflection\Emit\BuilderTools.cs" />
     <Compile Include="Reflection\Emit\CorElementType.cs" />
     <Compile Include="Reflection\Emit\ISignatureElement.cs" />
     <Compile Include="Reflection\Emit\MdSigCallingConvention.cs" />
+    <Compile Include="Reflection\Emit\MemberSignature.cs" />
     <Compile Include="Reflection\Emit\MethodSignature.cs" />
     <Compile Include="Reflection\Emit\SignatureTools.cs" />
     <Compile Include="Reflection\FunctionPointerType.cs" />
+    <Compile Include="Reflection\SignatureElementType.cs" />
     <Compile Include="Reflection\TypeModifier.cs" />
     <Compile Include="Reflection\Types.cs" />
     <Compile Include="Reflection\Emit\TypeEmitGenerator.cs" />
@@ -188,7 +191,6 @@
     <Compile Include="Reflection\methodof.cs" />
     <Compile Include="Reflection\ModifiedType.cs" />
     <Compile Include="Reflection\ModifiedTypeExtensions.cs" />
-    <Compile Include="Reflection\NamedArgument.cs" />
     <Compile Include="Reflection\Namespace.cs" />
     <Compile Include="Reflection\Property.cs" />
     <Compile Include="Reflection\CustomTypeModifier.cs" />

@@ -44,7 +44,7 @@ namespace IllidanS4.SharpUtils.Reflection.Cpp
 		
 		public override CppEnvironment Environment{
 			get{
-				return new CppEnvironment(DataType.Assembly);
+				return new CppEnvironment(DataType.Module);
 			}
 		}
 	}

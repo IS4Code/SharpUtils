@@ -8,10 +8,29 @@ using System.Text;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
-	public class MethodCallSite : IEquatable<MethodCallSite>, ISignatureElement
+	public class MethodSignature : IEquatable<MethodSignature>, ISignatureElement
 	{
 		public CallingConvention UnmanagedCallingConvention{get; private set;}
 		public CallingConventions CallingConvention{get; private set;}
+		public MdSigCallingConvention MethodCallingConvention{
+			get{
+				MdSigCallingConvention callConv = 0;
+				if(UnmanagedCallingConvention != 0) callConv = (MdSigCallingConvention)((byte)UnmanagedCallingConvention-1);
+				switch(CallingConvention)
+				{
+					case CallingConventions.HasThis:
+						callConv |= MdSigCallingConvention.HasThis;
+						break;
+					case CallingConventions.ExplicitThis:
+						callConv |= MdSigCallingConvention.ExplicitThis;
+						break;
+					case CallingConventions.VarArgs:
+						callConv |= MdSigCallingConvention.Vararg;
+						break;
+				}
+				return callConv;
+			}
+		}
 		public Type ReturnType{get; private set;}
 		private Type[] paramTypes;
 		private Type[] optionalParamTypes;
@@ -60,7 +79,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <summary>
 		/// Creates an empty method signature.
 		/// </summary>
-		public MethodCallSite() : this(CallingConventions.Standard, typeof(void), Type.EmptyTypes, Type.EmptyTypes)
+		public MethodSignature() : this(CallingConventions.Standard, typeof(void), Type.EmptyTypes, Type.EmptyTypes)
 		{
 			
 		}
@@ -69,22 +88,39 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// Copies a method signature.
 		/// </summary>
 		/// <param name="original">The signature to be copied.</param>
-		public MethodCallSite(MethodCallSite original) : this(original.CallingConvention, original.UnmanagedCallingConvention, original.ReturnType, original.paramTypes, original.optionalParamTypes)
+		public MethodSignature(MethodSignature original) : this(original.CallingConvention, original.UnmanagedCallingConvention, original.ReturnType, original.paramTypes, original.optionalParamTypes)
 		{
 			
 		}
 		
-		private MethodCallSite(CallingConventions callingConvention, CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : this(returnType, parameterTypes)
+		private MethodSignature(CallingConventions callingConvention, CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes)
 		{
 			CallingConvention = callingConvention;
 			UnmanagedCallingConvention = unmanagedCallConv;
 			OptionalParameterTypes = optionalParameterTypes;
-		}
-		
-		private MethodCallSite(Type returnType, Type[] parameterTypes)
-		{
 			ReturnType = returnType;
 			ParameterTypes = parameterTypes;
+		}
+		
+		/// <summary>
+		/// Creates a new managed method signature.
+		/// </summary>
+		/// <param name="returnType">The return type of the method.</param>
+		/// <param name="parameterTypes">The parameter types of the method.</param>
+		public MethodSignature(Type returnType, params Type[] parameterTypes) : this(CallingConventions.Standard, returnType, parameterTypes)
+		{
+			
+		}
+		
+		/// <summary>
+		/// Creates a new method signature using managed calling convention.
+		/// </summary>
+		/// <param name="callingConvention">The managed calling convetion. Cannot be Any.</param>
+		/// <param name="returnType">The return type.</param>
+		/// <param name="parameterTypes">The parameter types.</param>
+		public MethodSignature(CallingConventions callingConvention, Type returnType, Type[] parameterTypes) : this(callingConvention, returnType, parameterTypes, null)
+		{
+			
 		}
 		
 		/// <summary>
@@ -94,10 +130,12 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="returnType">The return type.</param>
 		/// <param name="parameterTypes">The parameter types.</param>
 		/// <param name="optionalParameterTypes">Optional parameter types for varargs calling convention.</param>
-		public MethodCallSite(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : this(returnType, parameterTypes)
+		public MethodSignature(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes)
 		{
 			CallingConvention = callingConvention;
 			OptionalParameterTypes = optionalParameterTypes;
+			ReturnType = returnType;
+			ParameterTypes = parameterTypes;
 		}
 		
 		/// <summary>
@@ -106,10 +144,12 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="unmanagedCallConv">The unmanaged calling convention. Cannot be Winapi.</param>
 		/// <param name="returnType">The return type.</param>
 		/// <param name="parameterTypes">The parameter types.</param>
-		public MethodCallSite(CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes) : this(returnType, parameterTypes)
+		public MethodSignature(CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes)
 		{
 			if(unmanagedCallConv == System.Runtime.InteropServices.CallingConvention.Winapi) throw new ArgumentException("Unmanaged calling convention cannot be Winapi.", "unmanagedCallConv");
 			UnmanagedCallingConvention = unmanagedCallConv;
+			ReturnType = returnType;
+			ParameterTypes = parameterTypes;
 		}
 		
 		/// <summary>
@@ -117,7 +157,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// </summary>
 		/// <param name="method">The method to be taken its signature from.</param>
 		/// <returns>The signature of the method.</returns>
-		public static MethodCallSite FromMethodInfo(MethodInfo method)
+		public static MethodSignature FromMethodInfo(MethodInfo method)
 		{
 			return FromMethodInfo(method, null);
 		}
@@ -128,30 +168,23 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="method">The method to be taken its signature from.</param>
 		/// <param name="optionalParameterTypes">Optional parameter types for varargs method.</param>
 		/// <returns>The signature of the method.</returns>
-		public static MethodCallSite FromMethodInfo(MethodInfo method, params Type[] optionalParameterTypes)
+		public static MethodSignature FromMethodInfo(MethodInfo method, params Type[] optionalParameterTypes)
 		{
 			var callconv = method.CallingConvention;
 			if((callconv&CallingConventions.VarArgs)==0 && optionalParameterTypes != null) throw new ArgumentException("Method must ve varargs to specify optional parameter types.");
-			return new MethodCallSite(callconv, method.ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
+			return new MethodSignature(callconv, method.ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
+		}
+		
+		public byte[] GetSignature(ModuleBuilder modBuilder)
+		{
+			SignatureHelper sig = SignatureTools.GetSigHelper(modBuilder);
+			sig.AddElement(this);
+			return sig.GetSignature();
 		}
 
 		void ISignatureElement.AddSignature(SignatureHelper signature)
 		{
-			byte callConv = 0;
-			if(UnmanagedCallingConvention != 0) callConv = (byte)((byte)UnmanagedCallingConvention-1);
-			switch(CallingConvention)
-			{
-				case CallingConventions.HasThis:
-					callConv |= 0x20;
-					break;
-				case CallingConventions.ExplicitThis:
-					callConv |= 0x40;
-					break;
-				case CallingConventions.VarArgs:
-					callConv |= 0x05;
-					break;
-			}
-			signature.AddData(callConv);
+			signature.AddData((byte)MethodCallingConvention);
 			signature.AddData(paramTypes.Length+optionalParamTypes.Length);
 			signature.AddArgumentSignature(ReturnType);
 			foreach(var type in paramTypes)
@@ -188,8 +221,32 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return name.ToString();
 		}
 		
+		public Type[] GetReturnTypeRequiredCustomModifiers()
+		{
+			ModifiedType mt = ReturnType as ModifiedType;
+			if(mt == null) return null;
+			return mt.Modifiers.EnumerateRequiredCustomModifiers().ToArray();
+		}
+		
+		public Type[] GetReturnTypeOptionalCustomModifiers()
+		{
+			ModifiedType mt = ReturnType as ModifiedType;
+			if(mt == null) return null;
+			return mt.Modifiers.EnumerateOptionalCustomModifiers().ToArray();
+		}
+		
+		public Type[][] GetParameterTypeRequiredCustomModifiers()
+		{
+			return ParameterTypes.OfType<ModifiedType>().Select(t => t.Modifiers.EnumerateRequiredCustomModifiers().ToArray()).ToArray();
+		}
+		
+		public Type[][] GetParameterTypeOptionalCustomModifiers()
+		{
+			return ParameterTypes.OfType<ModifiedType>().Select(t => t.Modifiers.EnumerateOptionalCustomModifiers().ToArray()).ToArray();
+		}
+		
 		#region Equals and GetHashCode implementation
-		public bool Equals(MethodCallSite other)
+		public bool Equals(MethodSignature other)
 		{
 			return
 				this.CallingConvention == other.CallingConvention &&
@@ -201,7 +258,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		
 		public override bool Equals(object obj)
 		{
-			MethodCallSite other = obj as MethodCallSite;
+			MethodSignature other = obj as MethodSignature;
 			if (other == null)
 				return false;
 			return Equals(other);
@@ -223,7 +280,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return hashCode;
 		}
 		
-		public static bool operator ==(MethodCallSite lhs, MethodCallSite rhs)
+		public static bool operator ==(MethodSignature lhs, MethodSignature rhs)
 		{
 			if (ReferenceEquals(lhs, rhs))
 				return true;
@@ -232,7 +289,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return lhs.Equals(rhs);
 		}
 		
-		public static bool operator !=(MethodCallSite lhs, MethodCallSite rhs)
+		public static bool operator !=(MethodSignature lhs, MethodSignature rhs)
 		{
 			return !(lhs == rhs);
 		}

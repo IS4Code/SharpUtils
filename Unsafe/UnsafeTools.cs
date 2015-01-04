@@ -134,6 +134,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return GetO((IntPtr)address);
 		}
 		
+		
+		// Boxing these non-nullable types is actually safer now thanks to GetUninitializedObject.
+		
 		/// <summary>
 		/// Boxes a <see cref="System.TypedReference"/>.
 		/// </summary>

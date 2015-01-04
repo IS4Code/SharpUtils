@@ -11,6 +11,12 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 		private readonly int rank;
 		private readonly bool md;
 		
+		public override CorElementType CorElementType{
+			get{
+				return md ? CorElementType.Array : CorElementType.SzArray;
+			}
+		}
+		
 		public ArrayType(Type elementType) : base(elementType, UnderlyingArrayType(elementType))
 		{
 			rank = 1;

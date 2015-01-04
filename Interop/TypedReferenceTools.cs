@@ -1,5 +1,6 @@
 ﻿/* Date: 13.11.2014, Time: 22:04 */
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
@@ -280,5 +281,90 @@ namespace IllidanS4.SharpUtils.Interop
 			del.Invoke(result);
 		}
 		#endregion
+		
+		/// <summary>
+		/// Obtains a reference to an element in an array.
+		/// </summary>
+		/// <param name="arr">The array where the element is located.</param>
+		/// <param name="tr">The pointer where the reference will be stored.</param>
+		/// <param name="indices">The indices of the element.</param>
+		[CLSCompliant(false)]
+		public static unsafe void ArrayAddress<TArray>(TArray arr, [Out]TypedReference* tr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		{
+			ArrayAddressCache<TArray>.ArrayAddress.Invoke(arr, tr, indices);
+		}
+		
+		/// <summary>
+		/// Obtains a reference to an element in an array.
+		/// </summary>
+		/// <param name="arr">The array where the element is located.</param>
+		/// <param name="indices">The indices of the element.</param>
+		/// <returns>The boxed reference to the element.</returns>
+		[return: Boxed(typeof(TypedReference))]
+		public static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		{
+			TypedReference tr;
+			ArrayAddress<TArray>(arr, &tr, indices);
+			return UnsafeTools.Box(tr);
+		}
+		
+		
+		private static unsafe void ArrayAddressInternal<TArray>(TArray arr, [Out]void* tr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		{
+			ArrayAddressCache<TArray>.ArrayAddress.Invoke(arr, tr, indices);
+		}
+		
+		private static readonly MethodInfo method_ArrayAddressCache = typeof(TypedReferenceTools).GetMethod("ArrayAddressInternal", flags);
+		
+		[CLSCompliant(false)]
+		public static unsafe void ArrayAddress(Array arr, [Out]TypedReference* tr, params int[] indices)
+		{
+			Type arrayType = arr.GetType();
+			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)tr, indices});;
+		}
+		
+		[return: Boxed(typeof(TypedReference))]
+		public static unsafe ValueType ArrayAddress(Array arr, params int[] indices)
+		{
+			Type arrayType = arr.GetType();
+			TypedReference tr;
+			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)(&tr), indices});;
+			return UnsafeTools.Box(tr);
+		}
+		
+		private static unsafe class ArrayAddressCache<TArray> where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		{
+			public delegate void ArrayAddressDelegate(TArray arr, void* tr, params int[] indices);
+			public static readonly ArrayAddressDelegate ArrayAddress;
+			
+			static ArrayAddressCache()
+			{
+				Type arrType = typeof(TArray);
+				if(!arrType.IsArray)
+				{
+					throw new InvalidOperationException("TArray must be an array type.");
+				}
+				Type indexType = arrType.GetElementType();
+				
+				int rank = arrType.GetArrayRank();
+				MethodInfo addrMethod = arrType.GetMethod("Address", BindingFlags.Public | BindingFlags.Instance);
+				
+				DynamicMethod dyn = new DynamicMethod("DynamicAddress", null, new[]{typeof(TArray), typeof(void*), typeof(int[])}, typeof(ArrayAddressCache<TArray>), true);
+				var il = dyn.GetILGenerator();
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Ldarg_0);
+				for(int i = 0; i < rank; i++)
+				{
+					il.Emit(OpCodes.Ldarg_2);
+					il.Emit(OpCodes.Ldc_I4, i);
+					il.Emit(OpCodes.Ldelem, typeof(int));
+				}
+				il.Emit(OpCodes.Callvirt, addrMethod);
+				il.Emit(OpCodes.Mkrefany, indexType);
+				il.Emit(OpCodes.Stobj, typeof(TypedReference));
+				il.Emit(OpCodes.Ret);
+				ArrayAddress = (ArrayAddressDelegate)dyn.CreateDelegate(typeof(ArrayAddressDelegate));
+			}
+		}
 	}
 }
