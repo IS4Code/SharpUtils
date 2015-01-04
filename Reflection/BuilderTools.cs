@@ -38,13 +38,13 @@ namespace IllidanS4.SharpUtils.Reflection
 			return fb;
 		}
 		
-		public static MethodBuilder DefineMethodExtended(this TypeBuilder builder, string name, MethodAttributes attributes, MethodSignature signature)
+		public static MethodBuilder DefineMethod(this TypeBuilder builder, string name, MethodAttributes attributes, MethodSignature signature)
 		{
 			var t = TypeOf<MethodBuilder>.TypeID;
 			var modb = (ModuleBuilder)builder.Module;
 			var mod = GetNativeModule(modb);
 			byte[] sig = signature.GetSignature(modb);
-			int tok = DefineMethod.Invoke(mod, builder.TypeToken.Token, name, sig, sig.Length, attributes);
+			int tok = DefineMethodInternal.Invoke(mod, builder.TypeToken.Token, name, sig, sig.Length, attributes);
 			MethodBuilder mb = NewMethod.Invoke(
 				name, attributes, signature.CallingConvention, signature.ReturnType,
 				signature.ParameterTypes, modb, builder, false
@@ -135,7 +135,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		}
 		
 		private delegate int DefineMethodDelegate(Module module, int tkParent, string name, byte[] signature, int sigLength, MethodAttributes attributes);
-		private static readonly DefineMethodDelegate DefineMethod = CreateMethodFunc();
+		private static readonly DefineMethodDelegate DefineMethodInternal = CreateMethodFunc();
 		private static DefineMethodDelegate CreateMethodFunc()
 		{
 			MethodInfo mi = typeof(TypeBuilder).GetMethod("DefineMethod", sflags);

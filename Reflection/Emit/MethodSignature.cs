@@ -8,27 +8,13 @@ using System.Text;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
-	public class MethodSignature : IEquatable<MethodSignature>, ISignatureElement
+	public class MethodSignature : MemberSignature, IEquatable<MethodSignature>, ISignatureElement
 	{
 		public CallingConvention UnmanagedCallingConvention{get; private set;}
 		public CallingConventions CallingConvention{get; private set;}
 		public MdSigCallingConvention MethodCallingConvention{
 			get{
-				MdSigCallingConvention callConv = 0;
-				if(UnmanagedCallingConvention != 0) callConv = (MdSigCallingConvention)((byte)UnmanagedCallingConvention-1);
-				switch(CallingConvention)
-				{
-					case CallingConventions.HasThis:
-						callConv |= MdSigCallingConvention.HasThis;
-						break;
-					case CallingConventions.ExplicitThis:
-						callConv |= MdSigCallingConvention.ExplicitThis;
-						break;
-					case CallingConventions.VarArgs:
-						callConv |= MdSigCallingConvention.Vararg;
-						break;
-				}
-				return callConv;
+				return SignatureType;
 			}
 		}
 		public Type ReturnType{get; private set;}
@@ -93,7 +79,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			
 		}
 		
-		private MethodSignature(CallingConventions callingConvention, CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes)
+		private MethodSignature(CallingConventions callingConvention, CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : base(ConvertCallConv(callingConvention, unmanagedCallConv))
 		{
 			CallingConvention = callingConvention;
 			UnmanagedCallingConvention = unmanagedCallConv;
@@ -130,7 +116,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="returnType">The return type.</param>
 		/// <param name="parameterTypes">The parameter types.</param>
 		/// <param name="optionalParameterTypes">Optional parameter types for varargs calling convention.</param>
-		public MethodSignature(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes)
+		public MethodSignature(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : base(ConvertCallConv(callingConvention, 0))
 		{
 			CallingConvention = callingConvention;
 			OptionalParameterTypes = optionalParameterTypes;
@@ -144,7 +130,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="unmanagedCallConv">The unmanaged calling convention. Cannot be Winapi.</param>
 		/// <param name="returnType">The return type.</param>
 		/// <param name="parameterTypes">The parameter types.</param>
-		public MethodSignature(CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes)
+		public MethodSignature(CallingConvention unmanagedCallConv, Type returnType, Type[] parameterTypes) : base(ConvertCallConv(0, unmanagedCallConv))
 		{
 			if(unmanagedCallConv == System.Runtime.InteropServices.CallingConvention.Winapi) throw new ArgumentException("Unmanaged calling convention cannot be Winapi.", "unmanagedCallConv");
 			UnmanagedCallingConvention = unmanagedCallConv;
@@ -175,6 +161,25 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return new MethodSignature(callconv, method.ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
 		}
 		
+		private static MdSigCallingConvention ConvertCallConv(CallingConventions managed, CallingConvention unmanaged)
+		{
+			MdSigCallingConvention callConv = 0;
+			if(unmanaged != 0) callConv = (MdSigCallingConvention)((byte)unmanaged-1);
+			switch(managed)
+			{
+				case CallingConventions.HasThis:
+					callConv |= MdSigCallingConvention.HasThis;
+					break;
+				case CallingConventions.ExplicitThis:
+					callConv |= MdSigCallingConvention.ExplicitThis;
+					break;
+				case CallingConventions.VarArgs:
+					callConv |= MdSigCallingConvention.Vararg;
+					break;
+			}
+			return callConv;
+		}
+		
 		public byte[] GetSignature(ModuleBuilder modBuilder)
 		{
 			SignatureHelper sig = SignatureTools.GetSigHelper(modBuilder);
@@ -182,7 +187,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return sig.GetSignature();
 		}
 
-		void ISignatureElement.AddSignature(SignatureHelper signature)
+		protected override void AddSignature(SignatureHelper signature)
 		{
 			signature.AddData((byte)MethodCallingConvention);
 			signature.AddData(paramTypes.Length+optionalParamTypes.Length);
