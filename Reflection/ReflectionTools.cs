@@ -122,6 +122,11 @@ namespace IllidanS4.SharpUtils.Reflection
 			return lam.Compile();
 		}
 		
+		public static ModifiedType MakeModifiedType(this Type type, params TypeModifier[] modifiers)
+		{
+			return new ModifiedType(type, modifiers);
+		}
+		
 		public static byte[] GetSignature(this FieldInfo fld)
 		{
 			var rmtype = fld.Module.GetType();
@@ -133,6 +138,11 @@ namespace IllidanS4.SharpUtils.Reflection
 			byte[] data = new byte[len];
 			Marshal.Copy(ptr, data, 0, len);
 			return data;
+		}
+		
+		public static MethodSignature GetDelegateSignature(this Type tDelegate)
+		{
+			return MethodSignature.FromMethodInfo(tDelegate.GetMethod("Invoke"));
 		}
 		
 		#region OpCodes

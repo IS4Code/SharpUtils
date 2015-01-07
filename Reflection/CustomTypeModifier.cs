@@ -39,6 +39,14 @@ namespace IllidanS4.SharpUtils.Reflection
 		public CustomTypeModifier(Type classRef, bool required) : base(required?CorElementType.CModReqd:CorElementType.CModOpt)
 		{
 			if(classRef == null) throw new ArgumentNullException("classRef");
+			/*if(classRef.HasElementType)
+			{
+				throw new ArgumentException(Extensions.GetResourceString("Argument_ArraysInvalid"), "classRef");
+			}
+			if(classRef.ContainsGenericParameters)
+			{
+				throw new ArgumentException(Extensions.GetResourceString("Argument_GenericsInvalid"), "classRef");
+			}*/
 			ModifierType = classRef;
 			IsRequired = required;
 		}
@@ -94,7 +102,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		protected override void AddSignature(SignatureHelper signature)
 		{
 			signature.AddElementType(ElementType);
-			signature.AddArgumentSignature(ModifierType);
+			signature.AddTypeToken(ModifierType);
 		}
 	}
 }

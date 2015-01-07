@@ -26,6 +26,11 @@ namespace IllidanS4.SharpUtils.Reflection
 			this.AddSignature(signature);
 		}
 		
+		public static implicit operator TypeModifier(Type modifyingType)
+		{
+			return new CustomTypeModifier(modifyingType);
+		}
+		
 		#region Equals and GetHashCode implementation
 		public override bool Equals(object obj)
 		{

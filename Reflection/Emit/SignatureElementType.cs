@@ -1,10 +1,9 @@
 ﻿/* Date: 4.1.2015, Time: 17:08 */
 using System;
 using System.Reflection.Emit;
-using IllidanS4.SharpUtils.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Reflection.Emit
 {
 	public class SignatureElementType : TypeConstruct
 	{
@@ -13,7 +12,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			get{return elementType;}
 		}
 		
-		public SignatureElementType(CorElementType elementType) : base(ReflectionTools.GetTypeFromElementType(elementType))
+		public SignatureElementType(CorElementType elementType) : base(ReflectionTools.GetTypeFromElementType(elementType) ?? typeof(object))
 		{
 			this.elementType = elementType;
 		}

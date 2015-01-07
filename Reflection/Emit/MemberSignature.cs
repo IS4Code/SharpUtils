@@ -13,7 +13,10 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			SignatureType = sigType;
 		}
 		
-		protected abstract void AddSignature(SignatureHelper signature);
+		protected virtual void AddSignature(SignatureHelper signature)
+		{
+			signature.AddData((byte)SignatureType);
+		}
 		
 		void ISignatureElement.AddSignature(SignatureHelper signature)
 		{

@@ -1,5 +1,6 @@
 ﻿/* Date: 13.12.2014, Time: 11:16 */
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -33,9 +34,14 @@ namespace IllidanS4.SharpUtils.Reflection
 			SignatureHelper sig = SignatureHelper.GetFieldSigHelper(builder.Module);
 			sig.AddElement(tc);
 			byte[] sigd = sig.GetSignature();
-			int tok = DefineField.Invoke(mod, builder.TypeToken.Token, name, sigd, sigd.Length, attributes);
+			int tok = DefineFieldInternal.Invoke(mod, builder.TypeToken.Token, name, sigd, sigd.Length, attributes);
 			InitField.Invoke(fb, name, builder, type.UnderlyingSystemType, attributes, tok, NewFieldToken(tok, type.UnderlyingSystemType));
 			return fb;
+		}
+		
+		public static FieldBuilder DefineField(this TypeBuilder builder, string name, FieldAttributes attributes, FieldSignature signature)
+		{
+			return DefineFieldExtended(builder, name, signature.FieldType, attributes);
 		}
 		
 		public static MethodBuilder DefineMethod(this TypeBuilder builder, string name, MethodAttributes attributes, MethodSignature signature)
@@ -51,14 +57,24 @@ namespace IllidanS4.SharpUtils.Reflection
 			);
 			mb.GetToken(); //returns 0 but circumvents the RSA error (?)
 			SetToken.Invoke(mb, NewMethodToken(tok));
-			AddMethod.Invoke(builder, mb);
+			GetMethodList.Invoke(builder).Add(mb);
 			return mb;
 		}
 		
-		public static void FinishMethod(this TypeBuilder builder, byte[] sig)
+		public static TypeToken GetTokenFromTypeSpec(this ModuleBuilder builder, byte[] signature)
 		{
-			
+			return NewTypeToken(GetTokFromTypeSpec(builder, signature, signature.Length));
 		}
+		
+		public static byte[] GetSignature(this ModuleBuilder builder, ISignatureElement sig)
+		{
+			SignatureHelper sh = SignatureTools.GetSigHelper(builder);
+			sh.AddElement(sig);
+			return sh.GetSignature();
+		}
+		
+		private delegate int TokTypeDel(ModuleBuilder builder, byte[] signature, int length);
+		private static readonly TokTypeDel GetTokFromTypeSpec = Hacks.GenerateInvoker<TokTypeDel>(typeof(ModuleBuilder), "GetTokenFromTypeSpec", true);
 		
 		private delegate void InitFieldDelegate(FieldBuilder builder, string name, TypeBuilder type, Type fieldType, FieldAttributes attributes, int i, FieldToken token);
 		private static readonly InitFieldDelegate InitField = CreateInitFunc();
@@ -105,6 +121,9 @@ namespace IllidanS4.SharpUtils.Reflection
 			return lam.Compile();
 		}
 		
+		private delegate TypeToken CreateTypeTokenDelegate(int tok);
+		private static readonly CreateTypeTokenDelegate NewTypeToken = Hacks.GenerateConstructor<CreateTypeTokenDelegate>(typeof(TypeToken), 0);
+		
 		private delegate Module GetNativeModuleDelegate(ModuleBuilder modb);
 		private static readonly GetNativeModuleDelegate GetNativeModule = CreateModuleFunc();
 		private static GetNativeModuleDelegate CreateModuleFunc()
@@ -119,7 +138,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		private delegate int DefineMemberDelegate<TMemberAttributes>(Module module, int tkParent, string name, byte[] signature, int sigLength, TMemberAttributes attributes);
 		
 		private delegate int DefineFieldDelegate(Module module, int tkParent, string name, byte[] signature, int sigLength, FieldAttributes attributes);
-		private static readonly DefineFieldDelegate DefineField = CreateFieldFunc();
+		private static readonly DefineFieldDelegate DefineFieldInternal = CreateFieldFunc();
 		private static DefineFieldDelegate CreateFieldFunc()
 		{
 			MethodInfo mi = typeof(TypeBuilder).GetMethod("DefineField", sflags);
@@ -150,7 +169,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			return lam.Compile();
 		}
 		
-		private delegate void AddMethodDelegate(TypeBuilder builder, MethodBuilder method);
+		/*private delegate void AddMethodDelegate(TypeBuilder builder, MethodBuilder method);
 		private static readonly AddMethodDelegate AddMethod = CreateAddMethod();
 		private static AddMethodDelegate CreateAddMethod()
 		{
@@ -164,47 +183,22 @@ namespace IllidanS4.SharpUtils.Reflection
 			);
 			var lam = Expression.Lambda<AddMethodDelegate>(exp, p1, p2);
 			return lam.Compile();
-		}
+		}*/
+		
+		private delegate IList<MethodBuilder> tbmlistdel(TypeBuilder tb);
+		private static readonly tbmlistdel GetMethodList = Hacks.GenerateFieldGetter<tbmlistdel>(typeof(TypeBuilder), "m_listMethods");
 		
 		private delegate MethodBuilder NewMethodDelegate(
 			string name, MethodAttributes attributes,
 			CallingConventions callingConvention, Type returnType, Type[] parameterTypes,
 			ModuleBuilder mod, TypeBuilder type, bool bIsGlobalMethod
 		);
-		private static readonly NewMethodDelegate NewMethod = CreateNewMethod();
-		private static NewMethodDelegate CreateNewMethod()
-		{
-			var ctor = typeof(MethodBuilder).GetConstructors(iflags)[0];
-			var args = new[]{
-				Expression.Parameter(typeof(string)),
-				Expression.Parameter(typeof(MethodAttributes)),
-				Expression.Parameter(typeof(CallingConventions)),
-				Expression.Parameter(typeof(Type)),
-				Expression.Parameter(typeof(Type[])),
-				Expression.Parameter(typeof(ModuleBuilder)),
-				Expression.Parameter(typeof(TypeBuilder)),
-				Expression.Parameter(typeof(bool))
-			};
-			var exp = Expression.New(ctor, args);
-			var lam = Expression.Lambda<NewMethodDelegate>(exp, args);
-			return lam.Compile();
-		}
+		private static readonly NewMethodDelegate NewMethod = Hacks.GenerateConstructor<NewMethodDelegate>(typeof(MethodBuilder), 0);
 		
+		private delegate void tokdel(MethodBuilder method, MethodToken token);
+		private static readonly tokdel SetToken = (tokdel)Delegate.CreateDelegate(typeof(tokdel), typeof(MethodBuilder).GetMethod("SetToken", iflags));
 		
-		private delegate void SetTokenDelegate(MethodBuilder method, MethodToken token);
-		private static readonly SetTokenDelegate SetToken = (SetTokenDelegate)Delegate.CreateDelegate(typeof(SetTokenDelegate), typeof(MethodBuilder).GetMethod("SetToken", iflags));
-		
-		private delegate void SetMethodImplDelegate(Module module, int tkMethod, MethodImplAttributes MethodImplAttributes);
-		private static readonly SetMethodImplDelegate SetMethodImpl = CreateMethodImpl();
-		private static SetMethodImplDelegate CreateMethodImpl()
-		{
-			MethodInfo mi = typeof(TypeBuilder).GetMethod("SetMethodImpl", sflags);
-			var p1 = Expression.Parameter(typeof(Module));
-			var p2 = Expression.Parameter(typeof(int));
-			var p3 = Expression.Parameter(typeof(MethodImplAttributes));
-			var exp = Expression.Call(mi, Expression.Convert(p1, Types.RuntimeModule), p2, p3);
-			var lam = Expression.Lambda<SetMethodImplDelegate>(exp, p1, p2, p3);
-			return lam.Compile();
-		}
+		private delegate void mimpdel(Module module, int tkMethod, MethodImplAttributes MethodImplAttributes);
+		private static readonly mimpdel SetMethodImpl = Hacks.GenerateInvoker<mimpdel>(typeof(TypeBuilder), "SetMethodImpl");
 	}
 }

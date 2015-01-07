@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Accessing;
+using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
@@ -68,11 +69,31 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			return Expression.Lambda<Func<SignatureHelper, ModuleBuilder>>(exp, p1).Compile();
 		}
 		
-		public static void AddTypeTokenArgument(this SignatureHelper signature, Type clsArgument)
+		public static void AddTypeRef(this SignatureHelper signature, Type clsArgument)
 		{
 			var corType = clsArgument.IsValueType ? CorElementType.ValueType : CorElementType.Class;
 			var mod = get_m_module(signature);
 			AddTypeToken(signature, mod.GetTypeToken(clsArgument), corType);
+		}
+		
+		public static void AddTypeToken(this SignatureHelper signature, Type type)
+		{
+			var mod = get_m_module(signature);
+			TypeConstruct tcon = type as TypeConstruct;
+			if(tcon != null) //generate TypeSpec for custom type
+			{
+				byte[] sig = BuilderTools.GetSignature(mod, tcon);
+				TypeToken token = mod.GetTokenFromTypeSpec(sig);
+				Sig_AddToken(signature, token.Token);
+			}else if(type.IsByRef) //unsupported by GetTypeToken
+			{
+				SignatureHelper sig = SignatureTools.GetSigHelper(mod);
+				sig.AddArgument(type);
+				TypeToken token = mod.GetTokenFromTypeSpec(sig.GetSignature());
+				Sig_AddToken(signature, token.Token);
+			}else{
+				Sig_AddToken(signature, mod.GetTypeToken(type).Token);
+			}
 		}
 		
 		public static SignatureHelper GetSigHelper(ModuleBuilder mod = null)

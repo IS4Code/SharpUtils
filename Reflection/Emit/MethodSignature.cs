@@ -8,6 +8,9 @@ using System.Text;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
+	/// <summary>
+	/// Represents a signature of a method.
+	/// </summary>
 	public class MethodSignature : MemberSignature, IEquatable<MethodSignature>, ISignatureElement
 	{
 		public CallingConvention UnmanagedCallingConvention{get; private set;}

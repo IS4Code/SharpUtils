@@ -34,12 +34,12 @@ namespace IllidanS4.SharpUtils.Reflection
 			if(baseType == null) throw new ArgumentNullException("baseType");
 		}
 		
-		public ModifiedType(Type baseType, params CustomTypeModifier[] modifiers) : this(baseType, (IList<CustomTypeModifier>)modifiers)
+		public ModifiedType(Type baseType, params TypeModifier[] modifiers) : this(baseType, (IList<TypeModifier>)modifiers)
 		{
 			
 		}
 		
-		public ModifiedType(Type baseType, IList<CustomTypeModifier> modifiers) : this(baseType)
+		public ModifiedType(Type baseType, IList<TypeModifier> modifiers) : this(baseType)
 		{
 			if(modifiers == null)
 			{

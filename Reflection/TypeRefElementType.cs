@@ -7,25 +7,30 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 namespace IllidanS4.SharpUtils.Reflection
 {
 	/// <summary>
-	/// Used to distinguish between void and System.Void in signatures.
+	/// Used to distinguish between basic element type and typeref in signatures.
 	/// </summary>
-	public class VoidValueType : TypeConstruct
+	public class TypeRefElementType : TypeConstruct
 	{
-		public static readonly VoidValueType Instance = new VoidValueType();
+		private readonly CorElementType elType;
 		public override CorElementType CorElementType{
 			get{
-				return CorElementType.ValueType;
+				return elType;
 			}
 		}
 		
-		public VoidValueType() : base(typeof(void))
+		public TypeRefElementType(Type typeRef) : base(typeRef)
 		{
-			
+			if(typeRef.IsValueType)
+			{
+				elType = CorElementType.ValueType;
+			}else{
+				elType = CorElementType.Class;
+			}
 		}
 		
 		protected override void AddSignature(SignatureHelper signature)
 		{
-			signature.AddTypeTokenArgument(typeof(void));
+			signature.AddTypeRef(this);
 		}
 	}
 }

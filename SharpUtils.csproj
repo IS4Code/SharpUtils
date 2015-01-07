@@ -87,6 +87,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="FloatPtr.cs" />
     <Compile Include="Globalization\Term.cs" />
+    <Compile Include="Hacks.cs" />
     <Compile Include="Interop\ArgListMark.cs" />
     <Compile Include="Interop\BitUtils.cs" />
     <Compile Include="Interop\InteropTools.cs" />
@@ -175,13 +176,14 @@
       <DependentUpon>LanguageType.cs</DependentUpon>
     </Compile>
     <Compile Include="Reflection\Emit\CorElementType.cs" />
+    <Compile Include="Reflection\Emit\FieldSignature.cs" />
     <Compile Include="Reflection\Emit\ISignatureElement.cs" />
     <Compile Include="Reflection\Emit\MdSigCallingConvention.cs" />
     <Compile Include="Reflection\Emit\MemberSignature.cs" />
     <Compile Include="Reflection\Emit\MethodSignature.cs" />
+    <Compile Include="Reflection\Emit\SignatureElementType.cs" />
     <Compile Include="Reflection\Emit\SignatureTools.cs" />
     <Compile Include="Reflection\FunctionPointerType.cs" />
-    <Compile Include="Reflection\SignatureElementType.cs" />
     <Compile Include="Reflection\TypeModifier.cs" />
     <Compile Include="Reflection\Types.cs" />
     <Compile Include="Reflection\Emit\TypeEmitGenerator.cs" />
@@ -204,7 +206,7 @@
     <Compile Include="Reflection\VarArgsGenerator.cs" />
     <Compile Include="Reflection\VarArgsInvoke.cs" />
     <Compile Include="Reflection\VarArgsInvoker.cs" />
-    <Compile Include="Reflection\VoidValueType.cs" />
+    <Compile Include="Reflection\TypeRefElementType.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Serialization\Serialization.cs" />
     <Compile Include="Streaming\BitStream.cs" />
