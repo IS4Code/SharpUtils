@@ -34,10 +34,12 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		
 		public Type[] OptionalParameterTypes{
 			get{
-				return (Type[])optionalParamTypes.Clone();
+				if(optionalParamTypes != null) return (Type[])optionalParamTypes.Clone();
+				else return null;
 			}
 			private set{
-				optionalParamTypes = value==null?Type.EmptyTypes:(Type[])value.Clone();
+				if(value != null) optionalParamTypes = (Type[])value.Clone();
+				else value = null;
 			}
 		}
 		
@@ -118,7 +120,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="callingConvention">The managed calling convetion. Cannot be Any.</param>
 		/// <param name="returnType">The return type.</param>
 		/// <param name="parameterTypes">The parameter types.</param>
-		/// <param name="optionalParameterTypes">Optional parameter types for varargs calling convention.</param>
+		/// <param name="optionalParameterTypes">Optional parameter types for varargs calling convention. Null to prevent emitting sentinel.</param>
 		public MethodSignature(CallingConventions callingConvention, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : base(ConvertCallConv(callingConvention, 0))
 		{
 			CallingConvention = callingConvention;
@@ -199,7 +201,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			{
 				signature.AddArgumentSignature(type);
 			}
-			if(VarArgs)
+			if(VarArgs && optionalParamTypes != null)
 			{
 				signature.AddSentinel();
 				foreach(var type in optionalParamTypes)

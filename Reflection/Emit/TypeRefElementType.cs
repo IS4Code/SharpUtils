@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Reflection.Emit
 {
 	/// <summary>
 	/// Used to distinguish between basic element type and typeref in signatures.

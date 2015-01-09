@@ -5,6 +5,9 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
+	/// <summary>
+	/// Signature type used to emit a signature element in places where a type is required.
+	/// </summary>
 	public class SignatureElementType : TypeConstruct
 	{
 		private readonly CorElementType elementType;
