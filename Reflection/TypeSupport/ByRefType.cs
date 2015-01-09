@@ -6,6 +6,9 @@ using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
+	/// <summary>
+	/// Represents a derived byref type.
+	/// </summary>
 	public class ByRefType : TypeAppendConstruct
 	{
 		public override CorElementType CorElementType{

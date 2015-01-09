@@ -6,6 +6,9 @@ using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
+	/// <summary>
+	/// Represents a derived array type.
+	/// </summary>
 	public class ArrayType : TypeAppendConstruct
 	{
 		private readonly int rank;

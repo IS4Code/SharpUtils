@@ -4,6 +4,9 @@ using System.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
+	/// <summary>
+	/// Represents an element of a member signature.
+	/// </summary>
 	public interface ISignatureElement
 	{
 		void AddSignature(SignatureHelper signature);

@@ -4,6 +4,9 @@ using System.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
+	/// <summary>
+	/// Heading byte of a member signature.
+	/// </summary>
 	public enum MdSigCallingConvention : byte
 	{
 		C = 1,

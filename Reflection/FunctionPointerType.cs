@@ -7,7 +7,7 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 namespace IllidanS4.SharpUtils.Reflection
 {
 	/// <summary>
-	/// Description of FunctionPointerType.
+	/// Represents a type containing a method signature to store both managed and unmanaged function pointers.
 	/// </summary>
 	public class FunctionPointerType : TypeConstruct
 	{

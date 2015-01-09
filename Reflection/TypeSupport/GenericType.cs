@@ -7,6 +7,9 @@ using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
+	/// <summary>
+	/// Represents a constructed generic type.
+	/// </summary>
 	public class GenericType : TypeConstruct
 	{
 		private readonly Type[] typeArgs;

@@ -4,6 +4,9 @@ using System.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
+	/// <summary>
+	/// Enum of defined signature element types. See ECMA-335 for their usage.
+	/// </summary>
 	public enum CorElementType : byte
 	{
 		Array = 20,
@@ -43,7 +46,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		Var = 0x13,
 		Void = 1,
 		
-		//Added
+		//Added (ILDasm knows this type)
 		R = 0x1a
 	}
 	
@@ -51,6 +54,11 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 	{
 		private static readonly Type type = typeof(AssemblyBuilder).Assembly.GetType("System.Reflection.CorElementType");
 		
+		/// <summary>
+		/// Boxes a CorElementType to its internal representation.
+		/// </summary>
+		/// <param name="elemType"></param>
+		/// <returns></returns>
 		public static object ToInternal(this CorElementType elemType)
 		{
 			return Enum.ToObject(type, (byte)elemType);
