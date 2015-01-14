@@ -142,7 +142,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		
 		public static MethodSignature GetDelegateSignature(this Type tDelegate)
 		{
-			return MethodSignature.FromMethodInfo(tDelegate.GetMethod("Invoke"));
+			return MethodSignature.FromDelegateType(tDelegate);
 		}
 		
 		#region OpCodes

@@ -4,7 +4,7 @@ using System;
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
 	/// <summary>
-	/// Description of CppHandleType.
+	/// Handle type for managed objects.
 	/// </summary>
 	public class CppHandleType : CppDerivedType
 	{

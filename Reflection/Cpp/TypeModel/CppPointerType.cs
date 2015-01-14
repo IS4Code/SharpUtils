@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// A pointer to a variable.
+	/// </summary>
 	public class CppPointerType : CppDerivedType
 	{
 		public CppPointerType(CppType type) : base(type, "*")

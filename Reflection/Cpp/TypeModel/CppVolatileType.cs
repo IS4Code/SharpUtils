@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// Type qualified as "volatile".
+	/// </summary>
 	public class CppVolatileType : CppQualifiedType
 	{
 		public CppVolatileType(CppType elementType) : base(elementType, "volatile", CustomTypeModifier.IsVolatile)

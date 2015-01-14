@@ -13,14 +13,14 @@ namespace IllidanS4.SharpUtils
 	/// </summary>
 	public static class EnumTools
 	{
-		private static void CheckEnum<TEnum>() where TEnum : struct, IComparable, IFormattable
+		private static void CheckEnumType<TEnum>() where TEnum : struct, IComparable, IFormattable
 		{
 			if(!typeof(TEnum).IsEnum) throw new ArgumentException(Extensions.GetResourceString("Arg_MustBeEnum"));
 		}
 		
 		public static unsafe TEnum ToEnum<TEnum, TValue>(TValue value) where TEnum : struct, IComparable, IFormattable where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
-			CheckEnum<TEnum>();
+			CheckEnumType<TEnum>();
 			var tr = __makeref(value);
 			TypedReferenceTools.ChangeType(&tr, typeof(TEnum));
 			return __refvalue(tr, TEnum);
@@ -28,7 +28,7 @@ namespace IllidanS4.SharpUtils
 		
 		public static unsafe TValue ToValue<TEnum, TValue>(TEnum enm) where TEnum : struct, IComparable, IFormattable where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
-			CheckEnum<TEnum>();
+			CheckEnumType<TEnum>();
 			var tr = __makeref(enm);
 			TypedReferenceTools.ChangeType(&tr, typeof(TValue));
 			return __refvalue(tr, TValue);
@@ -132,7 +132,7 @@ namespace IllidanS4.SharpUtils
 		private static Exception TryParseEnum<TEnum>(string value, bool ignoreCase, bool canThrow, out TEnum result) where TEnum : struct, IComparable, IFormattable
 		{
 			//basically rewrite of Enum.TryParseEnum
-			CheckEnum<TEnum>();
+			CheckEnumType<TEnum>();
 			if(value == null)
 			{
 				result = default(TEnum);

@@ -6,7 +6,7 @@ namespace IllidanS4.SharpUtils.Metadata
 	/// <summary>
 	/// An interface for types that have an identifier.
 	/// </summary>
-	public interface IIdentifiable<TIdentifier> 
+	public interface IIdentifiable<out TIdentifier> 
 	{
 		/// <summary>
 		/// The identifier of this object.

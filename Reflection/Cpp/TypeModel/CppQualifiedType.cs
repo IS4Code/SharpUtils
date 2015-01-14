@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// Type with type qualifiers.
+	/// </summary>
 	public abstract class CppQualifiedType : CppDerivedType
 	{
 		public string ModifierName{get; private set;}

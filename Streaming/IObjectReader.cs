@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace IllidanS4.SharpUtils.Streaming
 {
-	public interface IObjectReader<T> : IEnumerable<T>
+	public interface IObjectReader<out T> : IEnumerable<T>
 	{
 		T Read();
 	}

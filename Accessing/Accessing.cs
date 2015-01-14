@@ -4,7 +4,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// The interface for "get" accessors.
 	/// </summary>
-	public interface IReadAccessor<T>
+	public interface IReadAccessor<out T>
 	{
 		T Value{get;}
 	}
@@ -12,7 +12,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// The interface for "set" accessors.
 	/// </summary>
-	public interface IWriteAccessor<T>
+	public interface IWriteAccessor<in T>
 	{
 		T Value{set;}
 	}

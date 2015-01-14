@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// A managed reference to a variable.
+	/// </summary>
 	public class CppManagedReferenceType : CppDerivedType
 	{
 		public CppManagedReferenceType(CppType type) : base(type, "%")

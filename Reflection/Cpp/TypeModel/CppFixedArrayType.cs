@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// Unmanaged array type.
+	/// </summary>
 	public class CppFixedArrayType : CppDerivedType
 	{
 		public int Size{get; private set;}

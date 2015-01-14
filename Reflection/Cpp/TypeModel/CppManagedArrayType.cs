@@ -3,6 +3,9 @@ using System;
 
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
+	/// <summary>
+	/// Managed array type.
+	/// </summary>
 	public class CppManagedArrayType : CppDerivedType
 	{
 		public int Rank{get; private set;}

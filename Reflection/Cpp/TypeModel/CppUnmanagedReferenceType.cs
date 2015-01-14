@@ -4,7 +4,7 @@ using System;
 namespace IllidanS4.SharpUtils.Reflection.Cpp
 {
 	/// <summary>
-	/// Description of CppUnmanagedReferenceType.
+	/// Unmanaged reference to a variable.
 	/// </summary>
 	public class CppUnmanagedReferenceType : CppDerivedType
 	{

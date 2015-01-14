@@ -161,9 +161,19 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <returns>The signature of the method.</returns>
 		public static MethodSignature FromMethodInfo(MethodInfo method, params Type[] optionalParameterTypes)
 		{
+			if(method == null) throw new ArgumentNullException("method");
+			
 			var callconv = method.CallingConvention;
 			if((callconv&CallingConventions.VarArgs)==0 && optionalParameterTypes != null) throw new ArgumentException("Method must ve varargs to specify optional parameter types.");
 			return new MethodSignature(callconv, method.ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
+		}
+		
+		public static MethodSignature FromDelegateType(Type tDelegate)
+		{
+			if(tDelegate == null) throw new ArgumentNullException("tDelegate");
+			
+			MethodInfo invoke = tDelegate.GetMethod("Invoke");
+			return new MethodSignature(CallingConventions.Standard, invoke.ReturnType, invoke.GetParameters().Select(p => p.ParameterType).ToArray());
 		}
 		
 		private static MdSigCallingConvention ConvertCallConv(CallingConventions managed, CallingConvention unmanaged)

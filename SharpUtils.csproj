@@ -84,6 +84,8 @@
     <Compile Include="Empty.cs" />
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
+    <Compile Include="Interop\FnPtrInvoker.cs" />
+    <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FloatPtr.cs" />
     <Compile Include="Globalization\Term.cs" />

@@ -7,7 +7,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an object which's index values can be obtained.
 	/// </summary>
-	public interface IIndexableGetter<TKey,TValue>
+	public interface IIndexableGetter<in TKey, out TValue>
 	{
 		TValue this[TKey index]{
 			get;
@@ -17,7 +17,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an object which's index values can be set.
 	/// </summary>
-	public interface IIndexableSetter<TKey,TValue>
+	public interface IIndexableSetter<in TKey, in TValue>
 	{
 		TValue this[TKey index]{
 			set;

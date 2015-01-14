@@ -18,7 +18,7 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 namespace IllidanS4.SharpUtils.Reflection
 {
 	/// <summary>
-	/// Description of ModifiedType.
+	/// Represents a type with custom modifiers.
 	/// </summary>
 	public class ModifiedType : TypeAppendConstruct
 	{
