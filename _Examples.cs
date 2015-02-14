@@ -12,4 +12,36 @@
 	typ.DefineField("fld", typeof(int), null, new[]{typeof(int?)}, FieldAttributes.Public);
 	typ.CreateType();
 	asb.Save("TestAsm.dll");
+	
+	
+/* Proxy implementation */
+class MarshalTest : MarshalByRefObject
+{
+	public void Test(int arg1, ref int arg2, out int arg3)
+	{
+		arg3 = arg1+arg2;
+		arg2 *= 2;
+	}
+}
+
+interface IMarshalInterface : IProxyReplacer<MarshalTest, IMarshalInterface>
+{
+	void Test(int arg1, ref int arg2, out int arg3);
+}
+
+class MarshalImpl : IMarshalInterface
+{
+	public void Test(int arg1, ref int arg2, out int arg3)
+	{
+		arg3 = arg1-arg2;
+		arg2 /= 2;
+	}
+}
+
+var pr = ProxyImplementationBinder.GetProxy(new MarshalImpl());
+int a = 10;
+int b = 6;
+int c;
+pr.Test(a, ref b, out c);
+	
 #endif
