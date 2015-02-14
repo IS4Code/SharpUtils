@@ -85,6 +85,11 @@
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
     <Compile Include="Interop\FnPtrInvoker.cs" />
+    <Compile Include="Proxies\IProxyReplacer.cs" />
+    <Compile Include="Proxies\ProxyImplementationHelper.cs" />
+    <Compile Include="Proxies\ProxyImplementationBinder.cs" />
+    <Compile Include="Proxies\Replacers\IRegistryKey.cs" />
+    <Compile Include="Proxies\Replacers\RegistryKeyBase.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FloatPtr.cs" />
@@ -258,6 +263,8 @@
     <Folder Include="Interop" />
     <Folder Include="Math" />
     <Folder Include="Linq" />
+    <Folder Include="Proxies" />
+    <Folder Include="Proxies\Replacers" />
     <Folder Include="Reflection\Cpp\TypeModel" />
     <Folder Include="Reflection\Cpp\TypeModel\PrimitiveTypes" />
     <Folder Include="Reflection\Emit" />
