@@ -155,5 +155,35 @@ namespace IllidanS4.SharpUtils.Proxies.Replacers
 		public abstract string[] GetSubKeyNames();
 		
 		public abstract string[] GetValueNames();
+		
+		RegistryKey IRegistryKey.InternalOpenSubKey(string name, bool writable)
+		{
+			return OpenSubKey(name, writable);
+		}
+		
+		int IRegistryKey.InternalSubKeyCount()
+		{
+			return SubKeyCount;
+		}
+		
+		string[] IRegistryKey.InternalGetSubKeyNames()
+		{
+			return GetSubKeyNames();
+		}
+		
+		int IRegistryKey.InternalValueCount()
+		{
+			return ValueCount;
+		}
+		
+		object IRegistryKey.InternalGetValue(string name, object defaultValue, bool doNotExpand, bool checkSecurity)
+		{
+			return GetValue(name, defaultValue, doNotExpand ? RegistryValueOptions.DoNotExpandEnvironmentNames : 0);
+		}
+		
+		void IRegistryKey.Win32Error(int errorCode, string str)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

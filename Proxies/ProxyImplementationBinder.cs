@@ -50,6 +50,8 @@ namespace IllidanS4.SharpUtils.Proxies
 		
 		private class InterfaceProxy<TBound, TImplementation> : InterfaceProxyBase where TBound : MarshalByRefObject where TImplementation : class, IProxyReplacer<TBound, TImplementation>
 		{
+			private static readonly MethodInfo GetTypeMethod = typeof(object).GetMethod("GetType");
+			
 			public InterfaceProxy(IProxyReplacer<TBound, TImplementation> impl) : base(impl, TypeOf<TBound>.TypeID, TypeOf<TImplementation>.TypeID)
 			{
 				
@@ -60,7 +62,7 @@ namespace IllidanS4.SharpUtils.Proxies
 				IMethodCallMessage msgCall = msg as IMethodCallMessage;
 				if(msgCall != null)
 				{
-					if(msgCall.MethodBase.Name == "GetType" && msgCall.MethodBase.DeclaringType == TypeOf<object>.TypeID)
+					if(msgCall.MethodBase == GetTypeMethod)
 					{
 						return new ReturnMessage(BoundType, null, 0, msgCall.LogicalCallContext, msgCall);
 					}

@@ -43,26 +43,13 @@ namespace IllidanS4.SharpUtils.Proxies.Replacers
 		RegistrySecurity GetAccessControl(AccessControlSections includeSections);
 		void SetAccessControl(RegistrySecurity registrySecurity);
 		
-		/*
-		public static RegistryKey OpenBaseKey(RegistryHive hKey, RegistryView view)
-		{
-			
-		}
-		public static RegistryKey OpenRemoteBaseKey(RegistryHive hKey, string machineName)
-		{
-			
-		}
-		public static RegistryKey OpenRemoteBaseKey(RegistryHive hKey, string machineName, RegistryView view)
-		{
-			
-		}
-		public static RegistryKey FromHandle(SafeRegistryHandle handle)
-		{
-			
-		}
-		public static RegistryKey FromHandle(SafeRegistryHandle handle, RegistryView view)
-		{
-		}
-		*/
+		//Internal
+		
+		RegistryKey InternalOpenSubKey(string name, bool writable);
+		int InternalSubKeyCount();
+		string[] InternalGetSubKeyNames();
+		int InternalValueCount();
+		object InternalGetValue(string name, object defaultValue, bool doNotExpand, bool checkSecurity);
+		void Win32Error(int errorCode, string str);
 	}
 }
