@@ -5,16 +5,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection;
 using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils
 {
-	public static class Hacks
+	public sealed class Hacks : HacksBase<MulticastDelegate>
 	{
+		private Hacks(){}
+	}
+	
+	public abstract class HacksBase<TDelegateBase> where TDelegateBase : class
+	{
+		internal HacksBase(){}
+		
 		const BindingFlags privflags = BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
 		
-		public static TDelegate GenerateInvoker<TDelegate>(Type type, string method, bool? instance = null) where TDelegate : class
+		public static TDelegate GenerateInvoker<TDelegate>(Type type, string method, bool? instance = null) where TDelegate : TDelegateBase
 		{
 			BindingFlags flags = privflags;
 			if(instance.HasValue)
@@ -48,12 +56,13 @@ namespace IllidanS4.SharpUtils
 			}else{
 				inst = null;
 			}
+			var pxas = parPass.ToArray();
 			Expression exp = Expression.Call(inst, mi, parPass);
 			CheckRetType(ref exp, retType);
 			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
 		}
 		
-		public static TDelegate GenerateConstructor<TDelegate>(Type type, int ord) where TDelegate : class
+		public static TDelegate GenerateConstructor<TDelegate>(Type type, int ord) where TDelegate : TDelegateBase
 		{
 			ConstructorInfo ctor = type.GetConstructors(privflags)[ord];
 			Type delType = typeof(TDelegate);
@@ -70,7 +79,7 @@ namespace IllidanS4.SharpUtils
 			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
 		}
 		
-		public static TDelegate GenerateFieldGetter<TDelegate>(Type type, string field) where TDelegate : class
+		public static TDelegate GenerateFieldGetter<TDelegate>(Type type, string field) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
 			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
@@ -93,13 +102,37 @@ namespace IllidanS4.SharpUtils
 			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
 		}
 		
+		public static TDelegate GenerateFieldSetter<TDelegate>(Type type, params string[] fields) where TDelegate : TDelegateBase
+		{
+			Type delType = typeof(TDelegate);
+			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			Type[] tParams = delSig.ParameterTypes;
+			
+			FieldInfo[] fi = fields.Select(f => type.GetField(f, privflags)).ToArray();
+			ParameterExpression[] parExp = tParams.Select(tp => Expression.Parameter(tp)).ToArray();
+			Expression inst;
+			int iadd;
+			if(fi.All(f => f.IsStatic))
+			{
+				inst = null;
+				iadd = 0;
+			}else{
+				inst = ParamOrConvert(parExp[0], type);
+				iadd = 1;
+			}
+			Expression exp = Expression.Block(
+				fi.Select((f,i) => Expression.Assign(Expression.Field(inst, f), ParamOrConvert(parExp[i+iadd], tParams[i+iadd])))
+			);
+			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
+		}
+		
 		private static Expression ParamOrConvert(ParameterExpression p, Type pType)
 		{
-			if(p.Type != pType)
+			if(p.IsByRef ? p.Type.MakeByRefType() == pType : p.Type == pType)
 			{
-				return Expression.Convert(p, pType);
-			}else{
 				return p;
+			}else{
+				return Expression.Convert(p, pType);
 			}
 		}
 		

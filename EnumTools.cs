@@ -8,33 +8,30 @@ using IllidanS4.SharpUtils.Reflection;
 
 namespace IllidanS4.SharpUtils
 {
-	/// <summary>
-	/// Description of EnumTools.
-	/// </summary>
-	public static class EnumTools
+	public sealed class EnumTools : EnumToolsBase<Enum>
 	{
-		private static void CheckEnumType<TEnum>() where TEnum : struct, IComparable, IFormattable
-		{
-			if(!typeof(TEnum).IsEnum) throw new ArgumentException(Extensions.GetResourceString("Arg_MustBeEnum"));
-		}
+		private EnumTools(){}
+	}
+	
+	public abstract class EnumToolsBase<TEnumBase> where TEnumBase : class, IComparable, IFormattable
+	{
+		internal EnumToolsBase(){}
 		
-		public static unsafe TEnum ToEnum<TEnum, TValue>(TValue value) where TEnum : struct, IComparable, IFormattable where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
+		public static unsafe TEnum ToEnum<TEnum, TValue>(TValue value) where TEnum : struct, TEnumBase where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
-			CheckEnumType<TEnum>();
 			var tr = __makeref(value);
 			TypedReferenceTools.ChangeType(&tr, typeof(TEnum));
 			return __refvalue(tr, TEnum);
 		}
 		
-		public static unsafe TValue ToValue<TEnum, TValue>(TEnum enm) where TEnum : struct, IComparable, IFormattable where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
+		public static unsafe TValue ToValue<TEnum, TValue>(TEnum enm) where TEnum : struct, TEnumBase where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
-			CheckEnumType<TEnum>();
 			var tr = __makeref(enm);
 			TypedReferenceTools.ChangeType(&tr, typeof(TValue));
 			return __refvalue(tr, TValue);
 		}
 		
-		public static long ToValueBinary<TEnum>(TEnum enm) where TEnum : struct, IComparable, IFormattable
+		public static long ToValueBinary<TEnum>(TEnum enm) where TEnum : struct, TEnumBase
 		{
 			Type underlyingType = Enum.GetUnderlyingType(TypeOf<TEnum>.TypeID);
 			unchecked{
@@ -62,7 +59,7 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
-		public static TEnum ToEnumBinary<TEnum>(long value) where TEnum : struct, IComparable, IFormattable
+		public static TEnum ToEnumBinary<TEnum>(long value) where TEnum : struct, TEnumBase
 		{
 			Type underlyingType = Enum.GetUnderlyingType(TypeOf<TEnum>.TypeID);
 			unchecked{
@@ -90,28 +87,15 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
-		[CLSCompliant(false)]
-		public delegate void GetCachedValuesAndNamesDelegate(Type enumType, out ulong[] values, out string[] names, bool getValues, bool getNames);
-		[CLSCompliant(false)]
-		public static readonly GetCachedValuesAndNamesDelegate GetCachedValuesAndNames = CreateGetCachedValuesAndNames();
+		private delegate void GetCachedValuesAndNamesDelegate(Type enumType, out ulong[] values, out string[] names, bool getValues, bool getNames);
+		private static readonly GetCachedValuesAndNamesDelegate GetCachedValuesAndNames = Hacks.GenerateInvoker<GetCachedValuesAndNamesDelegate>(typeof(Enum), "GetCachedValuesAndNames", false);
 		
-		private static GetCachedValuesAndNamesDelegate CreateGetCachedValuesAndNames()
-		{
-			var p1 = Expression.Parameter(typeof(Type));
-			var p2 = Expression.Parameter(typeof(ulong[]).MakeByRefType());
-			var p3 = Expression.Parameter(typeof(string[]).MakeByRefType());
-			var p4 = Expression.Parameter(typeof(bool));
-			var p5 = Expression.Parameter(typeof(bool));
-			Expression exp = Expression.Call(typeof(Enum).GetMethod("GetCachedValuesAndNames", BindingFlags.NonPublic | BindingFlags.Static), Expression.Convert(p1, Types.RuntimeType), p2,  p3, p4, p5);
-			return Expression.Lambda<GetCachedValuesAndNamesDelegate>(exp, p1, p2, p3, p4, p5).Compile();
-		}
-		
-		public static TEnum Parse<TEnum>(string value) where TEnum : struct, IComparable, IFormattable
+		public static TEnum Parse<TEnum>(string value) where TEnum : struct, TEnumBase
 		{
 			return Parse<TEnum>(value, false);
 		}
 		
-		public static TEnum Parse<TEnum>(string value, bool ignoreCase) where TEnum : struct, IComparable, IFormattable
+		public static TEnum Parse<TEnum>(string value, bool ignoreCase) where TEnum : struct, TEnumBase
 		{
 			TEnum result;
 			Exception exc = TryParseEnum<TEnum>(value, ignoreCase, true, out result);
@@ -119,20 +103,19 @@ namespace IllidanS4.SharpUtils
 			return result;
 		}
 		
-		public static bool TryParse<TEnum>(string value, out TEnum result) where TEnum : struct, IComparable, IFormattable
+		public static bool TryParse<TEnum>(string value, out TEnum result) where TEnum : struct, TEnumBase
 		{
 			return TryParse<TEnum>(value, false, out result);
 		}
 		
-		public static bool TryParse<TEnum>(string value, bool ignoreCase, out TEnum result) where TEnum : struct, IComparable, IFormattable
+		public static bool TryParse<TEnum>(string value, bool ignoreCase, out TEnum result) where TEnum : struct, TEnumBase
 		{
 			return TryParseEnum<TEnum>(value, ignoreCase, false, out result) == null;
 		}
 		
-		private static Exception TryParseEnum<TEnum>(string value, bool ignoreCase, bool canThrow, out TEnum result) where TEnum : struct, IComparable, IFormattable
+		private static Exception TryParseEnum<TEnum>(string value, bool ignoreCase, bool canThrow, out TEnum result) where TEnum : struct, TEnumBase
 		{
 			//basically rewrite of Enum.TryParseEnum
-			CheckEnumType<TEnum>();
 			if(value == null)
 			{
 				result = default(TEnum);
