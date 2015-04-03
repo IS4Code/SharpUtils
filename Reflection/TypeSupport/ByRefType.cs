@@ -32,8 +32,14 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 			if(elementType is FunctionPointerType)
 			{
 				return Types.Generated.FnPtrByRef;
-			}else{
+			}else try{
 				return elementType.UnderlyingSystemType.MakeByRefType();
+			}catch(NullReferenceException)
+			{
+				return Types.Void.MakeByRefType();
+			}catch(TypeLoadException)
+			{
+				return Types.Void.MakeByRefType();
 			}
 		}
 		

@@ -8,7 +8,8 @@ namespace IllidanS4.SharpUtils.COM
 	/// IDispatch interface for COM reflection.
 	/// </summary>
 	[Guid("00020400-0000-0000-C000-000000000046"), ComImport(), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	interface IDispatch 
+	[CLSCompliant(false)]
+	public interface IDispatch
 	{ 
 	    [PreserveSig] 
 	    int GetTypeInfoCount(out int pctinfo); 
@@ -28,8 +29,8 @@ namespace IllidanS4.SharpUtils.COM
 	        int lcid, 
 	        [MarshalAs(UnmanagedType.LPArray)] int[] rgDispId); 
 	
-	    [PreserveSig] 
-	    int Invoke( 
+	    [PreserveSig]
+		int Invoke( 
 	        int dispIdMember, 
 	        ref Guid riid, 
 	        uint lcid, 

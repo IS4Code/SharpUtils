@@ -20,128 +20,219 @@ namespace IllidanS4.SharpUtils
 	{
 		internal HacksBase(){}
 		
-		const BindingFlags privflags = BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+		const BindingFlags privflags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 		
-		public static TDelegate GenerateInvoker<TDelegate>(Type type, string method, bool? instance = null) where TDelegate : TDelegateBase
+		public static TDelegate GetInvoker<TDelegate>(Type type, string method, bool instance) where TDelegate : TDelegateBase
 		{
 			BindingFlags flags = privflags;
-			if(instance.HasValue)
+			if(instance)
 			{
-				if(instance.Value)
-				{
-					flags &=~ BindingFlags.Static;
-				}else{
-					flags &=~ BindingFlags.Instance;
-				}
-			}
-			MethodInfo mi = type.GetMethod(method, flags);
-			Type delType = typeof(TDelegate);
-			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
-			Type[] tParams = delSig.ParameterTypes;
-			Type retType = delSig.ReturnType;
-			
-			ParameterExpression[] parExp = tParams.Select(t => Expression.Parameter(t.UnderlyingSystemType)).ToArray();
-			IEnumerable<Type> mParams = mi.GetParameters().Select(p => p.ParameterType);
-			if(!mi.IsStatic)
-			{
-				mParams = Enumerable.Repeat(type, 1).Concat(mParams);
-			}
-			
-			IEnumerable<Expression> parPass = parExp.Zip(mParams, ParamOrConvert);
-			Expression inst;
-			if(!mi.IsStatic)
-			{
-				inst = parExp.Take(1).First();
-				parPass = parPass.Skip(1);
+				flags &=~ BindingFlags.Static;
 			}else{
-				inst = null;
+				flags &=~ BindingFlags.Instance;
 			}
-			var pxas = parPass.ToArray();
-			Expression exp = Expression.Call(inst, mi, parPass);
-			CheckRetType(ref exp, retType);
-			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
+			MethodInfo mi;
+			try{
+				mi = type.GetMethod(method, flags);
+			}catch(AmbiguousMatchException)
+			{
+				var tParams = ReflectionTools.GetDelegateSignature(typeof(TDelegate)).ParameterTypes;
+				if(instance == true)
+				{
+					tParams = tParams.Skip(1).ToArray();
+				}
+				mi = type.GetMethod(method, flags, null, 0, tParams, null);
+				if(mi == null) throw;
+			}
+			return GetInvoker<TDelegate>(mi);
 		}
 		
-		public static TDelegate GenerateConstructor<TDelegate>(Type type, int ord) where TDelegate : TDelegateBase
-		{
-			ConstructorInfo ctor = type.GetConstructors(privflags)[ord];
-			Type delType = typeof(TDelegate);
-			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
-			Type[] tParams = delSig.ParameterTypes;
-			Type retType = delSig.ReturnType;
-			
-			ParameterExpression[] parExp = tParams.Select(t => Expression.Parameter(t.UnderlyingSystemType)).ToArray();
-			IEnumerable<Type> mParams = ctor.GetParameters().Select(p => p.ParameterType);
-
-			IEnumerable<Expression> parPass = parExp.Zip(mParams, ParamOrConvert);
-			Expression exp = Expression.New(ctor, parPass);
-			CheckRetType(ref exp, retType);
-			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
-		}
-		
-		public static TDelegate GenerateFieldGetter<TDelegate>(Type type, string field) where TDelegate : TDelegateBase
+		public static TDelegate GetInvoker<TDelegate>(MethodInfo mi) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
 			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
 			Type[] tParams = delSig.ParameterTypes;
 			Type retType = delSig.ReturnType;
 			
-			FieldInfo fi = type.GetField(field, privflags);
-			Expression exp;
-			ParameterExpression[] parExp;
+			var mParams = mi.GetParameters().Select(p => p.ParameterType).ToList();
+			
+			try{
+				return (TDelegate)(object)mi.CreateDelegate(delType);
+			}catch(ArgumentException)
+			{
+				
+			}
+			
+			DynamicMethod dyn = new DynamicMethod(mi.Name, retType, tParams, typeof(Hacks).Module, true);
+			var il = dyn.GetILGenerator();
+			int add = 0;
+			if(!mi.IsStatic)
+			{
+				add = 1;
+				il.Emit(OpCodes.Ldarg_0);
+				EmitCast(il, tParams[0], mi.DeclaringType);
+			}
+			for(int i = add; i < tParams.Length; i++)
+			{
+				il.EmitLdarg(i);
+				EmitCast(il, tParams[i], mParams[i-add]);
+			}
+			il.Emit(OpCodes.Call, mi);
+			EmitCast(il, mi.ReturnType, retType);
+			il.Emit(OpCodes.Ret);
+			return (TDelegate)(object)dyn.CreateDelegate(delType);
+		}
+		
+		public static TDelegate GetConstructor<TDelegate>(Type type, int ord) where TDelegate : TDelegateBase
+		{
+			return GetConstructor<TDelegate>(type.GetConstructors(privflags)[ord]);
+		}
+		
+		public static TDelegate GetConstructor<TDelegate>(ConstructorInfo ctor) where TDelegate : TDelegateBase
+		{
+			Type delType = typeof(TDelegate);
+			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			Type[] tParams = delSig.ParameterTypes;
+			Type retType = delSig.ReturnType;
+			
+			var mParams = ctor.GetParameters().Select(p => p.ParameterType).ToList();
+			
+			DynamicMethod dyn = new DynamicMethod("new_"+ctor.DeclaringType.Name, retType, tParams, typeof(Hacks).Module, true);
+			var il = dyn.GetILGenerator();
+			for(int i = 0; i < tParams.Length; i++)
+			{
+				il.EmitLdarg(i);
+				EmitCast(il, tParams[i], mParams[i]);
+			}
+			il.Emit(OpCodes.Newobj, ctor);
+			EmitCast(il, ctor.DeclaringType, retType);
+			il.Emit(OpCodes.Ret);
+			return (TDelegate)(object)dyn.CreateDelegate(delType);
+		}
+		
+		public static TDelegate GetFieldGetter<TDelegate>(Type type, string field) where TDelegate : TDelegateBase
+		{
+			return GetFieldGetter<TDelegate>(type.GetField(field, privflags));
+		}
+		
+		public static TDelegate GetFieldGetter<TDelegate>(FieldInfo fi) where TDelegate : TDelegateBase
+		{
+			Type delType = typeof(TDelegate);
+			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			Type[] tParams = delSig.ParameterTypes;
+			Type retType = delSig.ReturnType;
+			
+			DynamicMethod dyn = new DynamicMethod("get_"+fi.Name, retType, tParams, typeof(Hacks).Module, true);
+			var il = dyn.GetILGenerator();
 			if(fi.IsStatic)
 			{
-				parExp = new ParameterExpression[0];
-				exp = Expression.Field(null, fi);
+				il.Emit(OpCodes.Ldsfld, fi);
 			}else{
-				ParameterExpression p1 = Expression.Parameter(tParams.Single());
-				parExp = new ParameterExpression[]{p1};
-				exp = Expression.Field(ParamOrConvert(p1, type), fi);
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldfld, fi);
 			}
-			CheckRetType(ref exp, retType);
-			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
+			EmitCast(il, fi.FieldType, retType);
+			il.Emit(OpCodes.Ret);
+			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
-		public static TDelegate GenerateFieldSetter<TDelegate>(Type type, params string[] fields) where TDelegate : TDelegateBase
+		public static TDelegate GetFieldSetter<TDelegate>(Type type, params string[] fields) where TDelegate : TDelegateBase
+		{
+			return GetFieldSetter<TDelegate>(fields.Select(f => type.GetField(f, privflags)).ToList());
+		}
+		
+		public static TDelegate GetFieldSetter<TDelegate>(IList<FieldInfo> fields) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
 			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
 			Type[] tParams = delSig.ParameterTypes;
+			Type retType = delSig.ReturnType;
 			
-			FieldInfo[] fi = fields.Select(f => type.GetField(f, privflags)).ToArray();
-			ParameterExpression[] parExp = tParams.Select(tp => Expression.Parameter(tp)).ToArray();
-			Expression inst;
-			int iadd;
-			if(fi.All(f => f.IsStatic))
+			DynamicMethod dyn = new DynamicMethod("set_"+String.Join(",", fields.Select(f => f.Name)), retType, tParams, typeof(Hacks).Module, true);
+			var il = dyn.GetILGenerator();
+			int add = 0;
+			if(fields.Any(f => !f.IsStatic))
 			{
-				inst = null;
-				iadd = 0;
-			}else{
-				inst = ParamOrConvert(parExp[0], type);
-				iadd = 1;
+				add = 1;
 			}
-			Expression exp = Expression.Block(
-				fi.Select((f,i) => Expression.Assign(Expression.Field(inst, f), ParamOrConvert(parExp[i+iadd], tParams[i+iadd])))
-			);
-			return Expression.Lambda<TDelegate>(exp, parExp).Compile();
+			for(int i = 0; i < fields.Count; i++)
+			{
+				var fi = fields[i];
+				if(fi.IsStatic)
+				{
+					il.EmitLdarg(i+add);
+					EmitCast(il, tParams[i+add], fi.FieldType);
+					il.Emit(OpCodes.Stsfld, fi);
+				}else{
+					il.Emit(OpCodes.Ldarg_0);
+					EmitCast(il, tParams[0], fi.DeclaringType);
+					il.EmitLdarg(i+add);
+					EmitCast(il, tParams[i+add], fi.FieldType);
+					il.Emit(OpCodes.Stfld, fi);
+				}
+			}
+			il.Emit(OpCodes.Ret);
+			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
-		private static Expression ParamOrConvert(ParameterExpression p, Type pType)
+		public static TDelegate GetPropertyGetter<TDelegate>(Type type, string property) where TDelegate : TDelegateBase
 		{
-			if(p.IsByRef ? p.Type.MakeByRefType() == pType : p.Type == pType)
-			{
-				return p;
-			}else{
-				return Expression.Convert(p, pType);
-			}
+			return GetPropertyGetter<TDelegate>(type.GetProperty(property, privflags));
 		}
 		
-		private static void CheckRetType(ref Expression exp, Type retType)
+		public static TDelegate GetPropertyGetter<TDelegate>(PropertyInfo pi) where TDelegate : TDelegateBase
 		{
-			if(exp.Type != retType)
+			return GetInvoker<TDelegate>(pi.GetGetMethod(true));
+		}
+		
+		public static TDelegate GetPropertySetter<TDelegate>(Type type, string property) where TDelegate : TDelegateBase
+		{
+			return GetPropertySetter<TDelegate>(type.GetProperty(property, privflags));
+		}
+		
+		public static TDelegate GetPropertySetter<TDelegate>(PropertyInfo pi) where TDelegate : TDelegateBase
+		{
+			return GetInvoker<TDelegate>(pi.GetSetMethod(true));
+		}
+		
+		private static void EmitCast(ILGenerator il, Type from, Type to)
+		{
+			if(from.IsValueType && !to.IsValueType)
 			{
-				exp = Expression.Convert(exp, retType);
+				il.Emit(OpCodes.Box, from);
+			}else if(!from.IsValueType && to.IsValueType)
+			{
+				il.Emit(OpCodes.Unbox, to);
+				return;
 			}
+			if(TryEmitCast(from, to) || TryEmitCast(to, from))
+			{
+				il.Emit(OpCodes.Castclass, to);
+			}
+		}
+	
+		private static bool TryEmitCast(Type a, Type b)
+		{
+			if(a == b)
+			{
+				return false;
+			}else if(a.IsAssignableFrom(b) || b.IsAssignableFrom(a))
+			{
+				return true;
+			}else if(a.IsEnum && Enum.GetUnderlyingType(a) == b)
+			{
+				return false;
+			}else if(a.IsEnum && b.IsEnum && Enum.GetUnderlyingType(a) == Enum.GetUnderlyingType(b))
+			{
+				return false;
+			}else if(a.IsPointer && b.IsPointer)
+			{
+				return false;
+			}else if(a.IsPointer && (b == typeof(IntPtr) || b == typeof(UIntPtr)))
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }

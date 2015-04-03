@@ -8,8 +8,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Interop;
+using IllidanS4.SharpUtils.Reflection;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Interop
 {
 	public class VarArgsInvoker : IDynamicMetaObjectProvider
 	{

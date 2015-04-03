@@ -13,15 +13,7 @@ namespace IllidanS4.SharpUtils.Interop
 		public delegate void OutDelegate<TArg>(out TArg variable);
 		public delegate void RefDelegate<TArg>(ref TArg variable);
 		
-		static readonly AssemblyBuilder ab;
-		static readonly ModuleBuilder mob;
 		static readonly Type TypedReferenceType = typeof(TypedReference);
-		
-		static ReferenceHelper()
-		{
-			ab = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ReferenceHelperAssembly"), AssemblyBuilderAccess.Run);
-			mob = ab.DefineDynamicModule("ReferenceHelperAssembly.dll");
-		}
 		
 		public static TResult PassReference<TArg,TResult>(TypedReference tref, RefDelegate<TArg,TResult> del)
 		{
@@ -46,7 +38,7 @@ namespace IllidanS4.SharpUtils.Interop
 		static int mcounter = 0;
 		private static Type BuildPassRef(Type deltype, Type argType, Type resultType)
 		{
-			TypeBuilder tb = mob.DefineType("ReferenceHelperType"+(mcounter++), TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Abstract);
+			TypeBuilder tb = Resources.DynamicModule.DefineType("ReferenceHelperType"+(mcounter++), TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Abstract);
 			MethodBuilder mb = tb.DefineMethod(
 				"PassRef",
 				MethodAttributes.Public | MethodAttributes.Static,

@@ -2,6 +2,8 @@
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using System.Runtime.Remoting;
 using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Reflection.TypeSupport
@@ -19,7 +21,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 			
 		}
 		
-		public TypeConstruct(Type elementType, Type delegatingType) : base(delegatingType)
+		public TypeConstruct(Type elementType, Type delegatingType) : base(delegatingType ?? typeof(object))
 		{
 			ElementType = elementType;
 		}
@@ -99,6 +101,72 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 		void ISignatureElement.AddSignature(SignatureHelper signature)
 		{
 			this.AddSignature(signature);
+		}
+		
+		protected virtual Instance GetInstance(object target)
+		{
+			return new Instance(target);
+		}
+		
+		public virtual object InvokeMethod(MethodBase method, object target, object[] args)
+		{
+			string name = method.Name;
+			const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod;
+			var inst = GetInstance(target);
+			return ((object)inst).GetType().InvokeMember(name, flags, null, inst, args);
+		}
+		
+		protected class Instance
+		{
+			public object Object{get; private set;}
+			public VirtualObjectProxy Proxy{get; private set;}
+			
+			public Instance(object obj)
+			{
+				Object = obj;
+				Proxy = RemotingServices.GetRealProxy(obj) as VirtualObjectProxy;
+			}
+			
+			public override string ToString()
+			{
+				return Object.GetType().ToString();
+			}
+			
+			public override bool Equals(object obj)
+			{
+				return RuntimeHelpers.Equals(Object, obj);
+			}
+			
+			public override int GetHashCode()
+			{
+				return RuntimeHelpers.GetHashCode(Object);
+			}
+			
+			public new Type GetType()
+			{
+				if(Proxy != null)
+				{
+					return Proxy.VirtualType;
+				}else{
+					return Object.GetType();
+				}
+			}
+			public new object MemberwiseClone()
+			{
+				return ((VirtualObjectProxy)Proxy.Clone()).GetTransparentProxy();
+			}
+			public void FieldSetter(string typeName, string fieldName, object val)
+			{
+				Proxy.Fields[Proxy.Fields[fieldName]] = val;
+			}
+			public void FieldGetter(string typeName, string fieldName, ref object val)
+			{
+				val = Proxy.Fields[Proxy.Fields[fieldName]];
+			}
+			public FieldInfo GetFieldInfo(string typeName, string fieldName)
+			{
+				return Proxy.Fields[fieldName];
+			}
 		}
 	}
 }

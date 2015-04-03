@@ -11,11 +11,8 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
 namespace IllidanS4.SharpUtils.Reflection
 {
-	public static class BuilderTools
+	public static partial class BuilderTools
 	{
-		private const BindingFlags sflags = BindingFlags.Static | BindingFlags.NonPublic;
-		private const BindingFlags iflags = BindingFlags.Instance | BindingFlags.NonPublic;
-		
 		/// <summary>
 		/// Creates a new field using extended field type.
 		/// </summary>
@@ -72,50 +69,5 @@ namespace IllidanS4.SharpUtils.Reflection
 			sh.AddElement(sig);
 			return sh.GetSignature();
 		}
-		
-		private delegate int TokTypeDel(ModuleBuilder builder, byte[] signature, int length);
-		private static readonly TokTypeDel GetTokFromTypeSpec = Hacks.GenerateInvoker<TokTypeDel>(typeof(ModuleBuilder), "GetTokenFromTypeSpec", true);
-		
-		private delegate void InitFieldDelegate(FieldBuilder builder, string name, TypeBuilder type, Type fieldType, FieldAttributes attributes, int i, FieldToken token);
-		private static readonly InitFieldDelegate InitField = Hacks.GenerateFieldSetter<InitFieldDelegate>(
-			typeof(FieldBuilder), "m_fieldName", "m_typeBuilder",
-			"m_fieldType", "m_Attributes", "m_fieldTok", "m_tkField"
-		);
-		
-		private delegate FieldToken CreateFieldTokenDelegate(int field, Type fieldClass);
-		private static readonly CreateFieldTokenDelegate NewFieldToken = Hacks.GenerateConstructor<CreateFieldTokenDelegate>(typeof(FieldToken), 0);
-		
-		private static readonly Func<int,MethodToken> NewMethodToken = Hacks.GenerateConstructor<Func<int,MethodToken>>(typeof(MethodToken), 0);
-
-		
-		private static readonly Func<int,TypeToken> NewTypeToken = Hacks.GenerateConstructor<Func<int,TypeToken>>(typeof(TypeToken), 0);
-		
-		private delegate Module GetNativeModuleDelegate(ModuleBuilder modb);
-		private static readonly GetNativeModuleDelegate GetNativeModule = Hacks.GenerateInvoker<GetNativeModuleDelegate>(typeof(ModuleBuilder), "GetNativeHandle", true);
-
-		
-		private delegate int DefineMemberDelegate<TMemberAttributes>(Module module, int tkParent, string name, byte[] signature, int sigLength, TMemberAttributes attributes);
-		
-		private delegate int DefineFieldDelegate(Module module, int tkParent, string name, byte[] signature, int sigLength, FieldAttributes attributes);
-		private static readonly DefineFieldDelegate DefineFieldInternal = Hacks.GenerateInvoker<DefineFieldDelegate>(typeof(TypeBuilder), "DefineField", false);
-
-		private delegate int DefineMethodDelegate(Module module, int tkParent, string name, byte[] signature, int sigLength, MethodAttributes attributes);
-		private static readonly DefineMethodDelegate DefineMethodInternal = Hacks.GenerateInvoker<DefineMethodDelegate>(typeof(TypeBuilder), "DefineMethod", false);
-		
-		private delegate IList<MethodBuilder> tbmlistdel(TypeBuilder tb);
-		private static readonly tbmlistdel GetMethodList = Hacks.GenerateFieldGetter<tbmlistdel>(typeof(TypeBuilder), "m_listMethods");
-		
-		private delegate MethodBuilder NewMethodDelegate(
-			string name, MethodAttributes attributes,
-			CallingConventions callingConvention, Type returnType, Type[] parameterTypes,
-			ModuleBuilder mod, TypeBuilder type, bool bIsGlobalMethod
-		);
-		private static readonly NewMethodDelegate NewMethod = Hacks.GenerateConstructor<NewMethodDelegate>(typeof(MethodBuilder), 0);
-		
-		private delegate void tokdel(MethodBuilder method, MethodToken token);
-		private static readonly tokdel SetToken = (tokdel)Delegate.CreateDelegate(typeof(tokdel), typeof(MethodBuilder).GetMethod("SetToken", iflags));
-		
-		private delegate void mimpdel(Module module, int tkMethod, MethodImplAttributes MethodImplAttributes);
-		private static readonly mimpdel SetMethodImpl = Hacks.GenerateInvoker<mimpdel>(typeof(TypeBuilder), "SetMethodImpl");
 	}
 }

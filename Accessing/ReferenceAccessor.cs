@@ -24,12 +24,23 @@ namespace IllidanS4.SharpUtils.Accessing
 			
 		}
 		
-		public new T Value{
+		public ReferenceAccessor(object boxed) : base(boxed)
+		{
+			
+		}
+		
+		public new T Item{
 			set{
-				base.Value = value;
+				base.Item = value;
 			}
 			get{
 				return __refvalue((TypedReference)m_ref, T);
+			}
+		}
+		
+		object IReadAccessor.Item{
+			get{
+				return this.Item;
 			}
 		}
 		

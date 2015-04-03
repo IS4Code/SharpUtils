@@ -7,8 +7,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using IllidanS4.SharpUtils.Accessing;
+using IllidanS4.SharpUtils.Reflection;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Interop
 {
 	public static class VarArgsInvoke<TDelegate>
 	{

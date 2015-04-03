@@ -48,8 +48,13 @@ namespace IllidanS4.SharpUtils.Interop
 			return (void*)ptr;
 		}
 		
-		public bool IsNull
-		{
+		public Type PointerType{
+			get{
+				return typeof(T);
+			}
+		}
+		
+		public bool IsNull{
 			get{
 				return ptr == default(void*);
 			}
@@ -81,6 +86,36 @@ namespace IllidanS4.SharpUtils.Interop
 				TypedReference tr;
 				GetReference(&tr);
 				__refvalue(tr, T) = value;
+			}
+		}
+		
+		T IReadAccessor<T>.Item{
+			get{
+				return Value;
+			}
+		}
+		
+		T IWriteAccessor<T>.Item{
+			set{
+				Value = value;
+			}
+		}
+		
+		Type IStorageAccessor.ItemType{
+			get{
+				return typeof(T);
+			}
+		}
+		
+		object IReadAccessor.Item{
+			get{
+				return Value;
+			}
+		}
+		
+		object IWriteAccessor.Item{
+			set{
+				Value = (T)value;
 			}
 		}
 	}

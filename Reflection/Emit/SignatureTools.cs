@@ -9,18 +9,9 @@ using IllidanS4.SharpUtils.Reflection.TypeSupport;
 
 namespace IllidanS4.SharpUtils.Reflection.Emit
 {
-	public static class SignatureTools
+	public static partial class SignatureTools
 	{
 		private const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-		
-		private static readonly Type sigType = typeof(SignatureHelper);
-		private static readonly Action<SignatureHelper,int> Sig_AddData_int = (Action<SignatureHelper,int>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,int>), sigType.GetMethod("AddData", flags, null, new[]{typeof(int)}, null));
-		private static readonly Action<SignatureHelper,uint> Sig_AddData_uint = (Action<SignatureHelper,uint>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,uint>), sigType.GetMethod("AddData", flags, null, new[]{typeof(uint)}, null));
-		private static readonly Action<SignatureHelper,ulong> Sig_AddData_ulong = (Action<SignatureHelper,ulong>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,ulong>), sigType.GetMethod("AddData", flags, null, new[]{typeof(ulong)}, null));
-		private static readonly Action<SignatureHelper,byte> Sig_AddElementType = (Action<SignatureHelper,byte>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,byte>), sigType.GetMethod("AddElementType", flags));
-		private static readonly Action<SignatureHelper,int> Sig_AddToken = (Action<SignatureHelper,int>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,int>), sigType.GetMethod("AddToken", flags, null, new[]{typeof(int)}, null));
-		
-		private static readonly Action<SignatureHelper,Module> Sig_Init = (Action<SignatureHelper,Module>)Delegate.CreateDelegate(typeof(Action<SignatureHelper,Module>), sigType.GetMethod("Init", flags, null, new[]{typeof(Module)}, null));
 		
 		
 		public static void AddData(this SignatureHelper signature, byte data)

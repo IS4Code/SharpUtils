@@ -13,6 +13,11 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 				get{ return "dynamic"; }
 			}
 			
+			public DynamicTypeDescription() : base(TypeOf<object>.TypeID)
+			{
+				
+			}
+			
 			public override bool IsAssignableFrom(Type c)
 			{
 				return true;

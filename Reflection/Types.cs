@@ -1,5 +1,6 @@
 ﻿/* Date: 29.11.2014, Time: 19:33 */
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using IllidanS4.SharpUtils.Accessing;
 using IllidanS4.SharpUtils.Reflection.Emit;
@@ -12,10 +13,15 @@ namespace IllidanS4.SharpUtils.Reflection
 	public static class Types
 	{
 		public static readonly Module CommonLanguageRuntimeLibrary = typeof(object).Module;
+		public static readonly Module Core = typeof(Expression).Module;
 		
 		public static readonly Type Signature = CommonLanguageRuntimeLibrary.GetType("System.Signature");
 		public static readonly Type RuntimeType = CommonLanguageRuntimeLibrary.GetType("System.RuntimeType");
 		public static readonly Type RuntimeModule = CommonLanguageRuntimeLibrary.GetType("System.Reflection.RuntimeModule");
+		public static readonly Type MetadataImport = CommonLanguageRuntimeLibrary.GetType("System.Reflection.MetadataImport");
+		public static readonly Type ConstArray = CommonLanguageRuntimeLibrary.GetType("System.Reflection.ConstArray");
+		public static readonly Type DelegateHelpers = Core.GetType("System.Linq.Expressions.Compiler.DelegateHelpers");
+    	public static readonly Type Void = typeof(void);
 		
 		/// <summary>
 		/// Types that are generated from a signature.

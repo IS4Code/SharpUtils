@@ -25,12 +25,7 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 			
 		}
 		
-		public GenericType(Type genericTypeDef, IEnumerable<Type> typeArguments) :
-			base(
-				genericTypeDef.UnderlyingSystemType.MakeGenericType(
-					typeArguments.Select(t => t.UnderlyingSystemType).ToArray()
-				)
-			)
+		public GenericType(Type genericTypeDef, IEnumerable<Type> typeArguments) : base(UnderlyingGenericType(genericTypeDef, typeArguments))
 		{
 			typeDef = genericTypeDef;
 			typeArgs = typeArguments.ToArray();
@@ -78,6 +73,21 @@ namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 		public override string FullName{
 			get{
 				return ToString();
+			}
+		}
+		
+		private static Type UnderlyingGenericType(Type elementType, IEnumerable<Type> typeArguments)
+		{
+			try{
+				return elementType.UnderlyingSystemType.MakeGenericType(
+					typeArguments.Select(t => t.UnderlyingSystemType).ToArray()
+				);
+			}catch(NullReferenceException)
+			{
+				return null;
+			}catch(TypeLoadException)
+			{
+				return null;
 			}
 		}
 		

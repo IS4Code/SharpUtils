@@ -2,7 +2,7 @@
 using System;
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class DefinedWriteAccessor<T> : IWriteAccessor<T>
+	public class DefinedWriteAccessor<T> : BasicWriteAccessor<T>
 	{
 		Action<T> setter;
 		
@@ -11,7 +11,7 @@ namespace IllidanS4.SharpUtils.Accessing
 			this.setter = setter;
 		}
 		
-		public T Value{
+		public override T Item{
 			set{
 				setter(value);
 			}

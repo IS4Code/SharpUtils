@@ -48,15 +48,8 @@ namespace IllidanS4.SharpUtils.Unsafe
 			
 		}
 		
-		private static readonly AssemblyBuilder chameleonAssembly;
-		private static readonly ModuleBuilder chameleonModule;
 		private static readonly Dictionary<int,Type> chameleons = new Dictionary<int,Type>();
 		private static readonly Type chameleonType = typeof(Chameleon);
-		static Chameleon()
-		{
-			chameleonAssembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ChameleonAssembly"), AssemblyBuilderAccess.Run);
-			chameleonModule = chameleonAssembly.DefineDynamicModule("ChameleonAssembly.dll");
-		}
 		
 		/// <summary>
 		/// Creates a new chameleon objects by specifying its size.
@@ -69,7 +62,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			Type type;
 			if(!chameleons.TryGetValue(size, out type))
 			{
-				TypeBuilder tb = chameleonModule.DefineType("Chameleon"+size, TypeAttributes.Public | TypeAttributes.Sealed, chameleonType, size);
+				TypeBuilder tb = Resources.DynamicModule.DefineType("Chameleon"+size, TypeAttributes.Public | TypeAttributes.Sealed, chameleonType, size);
 				type = chameleons[size] = tb.CreateType();
 			}
 			return ((Chameleon)Activator.CreateInstance(type)).Mutate<Chameleon>();
@@ -78,11 +71,21 @@ namespace IllidanS4.SharpUtils.Unsafe
 		/// <summary>
 		/// Changes the object's type and cast-returns it.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>The mutated object.</returns>
 		public T Mutate<T>()
 		{
 			Type = TypeOf<T>.TypeID;
 			return (T)(object)this;
+		}
+		
+		/// <summary>
+		/// Changes the object's type and returns it.
+		/// </summary>
+		/// <returns>The mutated object.</returns>
+		public object Mutate(Type newType)
+		{
+			Type = newType;
+			return this;
 		}
 	}
 }

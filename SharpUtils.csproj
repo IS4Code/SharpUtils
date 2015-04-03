@@ -68,13 +68,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accessing\Accessing.cs" />
+    <Compile Include="Accessing\Accessor.cs" />
     <Compile Include="Accessing\AccessorGenerator.cs" />
+    <Compile Include="Accessing\ArrayAccessor.cs" />
     <Compile Include="Accessing\AtomicContainer.cs" />
     <Compile Include="Accessing\DefinedReadAccessor.cs" />
     <Compile Include="Accessing\DefinedReadWriteAccessor.cs" />
     <Compile Include="Accessing\DefinedWriteAccessor.cs" />
+    <Compile Include="Accessing\DictionaryAccessor.cs" />
     <Compile Include="Accessing\FieldAccessor.cs" />
     <Compile Include="Accessing\IIndexable.cs" />
+    <Compile Include="Accessing\IndexAccessor.cs" />
+    <Compile Include="Accessing\ListAccessor.cs" />
     <Compile Include="Accessing\OutputAccessor.cs" />
     <Compile Include="Accessing\ReferenceAccessor.cs" />
     <Compile Include="COM\IDispatch.cs" />
@@ -87,11 +92,31 @@
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
     <Compile Include="Interop\FnPtrInvoker.cs" />
+    <Compile Include="Interop\InteropToolsHacks.cs">
+      <DependentUpon>InteropTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interop\VarArgsGenerator.cs" />
+    <Compile Include="Interop\VarArgsInvoke.cs" />
+    <Compile Include="Interop\VarArgsInvoker.cs" />
+    <Compile Include="Reflection\Linq\Instruction.cs" />
     <Compile Include="Proxies\IProxyReplacer.cs" />
     <Compile Include="Proxies\ProxyImplementationHelper.cs" />
     <Compile Include="Proxies\ProxyImplementationBinder.cs" />
     <Compile Include="Proxies\Replacers\IRegistryKey.cs" />
     <Compile Include="Proxies\Replacers\RegistryKeyBase.cs" />
+    <Compile Include="Reflection\BuilderToolsHacks.cs">
+      <DependentUpon>BuilderTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\CSharp\StaticInvoker.cs" />
+    <Compile Include="Reflection\Emit\SignatureToolsHacks.cs">
+      <DependentUpon>SignatureTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\ReflectionToolsHacks.cs">
+      <DependentUpon>ReflectionTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reflection\TypeSupport\TypeContainer.cs" />
+    <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
+    <Compile Include="Unsafe\IMemoryUnion.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FloatPtr.cs" />
@@ -105,7 +130,7 @@
     <Compile Include="Interop\ReferenceHelper.cs" />
     <Compile Include="Interop\TypedReferenceTools.cs" />
     <Compile Include="Interop\VarArgsDelegateGenerator.cs" />
-    <Compile Include="Linq\LinqEmit.cs" />
+    <Compile Include="Reflection\Linq\LinqEmit.cs" />
     <Compile Include="Math\Extensions.cs" />
     <Compile Include="Metadata\BoxedAttribute.cs" />
     <Compile Include="Metadata\DataAttribute.cs" />
@@ -214,9 +239,6 @@
     <Compile Include="Reflection\TypeSupport\PointerType.cs" />
     <Compile Include="Reflection\TypeSupport\TypeAppendConstruct.cs" />
     <Compile Include="Reflection\TypeSupport\TypeConstruct.cs" />
-    <Compile Include="Reflection\VarArgsGenerator.cs" />
-    <Compile Include="Reflection\VarArgsInvoke.cs" />
-    <Compile Include="Reflection\VarArgsInvoker.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Serialization\Serialization.cs" />
     <Compile Include="Streaming\BitStream.cs" />
@@ -264,7 +286,7 @@
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Math" />
-    <Folder Include="Linq" />
+    <Folder Include="Reflection\Linq" />
     <Folder Include="Proxies" />
     <Folder Include="Proxies\Replacers" />
     <Folder Include="Reflection\Cpp\TypeModel" />

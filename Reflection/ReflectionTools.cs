@@ -16,15 +16,11 @@ namespace IllidanS4.SharpUtils.Reflection
 {
 	using SysEmit = System.Reflection.Emit;
 	
-	public static class ReflectionTools
+	public static partial class ReflectionTools
 	{
-		private const BindingFlags sflags = BindingFlags.Static | BindingFlags.NonPublic;
-		private const BindingFlags iflags = BindingFlags.Instance | BindingFlags.NonPublic;
-		
-		private static readonly FieldInfo CallSiteBinder_Cache = typeof(CallSiteBinder).GetField("Cache", iflags);
-    	public static Type GetBindingType(this CallSiteBinder binder)
+		public static Type GetBindingType(this CallSiteBinder binder)
 		{
-	    	IDictionary<Type,object> cache = (IDictionary<Type,object>)CallSiteBinder_Cache.GetValue(binder);
+    		IDictionary<Type,object> cache = GetCache(binder);
 	    	if(cache == null) return null;
 	    	Type ftype = cache.Select(t => t.Key).FirstOrDefault(t => t != null && t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,,,>));
 	    	if(ftype == null) return null;
@@ -33,17 +29,14 @@ namespace IllidanS4.SharpUtils.Reflection
 	    	return genargs[2];
 		}
     	
-    	private static readonly Type DelegateHelpersType = typeof(Expression).Assembly.GetType("System.Linq.Expressions.Compiler.DelegateHelpers");
-    	private static readonly Func<Type[],Type> MakeNewCustomDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewCustomDelegate", sflags));
-		public static Type NewCustomDelegateType(Type ret, params Type[] parameters)
+    	public static Type NewCustomDelegateType(Type ret, params Type[] parameters)
 		{
 			Type[] args = new Type[parameters.Length+1];
 			parameters.CopyTo(args, 0);
 			args[args.Length-1] = ret;
 			return MakeNewCustomDelegate(args);
 		}
-    	private static readonly Func<Type[],Type> MakeNewDelegate = (Func<Type[],Type>)Delegate.CreateDelegate(typeof(Func<Type[],Type>), DelegateHelpersType.GetMethod("MakeNewDelegate", sflags));
-		public static Type GetDelegateType(Type ret, params Type[] parameters)
+    	public static Type GetDelegateType(Type ret, params Type[] parameters)
 		{
 			Type[] args = new Type[parameters.Length+1];
 			parameters.CopyTo(args, 0);
@@ -55,37 +48,14 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		private unsafe delegate Type FieldSignatureGetter(void* sigptr, int siglength, Type declaringType);
-		private static readonly FieldSignatureGetter GetFieldSignature = CreateGetFieldSignature();
-		
 		public static unsafe Type GetTypeFromFieldSignature(byte[] signature, Type declaringType = null)
 		{
 			declaringType = declaringType ?? typeof(object);
-			Type sigtype = typeof(Type).Module.GetType("System.Signature");
-			Type rtype = typeof(Type).Module.GetType("System.RuntimeType");
-			var ctor = sigtype.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new[]{typeof(void*), typeof(int), rtype}, null);
 			fixed(byte* ptr = signature)
 			{
-				return GetFieldSignature.Invoke(ptr, signature.Length, declaringType);
+				object sig = SignatureCreator(ptr, signature.Length, declaringType);
+				return GetSignatureType(sig);
 			}
-		}
-		
-		private static FieldSignatureGetter CreateGetFieldSignature()
-		{
-			Type sigtype = Types.Signature;
-			Type rtype = Types.RuntimeType;
-			PropertyInfo fieldType = sigtype.GetProperty("FieldType", BindingFlags.NonPublic | BindingFlags.Instance);
-			var ctor = sigtype.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new[]{typeof(void*), typeof(int), rtype}, null);
-			DynamicMethod dyn = new DynamicMethod("GetFieldSignature", typeof(Type), new[]{typeof(void*), typeof(int), typeof(Type)}, typeof(ReflectionTools).Module, true);
-			var il = dyn.GetILGenerator();
-			il.Emit(SysEmit.OpCodes.Ldarg_0);
-			il.Emit(SysEmit.OpCodes.Ldarg_1);
-			il.Emit(SysEmit.OpCodes.Ldarg_2);
-			il.Emit(SysEmit.OpCodes.Castclass, rtype);
-			il.Emit(SysEmit.OpCodes.Newobj, ctor);
-			il.Emit(SysEmit.OpCodes.Callvirt, fieldType.GetGetMethod(true));
-			il.Emit(SysEmit.OpCodes.Ret);
-			return (FieldSignatureGetter)dyn.CreateDelegate(typeof(FieldSignatureGetter));
 		}
 		
 		public static void SetValue<T>(this FieldInfo fi, ref T obj, object value)
@@ -98,7 +68,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			return fi.GetValueDirect(__makeref(obj));
 		}
 		
-		public static readonly Func<IntPtr,Type> GetTypeFromHandle = (Func<IntPtr,Type>)Delegate.CreateDelegate(typeof(Func<IntPtr,Type>), typeof(Type).GetMethod("GetTypeFromHandleUnsafe", BindingFlags.Static | BindingFlags.NonPublic));
+		public static readonly Func<IntPtr,Type> GetTypeFromHandle = Hacks.GetInvoker<Func<IntPtr,Type>>(typeof(Type), "GetTypeFromHandleUnsafe", false);
 		
 		public static CorElementType GetCorElementType(this Type type)
 		{
@@ -111,17 +81,8 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		private delegate CorElementType GetCorElementTypeDelegate(Type type);
-		private static readonly GetCorElementTypeDelegate GetCorElType = CreateGetCorElType();
-		private static GetCorElementTypeDelegate CreateGetCorElType()
-		{
-			MethodInfo mi = typeof(RuntimeTypeHandle).GetMethod("GetCorElementType", sflags);
-			ParameterExpression p1 = Expression.Parameter(typeof(Type));
-			var exp = Expression.Convert(Expression.Call(mi, Expression.Convert(p1, Types.RuntimeType)), typeof(CorElementType));
-			var lam = Expression.Lambda<GetCorElementTypeDelegate>(exp, p1);
-			return lam.Compile();
-		}
-		
+		private static readonly Func<Type,CorElementType> GetCorElType = Hacks.GetInvoker<Func<Type,CorElementType>>(typeof(RuntimeTypeHandle), "GetCorElementType", false);
+
 		public static ModifiedType MakeModifiedType(this Type type, params TypeModifier[] modifiers)
 		{
 			return new ModifiedType(type, modifiers);
@@ -129,12 +90,10 @@ namespace IllidanS4.SharpUtils.Reflection
 		
 		public static byte[] GetSignature(this FieldInfo fld)
 		{
-			var rmtype = fld.Module.GetType();
-			var mimp = rmtype.InvokeMember("MetadataImport", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty, null, fld.Module, null);
-			var sig = mimp.GetType().InvokeMember("GetSigOfFieldDef", BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod, null, mimp, new object[]{fld.MetadataToken});
-			var ctype = sig.GetType();
-			IntPtr ptr = (IntPtr)ctype.InvokeMember("Signature", BindingFlags.GetProperty, null, sig, null);
-			int len = (int)ctype.InvokeMember("Length", BindingFlags.GetProperty, null, sig, null);
+			object metadata = GetSignatureHacks.GetMetadataImport(fld.Module);
+			object sig = GetSignatureHacks.GetSigOfFieldDef(metadata, fld.MetadataToken);
+			IntPtr ptr = GetSignatureHacks.GetSignaturePtr(sig);
+			int len = GetSignatureHacks.GetSignatureLength(sig);
 			byte[] data = new byte[len];
 			Marshal.Copy(ptr, data, 0, len);
 			return data;

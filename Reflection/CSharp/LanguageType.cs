@@ -3,12 +3,15 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using IllidanS4.SharpUtils.Reflection.Emit;
+using IllidanS4.SharpUtils.Reflection.TypeSupport;
 using Microsoft.CSharp.RuntimeBinder;
 
 namespace IllidanS4.SharpUtils.Reflection.CSharp
 {
-	public abstract partial class LanguageType : Type
+	public abstract partial class LanguageType : TypeConstruct
 	{
 		public static readonly LanguageType Dynamic = new DynamicTypeDescription();
 		public static readonly LanguageType Null = new NullTypeDescription();
@@ -24,6 +27,26 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		public static readonly LanguageType TypeParameter = new TypeParameterTypeDescription();
 		public static readonly LanguageType Variable = new VariableTypeDescription();
 
+		public LanguageType() : base(typeof(void*))
+		{
+			
+		}
+		
+		public LanguageType(Type underlyingType) : base(underlyingType)
+		{
+			
+		}
+		
+		protected override void AddSignature(SignatureHelper signature)
+		{
+			throw new NotImplementedException();
+		}
+			
+		public override CorElementType CorElementType{
+			get{
+				throw new NotImplementedException();
+			}
+		}
 		
 		public override bool IsDefined(Type attributeType, bool inherit)
 		{
@@ -49,6 +72,12 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		public override Type UnderlyingSystemType{
 			get{
 				return null;
+			}
+		}
+		
+		public override RuntimeTypeHandle TypeHandle{
+			get{
+				throw new NotImplementedException();
 			}
 		}
 		

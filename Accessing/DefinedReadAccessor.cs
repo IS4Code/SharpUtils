@@ -5,7 +5,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Read accessor that uses a passed function that returns its value.
 	/// </summary>
-	public class DefinedReadAccessor<T> : IReadAccessor<T>
+	public class DefinedReadAccessor<T> : BasicReadAccessor<T>
 	{
 		Func<T> getter;
 		
@@ -36,7 +36,7 @@ namespace IllidanS4.SharpUtils.Accessing
 			
 		}
 		
-		public T Value{
+		public override T Item{
 			get{
 				return getter();
 			}

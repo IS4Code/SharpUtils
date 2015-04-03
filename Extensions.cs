@@ -50,6 +50,30 @@ namespace IllidanS4.SharpUtils
 			return arr;
 		}
 		
+		public static void Process<T>(this IList<T> list, Func<T,T> changeFunc)
+		{
+			for(int i = 0; i < list.Count; i++)
+			{
+				list[i] = changeFunc(list[i]);
+			}
+		}
+		
+		public static void Process<T>(this IList<T> list, Func<int,T,T> changeFunc)
+		{
+			for(int i = 0; i < list.Count; i++)
+			{
+				list[i] = changeFunc(i, list[i]);
+			}
+		}
+		
+		public static void Process<TKey,TValue>(this IDictionary<TKey,TValue> dictionary, Func<TKey,TValue,TValue> changeFunc)
+		{
+			foreach(TKey key in dictionary.Keys)
+			{
+				dictionary[key] = changeFunc(key, dictionary[key]);
+			}
+		}
+		
 		public static void ForEach(this IEnumerator enumerator, Action<object> each)
 		{
 			while(enumerator.MoveNext())

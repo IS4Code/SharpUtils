@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using IllidanS4.SharpUtils.Reflection;
 
-namespace IllidanS4.SharpUtils.Reflection
+namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
 	/// From this class, you can generate methods which invoke varargs methods.

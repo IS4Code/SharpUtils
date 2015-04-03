@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
@@ -209,6 +211,46 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return arg;
 		}
 		
+		public static IMemoryUnion<T1, T2> CreateUnion<T1, T2>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3> CreateUnion<T1, T2, T3>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3, T4> CreateUnion<T1, T2, T3, T4>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3, T4>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3, T4, T5> CreateUnion<T1, T2, T3, T4, T5>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3, T4, T5, T6> CreateUnion<T1, T2, T3, T4, T5, T6>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3, T4, T5, T6, T7> CreateUnion<T1, T2, T3, T4, T5, T6, T7>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6, T7>>.CreateNew();
+		}
+		
+		public static IMemoryUnion<T1, T2, T3, T4, T5, T6, T7, T8> CreateUnion<T1, T2, T3, T4, T5, T6, T7, T8>()
+		{
+			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6, T7, T8>>.CreateNew();
+		}
+		
+		public static TUnion CreateUnion<TUnion>() where TUnion : IMemoryUnion
+		{
+			return UnionCache<TUnion>.CreateNew();
+		}
+		
 		private struct NullableContainer<T> where T : struct
 		{
 			public readonly T? Value;
@@ -216,6 +258,101 @@ namespace IllidanS4.SharpUtils.Unsafe
 			public NullableContainer(T? nullable)
 			{
 				Value = nullable;
+			}
+		}
+		
+		private static class UnionCache<TUnion> where TUnion : IMemoryUnion
+		{
+			public static readonly Type UnionType;
+			
+			static UnionCache()
+			{
+				Type infType = TypeOf<TUnion>.TypeID;
+				TypeBuilder tb = Resources.DefineDynamicType(TypeAttributes.Sealed | TypeAttributes.Public | TypeAttributes.ExplicitLayout);
+				tb.SetParent(TypeOf<ValueType>.TypeID);
+				tb.AddInterfaceImplementation(infType);
+				ImplementInterfaces(tb, infType);
+				ImplementDataType(tb);
+				ImplementSize(tb);
+				UnionType = tb.CreateType();
+			}
+			
+			private static void ImplementDataType(TypeBuilder tb)
+			{
+				var mb = tb.DefineMethod("get_DataType", MethodAttributes.Public | MethodAttributes.Virtual, TypeOf<Type>.TypeID, null);
+				var il = mb.GetILGenerator();
+				il.Emit(OpCodes.Ldtoken, tb);
+				il.Emit(OpCodes.Call, TypeOf<Type>.TypeID.GetMethod("GetTypeFromHandle"));
+				il.Emit(OpCodes.Ret);
+				tb.DefineMethodOverride(mb, TypeOf<IMemoryUnion>.TypeID.GetProperty("DataType").GetMethod);
+			}
+			
+			private static void ImplementSize(TypeBuilder tb)
+			{
+				var mb = tb.DefineMethod("get_Size", MethodAttributes.Public | MethodAttributes.Virtual, TypeOf<int>.TypeID, null);
+				var il = mb.GetILGenerator();
+				il.Emit(OpCodes.Sizeof, tb);
+				il.Emit(OpCodes.Ret);
+				tb.DefineMethodOverride(mb, TypeOf<IMemoryUnion>.TypeID.GetProperty("Size").GetMethod);
+			}
+			
+			private static void ImplementInterfaces(TypeBuilder tb, Type type)
+			{
+				foreach(var pi in type.GetProperties())
+				{
+					var pt = pi.PropertyType;
+					if(TypeOf<IMemoryUnion>.TypeID.IsAssignableFrom(pt))
+					{
+						try{
+							pt = (Type)typeof(UnionCache<>).MakeGenericType(pt).GetField("UnionType").GetValue(null);
+						}catch(TargetInvocationException e)
+						{
+							Exception e2 = e.InnerException;
+							if(e2 is TypeInitializationException)
+							{
+								throw e2.InnerException;
+							}else{
+								throw e2;
+							}
+						}
+					}
+					FieldBuilder fb = tb.DefineField(pi.Name+"@"+type, pt, FieldAttributes.Public);
+					fb.SetOffset(0);
+					ILGenerator il;
+					MethodBuilder get = tb.DefineMethod("get_"+fb.Name, MethodAttributes.Public | MethodAttributes.Virtual, pi.PropertyType, Type.EmptyTypes);
+					MethodBuilder set = tb.DefineMethod("set_"+fb.Name, MethodAttributes.Public | MethodAttributes.Virtual, null, new[]{pi.PropertyType});
+					il = get.GetILGenerator();
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Ldfld, fb);
+					if(pt != pi.PropertyType)
+					{
+						il.Emit(OpCodes.Box, pi.PropertyType);
+					}
+					il.Emit(OpCodes.Ret);
+					il = set.GetILGenerator();
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Ldarg_1);
+					if(pt != pi.PropertyType)
+					{
+						il.Emit(OpCodes.Unbox_Any);
+					}
+					il.Emit(OpCodes.Stfld, fb);
+					il.Emit(OpCodes.Ret);
+					tb.DefineMethodOverride(get, pi.GetMethod);
+					tb.DefineMethodOverride(set, pi.SetMethod);
+				}
+				foreach(var infType in type.GetInterfaces())
+				{
+					if(infType != TypeOf<IMemoryUnion>.TypeID)
+					{
+						ImplementInterfaces(tb, infType);
+					}
+				}
+			}
+			
+			public static TUnion CreateNew()
+			{
+				return (TUnion)Activator.CreateInstance(UnionType);
 			}
 		}
 	}

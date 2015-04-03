@@ -88,7 +88,7 @@ namespace IllidanS4.SharpUtils
 		}
 		
 		private delegate void GetCachedValuesAndNamesDelegate(Type enumType, out ulong[] values, out string[] names, bool getValues, bool getNames);
-		private static readonly GetCachedValuesAndNamesDelegate GetCachedValuesAndNames = Hacks.GenerateInvoker<GetCachedValuesAndNamesDelegate>(typeof(Enum), "GetCachedValuesAndNames", false);
+		private static readonly GetCachedValuesAndNamesDelegate GetCachedValuesAndNames = Hacks.GetInvoker<GetCachedValuesAndNamesDelegate>(typeof(Enum), "GetCachedValuesAndNames", false);
 		
 		public static TEnum Parse<TEnum>(string value) where TEnum : struct, TEnumBase
 		{
