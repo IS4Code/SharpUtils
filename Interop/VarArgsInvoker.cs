@@ -171,7 +171,13 @@ namespace IllidanS4.SharpUtils.Interop
 			    int skip = Value.Method.GetParameters().Length;
 			    if(Value.Target == null && !Value.Method.IsStatic) skip++;
 			    Expression expr = Value.CreateInvoker(args.Skip(skip).Select(a => a.LimitType).ToArray());
-			    expr = Expression.Block(Expression.Invoke(expr, args.Select(a => a.Expression)), Expression.Default(binder.ReturnType));
+			    expr = Expression.Invoke(expr, args.Select(a => a.Expression));
+			    if(Value.Method.ReturnType == typeof(void))
+			    {
+			    	expr = Expression.Block(expr, Expression.Default(binder.ReturnType));
+			    }else{
+			    	expr = Expression.Convert(expr, binder.ReturnType);
+			    }
 			    return new DynamicMetaObject(expr, restrictions);
 			}
 		}

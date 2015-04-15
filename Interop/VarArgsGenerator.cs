@@ -7,7 +7,7 @@ using IllidanS4.SharpUtils.Reflection;
 namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
-	/// From this class, you can generate methods which invoke varargs methods.
+	/// With this class, you can generate methods which invoke varargs methods.
 	/// </summary>
 	public static class VarArgsGenerator
 	{

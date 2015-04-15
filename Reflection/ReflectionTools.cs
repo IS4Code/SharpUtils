@@ -247,5 +247,14 @@ namespace IllidanS4.SharpUtils.Reflection
 					return null;
 			}
 		}
+		
+		public static Type MakePartialGenericType(this Type type, IDictionary<int, Type> typeArgs)
+		{
+			return new PartialGenericType(type, typeArgs);
+		}
+		
+		#region RuntimeMethodHandle extensions
+		
+		#endregion
 	}
 }

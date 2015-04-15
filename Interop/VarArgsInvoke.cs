@@ -11,6 +11,7 @@ using IllidanS4.SharpUtils.Reflection;
 
 namespace IllidanS4.SharpUtils.Interop
 {
+	[Obsolete("Use FnPtrInvoker.")]
 	public static class VarArgsInvoke<TDelegate>
 	{
 		public static readonly IIndexableGetter<int,TDelegate> Invoke;

@@ -22,7 +22,7 @@ namespace IllidanS4.SharpUtils
 		
 		const BindingFlags privflags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 		
-		public static TDelegate GetInvoker<TDelegate>(Type type, string method, bool instance) where TDelegate : TDelegateBase
+		public static TDelegate GetInvoker<TDelegate>(Type type, string method, bool instance, int ord=0) where TDelegate : TDelegateBase
 		{
 			BindingFlags flags = privflags;
 			if(instance)
@@ -42,7 +42,7 @@ namespace IllidanS4.SharpUtils
 					tParams = tParams.Skip(1).ToArray();
 				}
 				mi = type.GetMethod(method, flags, null, 0, tParams, null);
-				if(mi == null) throw;
+				if(mi == null) mi = type.GetMethods(flags).Where(m => m.Name == method).ElementAt(ord);
 			}
 			return GetInvoker<TDelegate>(mi);
 		}

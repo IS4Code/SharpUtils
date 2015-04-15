@@ -63,11 +63,63 @@ namespace IllidanS4.SharpUtils.Reflection
 			return NewTypeToken(GetTokFromTypeSpec(builder, signature, signature.Length));
 		}
 		
+		public static TypeToken GetTypeToken(this ModuleBuilder builder, TypeConstruct tc)
+		{
+			return GetTypeTokenExtended(builder, tc);
+		}
+		
+		public static TypeToken GetTypeTokenExtended(this ModuleBuilder builder, Type type)
+		{
+			TypeConstruct tc = type as TypeConstruct;
+			if(tc != null || builder == null)
+			{
+				var sig = SignatureTools.GetSigHelper(builder);
+				sig.AddArgumentSignature(type);
+				return GetTokenFromTypeSpec(builder, sig.GetSignature());
+			}else{
+				return builder.GetTypeToken(type);
+			}
+		}
+		
 		public static byte[] GetSignature(this ModuleBuilder builder, ISignatureElement sig)
 		{
 			SignatureHelper sh = SignatureTools.GetSigHelper(builder);
 			sh.AddElement(sig);
 			return sh.GetSignature();
+		}
+		
+		public static void Emit(this ILGenerator il, OpCode opcode, TypeToken token)
+		{
+			EnsureCapacity(il, 7);
+			InternalEmit(il, opcode);
+			RecordTokenFixup(il);
+			PutInteger4(il, token.Token);
+		}
+		
+		public static void EmitExtended(this ILGenerator il, OpCode opcode, Type type)
+		{
+			TypeConstruct tc = type as TypeConstruct;
+			if(tc != null)
+			{
+				var mb = GetMethodBuilder(il);
+				TypeToken token;
+				if(mb is DynamicMethod)
+				{
+					throw new NotSupportedException();
+					/*var sig = SignatureTools.GetSigHelper(null);
+					sig.AddArgumentSignature(type);
+					object scope = GetDynamicScope(il);
+					int tok = GetTokenFor(scope, sig.GetSignature());
+					tok &= 0x00FFFFFF;
+					tok |= 0x1b000000;
+					token = NewTypeToken(tok);*/
+				}else{
+					token = GetTypeTokenExtended((ModuleBuilder)((MethodBuilder)mb).Module, type);
+				}
+				Emit(il, opcode, token);
+			}else{
+				il.Emit(opcode, type);
+			}
 		}
 	}
 }

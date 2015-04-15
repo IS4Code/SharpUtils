@@ -44,10 +44,7 @@ namespace IllidanS4.SharpUtils.Templates
 				}
 				templateType = templateType.MakeGenericType(genArgs);
 			}
-			string name = "DynamicTemplate";
-			var ab = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(name), AssemblyBuilderAccess.RunAndCollect);
-			var modb = ab.DefineDynamicModule(name);
-			var tb = modb.DefineType(name, TypeAttributes.Public);
+			var tb = Resources.DynamicModule.DefineType("DynamicTemplate", TypeAttributes.Public);
 			if(templateType.IsInterface)
 			{
 				tb.SetParent(typeofObject);

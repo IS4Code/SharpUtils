@@ -22,7 +22,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		public ObjectHandle(Type t)
 		{
 			tptr = t.TypeHandle.Value;
-			int size = UnsafeTools.BaseInstaceSizeOf(t);
+			int size = UnsafeTools.BaseInstanceSizeOf(t);
 			handle = Marshal.AllocHGlobal(size);
 			byte[] zero = new byte[size];
 			Marshal.Copy(zero, 0, handle, size);

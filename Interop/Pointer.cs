@@ -50,7 +50,7 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		public Type PointerType{
 			get{
-				return typeof(T);
+				return TypeOf<T>.TypeID.MakePointerType();
 			}
 		}
 		

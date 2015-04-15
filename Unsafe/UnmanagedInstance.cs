@@ -33,7 +33,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		{
 			var type = TypeOf<T>.TypeID;
 			tptr = type.TypeHandle.Value;
-			tsize = UnsafeTools.BaseInstaceSizeOf(type);
+			tsize = UnsafeTools.BaseInstanceSizeOf(type);
 			init = new byte[tsize];
 			BitConverter.GetBytes((long)tptr).CopyTo(init, 4);
 		}

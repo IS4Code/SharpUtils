@@ -67,7 +67,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			}
 		}
 		
-		public static int BaseInstaceSizeOf(Type t)
+		public static int BaseInstanceSizeOf(Type t)
 		{
 			return Marshal.ReadInt32(t.TypeHandle.Value, 4);
 		}

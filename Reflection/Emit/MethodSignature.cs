@@ -148,9 +148,9 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// </summary>
 		/// <param name="method">The method to be taken its signature from.</param>
 		/// <returns>The signature of the method.</returns>
-		public static MethodSignature FromMethodInfo(MethodInfo method)
+		public static MethodSignature FromMethodInfo(MethodBase method)
 		{
-			return FromMethodInfo(method, null);
+			return FromMethod(method, null);
 		}
 		
 		/// <summary>
@@ -159,13 +159,13 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <param name="method">The method to be taken its signature from.</param>
 		/// <param name="optionalParameterTypes">Optional parameter types for varargs method.</param>
 		/// <returns>The signature of the method.</returns>
-		public static MethodSignature FromMethodInfo(MethodInfo method, params Type[] optionalParameterTypes)
+		public static MethodSignature FromMethod(MethodBase method, params Type[] optionalParameterTypes)
 		{
 			if(method == null) throw new ArgumentNullException("method");
 			
 			var callconv = method.CallingConvention;
 			if((callconv&CallingConventions.VarArgs)==0 && optionalParameterTypes != null) throw new ArgumentException("Method must ve varargs to specify optional parameter types.");
-			return new MethodSignature(callconv, method.ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
+			return new MethodSignature(callconv, method.IsConstructor?method.DeclaringType:((MethodInfo)method).ReturnType, method.GetParameters().Select(p => p.ParameterType).ToArray(), optionalParameterTypes);
 		}
 		
 		public static MethodSignature FromDelegateType(Type tDelegate)
@@ -174,6 +174,11 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			
 			MethodInfo invoke = tDelegate.GetMethod("Invoke");
 			return new MethodSignature(CallingConventions.Standard, invoke.ReturnType, invoke.GetParameters().Select(p => p.ParameterType).ToArray());
+		}
+		
+		public Type GetDelegateType()
+		{
+			return ReflectionTools.GetDelegateType(ReturnType, ParameterTypes);
 		}
 		
 		private static MdSigCallingConvention ConvertCallConv(CallingConventions managed, CallingConvention unmanaged)
