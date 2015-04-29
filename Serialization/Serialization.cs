@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Serialization

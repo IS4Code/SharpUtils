@@ -9,13 +9,13 @@ using IllidanS4.SharpUtils.Reflection;
 namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
-	/// Allows dynamic invoking of function pointers with the specified signature. TDelegate must be a delegate type with IntPtr, pointing to the function, or MethodBase, as the first parameter.
+	/// Allows dynamic calling of function pointers with the specified signature. TDelegate must be a delegate type with IntPtr, pointing to the function, or MethodBase, as the first parameter.
 	/// </summary>
-	public static class FnPtrInvoker<TDelegate> where TDelegate : class
+	public static class FnPtrCaller<TDelegate> where TDelegate : class
 	{
 		public static readonly TDelegate Invoke;
 		
-		static FnPtrInvoker()
+		static FnPtrCaller()
 		{
 			Type tDel = TypeOf<TDelegate>.TypeID;
 			var msig = ReflectionTools.GetDelegateSignature(tDel);
@@ -28,7 +28,7 @@ namespace IllidanS4.SharpUtils.Interop
 			}
 			if(ptypes[0] != TypeOf<IntPtr>.TypeID)
 				throw new ArgumentException("Delegate must have IntPtr or MethodBase as the first parameter.");
-			DynamicMethod dyn = new DynamicMethod("Invoker", msig.ReturnType, ptypes, typeof(FnPtrInvoker<TDelegate>), true);
+			DynamicMethod dyn = new DynamicMethod("Invoker", msig.ReturnType, ptypes, typeof(FnPtrCaller<TDelegate>), true);
 			var il = dyn.GetILGenerator();
 			int vastart = -1;
 			int i = 1;

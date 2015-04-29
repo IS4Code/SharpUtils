@@ -21,6 +21,21 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 			flags = BindingFlags.Static | BindingFlags.Public | (nonPublic ? BindingFlags.NonPublic : 0);
 		}
 		
+		public override bool TryCreateInstance(CreateInstanceBinder binder, object[] args, out object result)
+		{
+			try{
+				result = Activator.CreateInstance(type, args);
+				return true;
+			}catch(TargetInvocationException e)
+			{
+				throw e.InnerException;
+			}catch(MissingMemberException)
+			{
+				result = null;
+				return false;
+			}
+		}
+		
 		public override bool TryGetMember(GetMemberBinder binder, out object result)
 		{
 			try{

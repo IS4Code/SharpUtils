@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace IllidanS4.SharpUtils.Reflection
 {
-	public struct Operand<T> : IEquatable<Operand<T>>, IEquatable<T>, IConvertible
+	public struct Operand<T> : IEquatable<Operand<T>>, IEquatable<T>, IConvertible, IOperand<Operand<T>>
 	{
 		public readonly T Value;
 		
@@ -394,6 +394,123 @@ namespace IllidanS4.SharpUtils.Reflection
 		private object ToTypeInternal<TTo>(IFormatProvider provider)
 		{
 			return Convert<TTo>.ToChecked(Value);
+		}
+		
+		#endregion
+		
+		#region IOperand
+		
+		bool IOperand<Operand<T>>.Equal(Operand<T> other)
+		{
+			return this == other;
+		}
+		bool IOperand<Operand<T>>.NotEqual(Operand<T> other)
+		{
+			return this != other;
+		}
+		bool IOperand<Operand<T>>.GreaterThan(Operand<T> other)
+		{
+			return this > other;
+		}
+		bool IOperand<Operand<T>>.LessThan(Operand<T> other)
+		{
+			return this < other;
+		}
+		bool IOperand<Operand<T>>.GreaterThanOrEqual(Operand<T> other)
+		{
+			return this >= other;
+		}
+		bool IOperand<Operand<T>>.LessThanOrEqual(Operand<T> other)
+		{
+			return this <= other;
+		}
+		Operand<T> IOperand<Operand<T>>.BitwiseAnd(Operand<T> other)
+		{
+			return this & other;
+		}
+		Operand<T> IOperand<Operand<T>>.BitwiseOr(Operand<T> other)
+		{
+			return this | other;
+		}
+		Operand<T> IOperand<Operand<T>>.Add(Operand<T> other)
+		{
+			return Addition(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.AddChecked(Operand<T> other)
+		{
+			return AdditionChecked(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.Subtract(Operand<T> other)
+		{
+			return Subtraction(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.SubtractChecked(Operand<T> other)
+		{
+			return SubtractionChecked(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.Divide(Operand<T> other)
+		{
+			return this / other;
+		}
+		Operand<T> IOperand<Operand<T>>.Modulo(Operand<T> other)
+		{
+			return this % other;
+		}
+		Operand<T> IOperand<Operand<T>>.Multiply(Operand<T> other)
+		{
+			return Multiply(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.MultiplyChecked(Operand<T> other)
+		{
+			return MultiplyChecked(this, other);
+		}
+		Operand<T> IOperand<Operand<T>>.ExclusiveOr(Operand<T> other)
+		{
+			return this ^ other;
+		}
+		Operand<T> IOperand<Operand<T>>.LeftShift(int shift)
+		{
+			return this << shift;
+		}
+		Operand<T> IOperand<Operand<T>>.RightShift(int shift)
+		{
+			return this >> shift;
+		}
+		Operand<T> IOperand<Operand<T>>.UnaryMinus()
+		{
+			return UnaryNegation(this);
+		}
+		Operand<T> IOperand<Operand<T>>.UnaryMinusChecked()
+		{
+			return UnaryNegationChecked(this);
+		}
+		Operand<T> IOperand<Operand<T>>.UnaryPlus()
+		{
+			return +this;
+		}
+		Operand<T> IOperand<Operand<T>>.Not()
+		{
+			return !this;
+		}
+		Operand<T> IOperand<Operand<T>>.OnesComplement()
+		{
+			return ~this;
+		}
+		Operand<T> IOperand<Operand<T>>.Increment()
+		{
+			return ++this;
+		}
+		Operand<T> IOperand<Operand<T>>.Decrement()
+		{
+			return --this;
+		}
+		bool IOperand<Operand<T>>.IsFalse()
+		{
+			return False(this);
+		}
+		bool IOperand<Operand<T>>.IsTrue()
+		{
+			return True(this);
 		}
 		
 		#endregion

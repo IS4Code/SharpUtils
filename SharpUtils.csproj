@@ -91,18 +91,34 @@
     <Compile Include="Empty.cs" />
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
-    <Compile Include="Interop\FnPtrInvoker.cs" />
+    <Compile Include="Interop\FnPtrCaller.cs" />
     <Compile Include="Interop\FunctionPointer.cs" />
     <Compile Include="Interop\InteropToolsHacks.cs">
       <DependentUpon>InteropTools.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\Sentinel.cs" />
+    <Compile Include="Interop\UnmanagedFunctionCaller.cs" />
+    <Compile Include="Interop\VarArgsDelegate.cs" />
     <Compile Include="Interop\VarArgsGenerator.cs" />
     <Compile Include="Interop\VarArgsInvoke.cs" />
     <Compile Include="Interop\VarArgsInvoker.cs" />
+    <Compile Include="Proxies\Dynamic\AdapterProxy.cs" />
+    <Compile Include="Proxies\Dynamic\AdapterTools.cs" />
+    <Compile Include="Proxies\Dynamic\BindingInfo.cs" />
+    <Compile Include="Proxies\Dynamic\DelegateAdapter.cs" />
+    <Compile Include="Proxies\Dynamic\DynamicAdapter.cs" />
+    <Compile Include="Proxies\Dynamic\DynamicProxy.cs" />
+    <Compile Include="Proxies\Dynamic\IDynamicAdapterProvider.cs" />
+    <Compile Include="Proxies\Dynamic\IStaticAdapterProvider.cs" />
+    <Compile Include="Proxies\Dynamic\MarshallerProxy.cs" />
+    <Compile Include="Proxies\Dynamic\ObjectTypeHandle.cs" />
+    <Compile Include="Proxies\Dynamic\StaticAdapter.cs" />
+    <Compile Include="Proxies\Dynamic\StaticProxy.cs" />
+    <Compile Include="Proxies\Dynamic\TaskAdapter.cs" />
+    <Compile Include="Reflection\IOperand.cs" />
     <Compile Include="Reflection\Linq\Instruction.cs" />
     <Compile Include="Proxies\IProxyReplacer.cs" />
-    <Compile Include="Proxies\ProxyImplementationHelper.cs" />
+    <Compile Include="Proxies\ProxyImplementation.cs" />
     <Compile Include="Proxies\ProxyImplementationBinder.cs" />
     <Compile Include="Proxies\Replacers\IRegistryKey.cs" />
     <Compile Include="Proxies\Replacers\RegistryKeyBase.cs" />
@@ -120,6 +136,7 @@
     <Compile Include="Reflection\TypeSupport\PartialGenericType.cs" />
     <Compile Include="Reflection\TypeSupport\TypeContainer.cs" />
     <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
+    <Compile Include="Serialization\ObjectConstructInfo.cs" />
     <Compile Include="Unsafe\IMemoryUnion.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
@@ -289,6 +306,7 @@
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Math" />
+    <Folder Include="Proxies\Dynamic" />
     <Folder Include="Reflection\Linq" />
     <Folder Include="Proxies" />
     <Folder Include="Proxies\Replacers" />

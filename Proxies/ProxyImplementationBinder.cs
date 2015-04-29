@@ -19,7 +19,7 @@ namespace IllidanS4.SharpUtils.Proxies
 			var rp = RemotingServices.GetRealProxy(proxy) as InterfaceProxy<TBound, TImplementation>;
 			if(rp != null)
 			{
-				return (TImplementation)rp.Implementation;
+				return (TImplementation)(object)rp.Implementation;
 			}
 			return null;
 		}
@@ -34,17 +34,31 @@ namespace IllidanS4.SharpUtils.Proxies
 			return null;
 		}
 		
-		private abstract class InterfaceProxyBase : RealProxy
+		private abstract class InterfaceProxyBase : RealProxy, IRemotingTypeInfo
 		{
-			public object Implementation{get; private set;}
+			public MarshalByRefObject Implementation{get; private set;}
 			public Type ImplementationType{get; private set;}
 			public Type BoundType{get; private set;}
 			
-			public InterfaceProxyBase(object impl, Type boundType, Type implType) : base(boundType)
+			public InterfaceProxyBase(MarshalByRefObject impl, Type boundType, Type implType) : base(boundType)
 			{
 				Implementation = impl;
 				ImplementationType = implType;
 				BoundType = boundType;
+				TypeName = boundType.FullName;
+			}
+			
+			public string TypeName{
+				get; set;
+			}
+			
+			public bool CanCastTo(Type fromType, object o)
+			{
+				if(fromType.IsAssignableFrom(Implementation.GetType()))
+				{
+					return true;
+				}
+				return false;
 			}
 		}
 		
@@ -52,7 +66,7 @@ namespace IllidanS4.SharpUtils.Proxies
 		{
 			private static readonly MethodInfo GetTypeMethod = typeof(object).GetMethod("GetType");
 			
-			public InterfaceProxy(IProxyReplacer<TBound, TImplementation> impl) : base(impl, TypeOf<TBound>.TypeID, TypeOf<TImplementation>.TypeID)
+			public InterfaceProxy(IProxyReplacer<TBound, TImplementation> impl) : base((MarshalByRefObject)(object)impl, TypeOf<TBound>.TypeID, TypeOf<TImplementation>.TypeID)
 			{
 				
 			}
@@ -66,15 +80,7 @@ namespace IllidanS4.SharpUtils.Proxies
 					{
 						return new ReturnMessage(BoundType, null, 0, msgCall.LogicalCallContext, msgCall);
 					}
-					MethodInfo mi = ImplementationType.GetMethod(msgCall.MethodName, (Type[])msgCall.MethodSignature);
-					try{
-						object[] args = msgCall.Args;
-						object ret = mi.Invoke(Implementation, args);
-						return new ReturnMessage(ret, args, args.Length, msgCall.LogicalCallContext, msgCall);
-					}catch(TargetInvocationException e)
-					{
-						return new ReturnMessage(e.InnerException, msgCall);
-					}
+					return RemotingServices.ExecuteMessage(Implementation, msgCall);
 				}
 				return null;
 			}

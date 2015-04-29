@@ -1,6 +1,7 @@
 ﻿/* Date: 12.11.2014, Time: 15:32 */
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection.TypeSupport;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace IllidanS4.SharpUtils.Reflection
 {
@@ -27,6 +29,54 @@ namespace IllidanS4.SharpUtils.Reflection
 	    	Type[] genargs = ftype.GetGenericArguments();
 	    	if(genargs == null || genargs.Length <= 2) return null;
 	    	return genargs[2];
+		}
+		
+		public static IEnumerable<Type> GetTypeArguments(this InvokeMemberBinder binder)
+		{
+			return GetTypeArgs(binder);
+		}
+		
+		public static IEnumerable<CSharpArgumentInfo> GetArgumentInfo(this CallSiteBinder binder)
+		{
+			var fi = binder.GetType().GetField("m_argumentInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+			if(fi != null)
+			{
+				return (IEnumerable<CSharpArgumentInfo>)fi.GetValue(binder);
+			}else{
+				return null;
+			}
+		}
+		
+		public static CSharpBinderFlags GetBinderFlags(this CallSiteBinder binder)
+		{
+			var fi = binder.GetType().GetField("m_flags", BindingFlags.NonPublic | BindingFlags.Instance);
+			if(fi != null)
+			{
+				return EnumTools.Parse<CSharpBinderFlags>(fi.GetValue(binder).ToString());
+			}else{
+				return 0;
+			}
+		}
+		
+		public static Type GetCallingContext(this CallSiteBinder binder)
+		{
+			var fi = binder.GetType().GetField("m_callingContext", BindingFlags.NonPublic | BindingFlags.Instance);
+			if(fi != null)
+			{
+				return (Type)fi.GetValue(binder);
+			}else{
+				return null;
+			}
+		}
+		
+		public static CSharpArgumentInfoFlags GetFlags(this CSharpArgumentInfo argInfo)
+		{
+			return GetArgFlags(argInfo);
+		}
+		
+		public static string GetName(this CSharpArgumentInfo argInfo)
+		{
+			return GetArgName(argInfo);
 		}
     	
     	public static Type NewCustomDelegateType(Type ret, params Type[] parameters)

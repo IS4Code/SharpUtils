@@ -5,8 +5,8 @@ namespace IllidanS4.SharpUtils.Unsafe
 {
 	public sealed class DummyObject<T> : IDisposable
 	{
-		private readonly IntPtr handle;
-		public readonly T Value;
+		private IntPtr handle;
+		public T Value{get; private set;}
 		
 		internal DummyObject(IntPtr handle, T value)
 		{
@@ -21,7 +21,12 @@ namespace IllidanS4.SharpUtils.Unsafe
 		
 		public void Dispose()
 		{
-			Marshal.FreeHGlobal(handle);
+			if(handle != IntPtr.Zero)
+			{
+				Value = default(T);
+				Marshal.FreeHGlobal(handle);
+				handle = IntPtr.Zero;
+			}
 			
 			GC.SuppressFinalize(this);
 		}
