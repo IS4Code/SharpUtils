@@ -10,7 +10,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using IllidanS4.SharpUtils.Interop;
+using IllidanS4.SharpUtils.Metadata;
 using IllidanS4.SharpUtils.Reflection.Emit;
+using IllidanS4.SharpUtils.Reflection.Linq;
 using IllidanS4.SharpUtils.Reflection.TypeSupport;
 using Microsoft.CSharp.RuntimeBinder;
 
@@ -108,14 +111,115 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		public static void SetValue<T>(this FieldInfo fi, ref T obj, object value)
+		public static void SetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr, object value)
+		{
+			fi.SetValueDirect((TypedReference)tr, value);
+		}
+		
+		public static object GetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr)
+		{
+			return fi.GetValueDirect((TypedReference)tr);
+		}
+		
+		public static void SetValue<T>(this FieldInfo fi, ref T obj, object value) where T : struct
 		{
 			fi.SetValueDirect(__makeref(obj), value);
 		}
 		
-		public static object GetValue<T>(this FieldInfo fi, ref T obj)
+		public static object GetValue<T>(this FieldInfo fi, ref T obj) where T : struct
 		{
 			return fi.GetValueDirect(__makeref(obj));
+		}
+		
+		public static unsafe void SetValue<TField>(this FieldInfo fi, object obj, TField value)
+		{
+			TypedReference tr;
+			TypedReferenceTools.MakeTypedReference(&tr, obj, fi);
+			__refvalue(tr, TField) = value;
+		}
+		
+		public static unsafe TField GetValue<TField>(this FieldInfo fi, object obj)
+		{
+			TypedReference tr;
+			TypedReferenceTools.MakeTypedReference(&tr, obj, fi);
+			return __refvalue(tr, TField);
+		}
+		
+		//TODO Type safety (TProperty == pi.PropertyType)
+		public static void SetValue<TType, TProperty>(this PropertyInfo pi, ref TType obj, TProperty value) where TType : struct
+		{
+			PropertyHelper<TType, TProperty>.SetValue(pi.GetSetMethod(true).MethodHandle.GetFunctionPointer(), ref obj, value);
+		}
+		
+		public static TProperty GetValue<TType, TProperty>(this PropertyInfo pi, ref TType obj) where TType : struct
+		{
+			return PropertyHelper<TType, TProperty>.GetValue(pi.GetGetMethod(true).MethodHandle.GetFunctionPointer(), ref obj);
+		}
+		
+		private static class PropertyHelper<T, TProperty> where T : struct
+		{
+			public delegate void Set(IntPtr method, ref T obj, TProperty value);
+			public delegate TProperty Get(IntPtr method, ref T obj);
+			
+			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
+				SysEmit.OpCodes.Ldarg_1,
+				SysEmit.OpCodes.Ldarg_2,
+				SysEmit.OpCodes.Ldarg_0,
+				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, Types.Void, new[]{TypeOf<T>.TypeID.MakeByRefType(), TypeOf<TProperty>.TypeID}, null),
+				SysEmit.OpCodes.Ret
+			);
+			
+			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
+				SysEmit.OpCodes.Ldarg_1,
+				SysEmit.OpCodes.Ldarg_0,
+				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, TypeOf<TProperty>.TypeID, new[]{TypeOf<T>.TypeID.MakeByRefType()}, null),
+				SysEmit.OpCodes.Ret
+			);
+		}
+		
+		[CLSCompliant(false)]
+		public static void SetValueDirect<TProperty>(this PropertyInfo pi, TypedReference tr, TProperty value)
+		{
+			PropertyRefHelper<TProperty>.SetValue(pi.GetSetMethod(true).MethodHandle.GetFunctionPointer(), tr, value);
+		}
+		
+		[CLSCompliant(false)]
+		public static TProperty GetValueDirect<TProperty>(this PropertyInfo pi, TypedReference tr)
+		{
+			return PropertyRefHelper<TProperty>.GetValue(pi.GetGetMethod(true).MethodHandle.GetFunctionPointer(), tr);
+		}
+		
+		public static void SetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr, TProperty value)
+		{
+			SetValueDirect<TProperty>(pi, (TypedReference)tr, value);
+		}
+		
+		public static TProperty GetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr)
+		{
+			return GetValueDirect<TProperty>(pi, (TypedReference)tr);
+		}
+		
+		private static class PropertyRefHelper<TProperty>
+		{
+			public delegate void Set(IntPtr method, TypedReference tr, TProperty value);
+			public delegate TProperty Get(IntPtr method, TypedReference tr);
+			
+			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
+				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
+				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Ldarg_2,
+				SysEmit.OpCodes.Ldarg_0,
+				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, Types.Void, new[]{typeof(TypedReference), TypeOf<TProperty>.TypeID}, null),
+				SysEmit.OpCodes.Ret
+			);
+			
+			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
+				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
+				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Ldarg_0,
+				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, TypeOf<TProperty>.TypeID, new[]{typeof(TypedReference)}, null),
+				SysEmit.OpCodes.Ret
+			);
 		}
 		
 		public static readonly Func<IntPtr,Type> GetTypeFromHandle = Hacks.GetInvoker<Func<IntPtr,Type>>(typeof(Type), "GetTypeFromHandleUnsafe", false);

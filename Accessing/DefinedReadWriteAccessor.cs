@@ -1,5 +1,6 @@
 ﻿/* ‎Date: 20.12.‎2012, Time: ‏‎17:01 */
 using System;
+
 namespace IllidanS4.SharpUtils.Accessing
 {
 	/// <summary>

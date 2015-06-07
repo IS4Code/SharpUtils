@@ -44,4 +44,15 @@ int b = 6;
 int c;
 pr.Test(a, ref b, out c);
 	
+/* Null reference check */
+public static void TestRef(ref int i)
+{
+	Console.WriteLine(Reference.IsNull(ref i));
+}
+
+unsafe{
+	int* a = null;
+	TestRef(ref *a);
+}
+	
 #endif

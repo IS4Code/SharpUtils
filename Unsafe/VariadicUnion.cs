@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace IllidanS4.SharpUtils
+namespace IllidanS4.SharpUtils.Unsafe
 {
 	/// <summary>
 	/// This struct is an union of some basic types. Each field points to the same location.

@@ -13,7 +13,7 @@ namespace IllidanS4.SharpUtils.Interop
 	{
 		readonly IntPtr ptr;
 		readonly FunctionPointerType fnptrType;
-		public Type PointerType{get{return fnptrType;}}
+		public Type Type{get{return fnptrType;}}
 		
 		public FunctionPointer(MethodBase method, params Type[] optionalParameterTypes) : this(method.MethodHandle.GetFunctionPointer(), new FunctionPointerType(MethodSignature.FromMethod(method, optionalParameterTypes)))
 		{

@@ -136,6 +136,69 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return GetO((IntPtr)address);
 		}
 		
+		public static void GetReference<T>(Pointer<T> ptr, Reference.RefAction<T> act) where T : struct
+		{
+			GetReference<T>(ptr.ToIntPtr(), act);
+		}
+		
+		public static TRet GetReference<T, TRet>(Pointer<T> ptr, Reference.RefFunc<T, TRet> func) where T : struct
+		{
+			return GetReference<T, TRet>(ptr.ToIntPtr(), func);
+		}
+		
+		public static void GetReference<T>(IntPtr ptr, Reference.RefAction<T> act) where T : struct
+		{
+			Reference.CacheHelper<T>.FromPtr(ptr, act);
+		}
+		
+		public static TRet GetReference<T, TRet>(IntPtr ptr, Reference.RefFunc<T, TRet> func) where T : struct
+		{
+			return Reference.CacheHelper<T>.WithRet<TRet>.FromPtr(ptr, func);
+		}
+		
+		public static void GetPointer<T>(out T reference, Action<IntPtr> act) where T : struct
+		{
+			GetPointer<T>(out reference, ptr => act(ptr.ToIntPtr()));
+		}
+		
+		public static TRet GetPointer<T, TRet>(out T reference, Func<IntPtr, TRet> func) where T : struct
+		{
+			return GetPointer<T, TRet>(out reference, ptr => func(ptr.ToIntPtr()));
+		}
+		
+		public static unsafe void GetPointer<T>(out T reference, Action<Pointer<T>> act) where T : struct
+		{
+			Reference.CacheHelper<T>.ToPtr(out reference, ptr => act(new Pointer<T>(ptr)));
+		}
+		
+		public static unsafe TRet GetPointer<T, TRet>(out T reference, Func<Pointer<T>, TRet> func) where T : struct
+		{
+			return Reference.CacheHelper<T>.WithRet<TRet>.ToPtr(out reference, ptr => func(new Pointer<T>(ptr)));
+		}
+		
+		[CLSCompliant(false)]
+		public static void GetPointer<T>(TypedReference tr, Action<IntPtr> act) where T : struct
+		{
+			GetPointer<T>(tr, ptr => act(ptr.ToIntPtr()));
+		}
+		
+		[CLSCompliant(false)]
+		public static TRet GetPointer<T, TRet>(TypedReference tr, Func<IntPtr, TRet> func) where T : struct
+		{
+			return GetPointer<T, TRet>(tr, ptr => func(ptr.ToIntPtr()));
+		}
+		
+		[CLSCompliant(false)]
+		public static void GetPointer<T>(TypedReference tr, Action<Pointer<T>> act) where T : struct
+		{
+			tr.AsRef((ref T r)=>GetPointer<T>(out r, act));
+		}
+		
+		[CLSCompliant(false)]
+		public static TRet GetPointer<T, TRet>(TypedReference tr, Func<Pointer<T>, TRet> func) where T : struct
+		{
+			return tr.AsRef((ref T r)=>GetPointer<T, TRet>(out r, func));
+		}
 		
 		// Boxing these non-nullable types is actually safer now thanks to GetUninitializedObject.
 		

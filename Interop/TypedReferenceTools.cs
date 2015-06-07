@@ -8,24 +8,26 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Metadata;
 using IllidanS4.SharpUtils.Reflection;
+using IllidanS4.SharpUtils.Reflection.Linq;
 using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Interop
 {
-	public static class TypedReferenceTools
+	public sealed class TypedReferenceTools : TypedReferenceToolsBase<Array>
+	{
+		
+	}
+	
+	public abstract class TypedReferenceToolsBase<TArrayBase> where TArrayBase : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
 	{	
+		internal TypedReferenceToolsBase(){}
+		
 		const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;
-		static readonly Type thisType = typeof(TypedReferenceTools);
 		
-		delegate void TypedReferenceSet(TypedReference tr, object value);
-		static readonly Type TypedReferenceSet_t = typeof(TypedReferenceSet);
-		static readonly MethodInfo SetTypedReference_m = thisType.GetMethod("SetTypedReference", flags);
-		static readonly ConcurrentDictionary<Type,TypedReferenceSet> setcache = new ConcurrentDictionary<Type,TypedReferenceSet>();
-		
-		delegate void TypedReferenceSetRef(TypedReference tr, TypedReference value);
-		static readonly Type TypedReferenceSetRef_t = typeof(TypedReferenceSetRef);
-		static readonly MethodInfo SetTypedReferenceRef_m = thisType.GetMethod("SetTypedReferenceRef", flags);
-		static readonly ConcurrentDictionary<Type,TypedReferenceSetRef> setcacheref = new ConcurrentDictionary<Type,TypedReferenceSetRef>();
+		[CLSCompliant(false)]
+		public delegate void TypedRefAction(TypedReference tr);
+		[CLSCompliant(false)]
+		public delegate TRet TypedRefFunc<TRet>(TypedReference tr);
 		
 		/// <summary>
 		/// Changes the type information stored in the TypedReference object.
@@ -35,7 +37,7 @@ namespace IllidanS4.SharpUtils.Interop
 		[CLSCompliant(false)]
 		public static unsafe void ChangeType(TypedReference* target, Type newType)
 		{
-			((IntPtr*)target)[1] = newType.TypeHandle.Value;
+			((TypedRef*)target)->Type = newType.TypeHandle.Value;
 		}
 		
 		public static unsafe void ChangeType([Boxed(typeof(TypedReference))]ValueType target, Type newType)
@@ -44,32 +46,20 @@ namespace IllidanS4.SharpUtils.Interop
 			ChangeType(ptr, newType);
 		}
 		
-		[CLSCompliant(false)]
-		public static Type GetType(this TypedReference target)
-		{
-			return __reftype(target);
-		}
-		
 		public static Type GetType([Boxed(typeof(TypedReference))]ValueType target)
 		{
 			return __reftype((TypedReference)target);
 		}
 		
-		[CLSCompliant(false)]
-		public static unsafe IntPtr ToPointer(this TypedReference target)
-		{
-			return ((IntPtr*)(&target))[0];
-		}
-		
 		public static IntPtr GetReferencePointer([Boxed(typeof(TypedReference))]ValueType target)
 		{
-			return ToPointer((TypedReference)target);
+			return ((TypedReference)target).ToPointer();
 		}
 		
 		[CLSCompliant(false)]
 		public static unsafe void ChangePointer(TypedReference* target, IntPtr ptr)
 		{
-			((IntPtr*)target)[0] = ptr;
+			((TypedRef*)target)->Value = ptr;
 		}
 		
 		public static unsafe void ChangePointer([Boxed(typeof(TypedReference))]ValueType target, IntPtr ptr)
@@ -78,49 +68,19 @@ namespace IllidanS4.SharpUtils.Interop
 			ChangePointer(trptr, ptr);
 		}
 		
-		[CLSCompliant(false)]
-		public static void SetValue(this TypedReference target, object value)
-		{
-			TypedReferenceSet set;
-			Type t = __reftype(target);
-			if(!setcache.TryGetValue(t, out set))
-			{
-				set = setcache[t] = (TypedReferenceSet)Delegate.CreateDelegate(TypedReferenceSet_t, SetTypedReference_m.MakeGenericMethod(t));
-			}
-			set(target, value);
-		}
-		
 		public static void SetValue([Boxed(typeof(TypedReference))]ValueType target, object value)
 		{
-			SetValue((TypedReference)target, value);
-		}
-		
-		[CLSCompliant(false)]
-		public static void SetValue(this TypedReference target, TypedReference value)
-		{
-			TypedReferenceSetRef set;
-			Type t = __reftype(target);
-			if(!setcacheref.TryGetValue(t, out set))
-			{
-				set = setcacheref[t] = (TypedReferenceSetRef)Delegate.CreateDelegate(TypedReferenceSetRef_t, SetTypedReferenceRef_m.MakeGenericMethod(t));
-			}
-			set(target, value);
+			((TypedReference)target).SetValue(value);
 		}
 		
 		public static void SetValue([Boxed(typeof(TypedReference))]ValueType target, [Boxed(typeof(TypedReference))]ValueType value)
 		{
-			SetValue((TypedReference)target, (TypedReference)value);
-		}
-		
-		[CLSCompliant(false)]
-		public static void SetValue<T>(this TypedReference target, T value)
-		{
-			__refvalue(target, T) = value;
+			((TypedReference)target).SetValue((TypedReference)value);
 		}
 		
 		public static void SetValue<T>([Boxed(typeof(TypedReference))]ValueType target, T value)
 		{
-			SetValue<T>((TypedReference)target, value);
+			((TypedReference)target).SetValue<T>(value);
 		}
 		
 		private static void SetTypedReference<T>(TypedReference target, object value)
@@ -133,26 +93,14 @@ namespace IllidanS4.SharpUtils.Interop
 			__refvalue(target, T) = __refvalue(value, T);
 		}
 		
-		[CLSCompliant(false)]
-		public static object GetValue(this TypedReference target)
-		{
-			return TypedReference.ToObject(target);
-		}
-		
 		public static object GetValue([Boxed(typeof(TypedReference))]ValueType target)
 		{
-			return GetValue((TypedReference)target);
-		}
-		
-		[CLSCompliant(false)]
-		public static T GetValue<T>(this TypedReference target)
-		{
-			return __refvalue(target, T);
+			return ((TypedReference)target).GetValue();
 		}
 		
 		public static T GetValue<T>([Boxed(typeof(TypedReference))]ValueType target)
 		{
-			return GetValue<T>((TypedReference)target);
+			return ((TypedReference)target).GetValue<T>();
 		}
 		
 		[CLSCompliant(false)]
@@ -168,34 +116,31 @@ namespace IllidanS4.SharpUtils.Interop
 			return UnsafeTools.Box(tr);
 		}
 		
-		/// <summary>
-		/// Compares two typed references for equality.
-		/// </summary>
-		/// <param name="tr">The first typed reference.</param>
-		/// <param name="other">The second typed reference.</param>
-		/// <returns>true if they are equal (point to the same location).</returns>
 		[CLSCompliant(false)]
-		public unsafe static bool Equals(this TypedReference tr, TypedReference other)
+		public static void GetTypedReference<T>(ref T reference, TypedRefAction act)
 		{
-			IntPtr* a = ((IntPtr*)&tr);
-			IntPtr* b = ((IntPtr*)&other);
-			return a[0] == b[0] && a[1] == b[1];
+			act(__makeref(reference));
+		}
+		
+		[CLSCompliant(false)]
+		public static TRet GetTypedReference<T, TRet>(ref T reference, TypedRefFunc<TRet> func)
+		{
+			return func(__makeref(reference));
 		}
 		
 		public static bool Equals([Boxed(typeof(TypedReference))]ValueType tr, [Boxed(typeof(TypedReference))]ValueType other)
 		{
-			return Equals((TypedReference)tr, (TypedReference)other);
+			return ((TypedReference)tr).Equals((TypedReference)other);
 		}
 		
-		[CLSCompliant(false)]
-		public static bool IsEmpty(this TypedReference tr)
+		public static bool Equals([Boxed(typeof(TypedReference))]ValueType tr)
 		{
-			return __reftype(tr) == null;
+			return ((TypedReference)tr).IsNull();
 		}
 		
 		public static bool IsEmpty([Boxed(typeof(TypedReference))]ValueType tr)
 		{
-			return IsEmpty((TypedReference)tr);
+			return ((TypedReference)tr).IsEmpty();
 		}
 		
 		#region Field typedref
@@ -247,6 +192,22 @@ namespace IllidanS4.SharpUtils.Interop
 			return UnsafeTools.Box(tr);
 		}
 		
+		[CLSCompliant(false)]
+		public unsafe static void MakeTypedReference(object target, FieldInfo[] fields, TypedRefAction act)
+		{
+			TypedReference tr;
+			MakeTypedReference(&tr, target, fields);
+			act(tr);
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe static TRet MakeTypedReference<TRet>(object target, FieldInfo[] fields, TypedRefFunc<TRet> func)
+		{
+			TypedReference tr;
+			MakeTypedReference(&tr, target, fields);
+			return func(tr);
+		}
+		
 		private unsafe delegate void FieldTypedRef(void* result);
 		private unsafe static void MakeStaticTypedReference([Out]TypedReference* result, params FieldInfo[] fields)
 		{
@@ -289,7 +250,7 @@ namespace IllidanS4.SharpUtils.Interop
 		/// <param name="tr">The pointer where the reference will be stored.</param>
 		/// <param name="indices">The indices of the element.</param>
 		[CLSCompliant(false)]
-		public static unsafe void ArrayAddress<TArray>(TArray arr, [Out]TypedReference* tr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		public static unsafe void ArrayAddress<TArray>(TArray arr, [Out]TypedReference* tr, params int[] indices) where TArray : TArrayBase
 		{
 			ArrayAddressCache<TArray>.ArrayAddress.Invoke(arr, tr, indices);
 		}
@@ -301,15 +262,30 @@ namespace IllidanS4.SharpUtils.Interop
 		/// <param name="indices">The indices of the element.</param>
 		/// <returns>The boxed reference to the element.</returns>
 		[return: Boxed(typeof(TypedReference))]
-		public static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		public static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : TArrayBase
 		{
 			TypedReference tr;
 			ArrayAddress<TArray>(arr, &tr, indices);
 			return UnsafeTools.Box(tr);
 		}
 		
+		[CLSCompliant(false)]
+		public static unsafe void ArrayAddress<TArray>(TArray arr, int[] indices, TypedRefAction act) where TArray : TArrayBase
+		{
+			TypedReference tr;
+			ArrayAddress<TArray>(arr, &tr, indices);
+			act(tr);
+		}
 		
-		private static unsafe void ArrayAddressInternal<TArray>(TArray arr, [Out]void* tr, params int[] indices) where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		[CLSCompliant(false)]
+		public static unsafe TRet ArrayAddress<TArray, TRet>(TArray arr, int[] indices, TypedRefFunc<TRet> func) where TArray : TArrayBase
+		{
+			TypedReference tr;
+			ArrayAddress<TArray>(arr, &tr, indices);
+			return func(tr);
+		}
+		
+		private static unsafe void ArrayAddressInternal<TArray>(TArray arr, [Out]void* tr, params int[] indices) where TArray : TArrayBase
 		{
 			ArrayAddressCache<TArray>.ArrayAddress.Invoke(arr, tr, indices);
 		}
@@ -320,19 +296,18 @@ namespace IllidanS4.SharpUtils.Interop
 		public static unsafe void ArrayAddress(Array arr, [Out]TypedReference* tr, params int[] indices)
 		{
 			Type arrayType = arr.GetType();
-			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)tr, indices});;
+			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)tr, indices});
 		}
 		
 		[return: Boxed(typeof(TypedReference))]
 		public static unsafe ValueType ArrayAddress(Array arr, params int[] indices)
 		{
-			Type arrayType = arr.GetType();
 			TypedReference tr;
-			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)(&tr), indices});;
+			ArrayAddress(arr, &tr, indices);
 			return UnsafeTools.Box(tr);
 		}
 		
-		private static unsafe class ArrayAddressCache<TArray> where TArray : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+		private static unsafe class ArrayAddressCache<TArray> where TArray : TArrayBase
 		{
 			public delegate void ArrayAddressDelegate(TArray arr, void* tr, params int[] indices);
 			public static readonly ArrayAddressDelegate ArrayAddress;
@@ -364,6 +339,152 @@ namespace IllidanS4.SharpUtils.Interop
 				il.Emit(OpCodes.Stobj, typeof(TypedReference));
 				il.Emit(OpCodes.Ret);
 				ArrayAddress = (ArrayAddressDelegate)dyn.CreateDelegate(typeof(ArrayAddressDelegate));
+			}
+		}
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	internal struct TypedRef
+	{
+		public IntPtr Value;
+		public IntPtr Type;
+	}
+	
+	public static class TypedReferenceToolsExtensions
+	{
+		const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;
+		static readonly Type thisType = typeof(TypedReferenceTools);
+		
+		delegate void TypedReferenceSet(TypedReference tr, object value);
+		static readonly Type TypedReferenceSet_t = typeof(TypedReferenceSet);
+		static readonly MethodInfo SetTypedReference_m = thisType.GetMethod("SetTypedReference", flags);
+		static readonly ConcurrentDictionary<Type,TypedReferenceSet> setcache = new ConcurrentDictionary<Type,TypedReferenceSet>();
+		
+		delegate void TypedReferenceSetRef(TypedReference tr, TypedReference value);
+		static readonly Type TypedReferenceSetRef_t = typeof(TypedReferenceSetRef);
+		static readonly MethodInfo SetTypedReferenceRef_m = thisType.GetMethod("SetTypedReferenceRef", flags);
+		static readonly ConcurrentDictionary<Type,TypedReferenceSetRef> setcacheref = new ConcurrentDictionary<Type,TypedReferenceSetRef>();
+		
+		
+		[CLSCompliant(false)]
+		public static Type GetType(this TypedReference target)
+		{
+			return __reftype(target);
+		}
+		
+		[CLSCompliant(false)]
+		public static unsafe IntPtr ToPointer(this TypedReference target)
+		{
+			return ((TypedRef*)(&target))->Value;
+		}
+		
+		[CLSCompliant(false)]
+		public static void SetValue(this TypedReference target, object value)
+		{
+			TypedReferenceSet set;
+			Type t = __reftype(target);
+			if(!setcache.TryGetValue(t, out set))
+			{
+				set = setcache[t] = (TypedReferenceSet)Delegate.CreateDelegate(TypedReferenceSet_t, SetTypedReference_m.MakeGenericMethod(t));
+			}
+			set(target, value);
+		}
+		
+		[CLSCompliant(false)]
+		public static void SetValue(this TypedReference target, TypedReference value)
+		{
+			TypedReferenceSetRef set;
+			Type t = __reftype(target);
+			if(!setcacheref.TryGetValue(t, out set))
+			{
+				set = setcacheref[t] = (TypedReferenceSetRef)Delegate.CreateDelegate(TypedReferenceSetRef_t, SetTypedReferenceRef_m.MakeGenericMethod(t));
+			}
+			set(target, value);
+		}
+		
+		[CLSCompliant(false)]
+		public static void SetValue<T>(this TypedReference target, T value)
+		{
+			__refvalue(target, T) = value;
+		}
+		
+		[CLSCompliant(false)]
+		public static object GetValue(this TypedReference target)
+		{
+			return TypedReference.ToObject(target);
+		}
+		
+		[CLSCompliant(false)]
+		public static T GetValue<T>(this TypedReference target)
+		{
+			return __refvalue(target, T);
+		}
+		
+		/// <summary>
+		/// Compares two typed references for equality.
+		/// </summary>
+		/// <param name="tr">The first typed reference.</param>
+		/// <param name="other">The second typed reference.</param>
+		/// <returns>true if they are equal (point to the same location).</returns>
+		[CLSCompliant(false)]
+		public unsafe static bool Equals(this TypedReference tr, TypedReference other)
+		{
+			var a = ((TypedRef*)&tr);
+			var b = ((TypedRef*)&other);
+			return a->Value == b->Value && a->Type == b->Type;
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe static bool IsNull(this TypedReference tr)
+		{
+			var ptr = ((TypedRef*)&tr);
+			return ptr->Value == IntPtr.Zero;
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe static bool IsEmpty(this TypedReference tr)
+		{
+			var ptr = ((TypedRef*)&tr);
+			return ptr->Value == IntPtr.Zero && ptr->Type == IntPtr.Zero;
+		}
+		
+		[CLSCompliant(false)]
+		public static void AsRef<T>(this TypedReference tr, Reference.RefAction<T> act)
+		{
+			ConvHelper<T>.Convert(tr, act);
+		}
+		
+		[CLSCompliant(false)]
+		public static TRet AsRef<T, TRet>(this TypedReference tr, Reference.RefFunc<T, TRet> act)
+		{
+			return ConvHelper<T>.WithRet<TRet>.Convert(tr, act);
+		}
+		
+		private static class ConvHelper<T>
+		{
+			private static readonly MethodInfo Invoke = typeof(Reference.RefAction<T>).GetMethod("Invoke");
+			
+			public delegate void Del(TypedReference tr, Reference.RefAction<T> act);
+			public static readonly Del Convert = LinqEmit.CreateDynamicMethod<Del>(
+				OpCodes.Ldarg_1,
+				OpCodes.Ldarg_0,
+				new Instruction(OpCodes.Refanyval, typeof(T)),
+				new Instruction(OpCodes.Call, Invoke),
+				OpCodes.Ret
+			);
+			
+			public static class WithRet<TRet>
+			{
+				private static readonly MethodInfo Invoke = typeof(Reference.RefFunc<T, TRet>).GetMethod("Invoke");
+			
+				public delegate TRet Del(TypedReference tr, Reference.RefFunc<T, TRet> act);
+				public static readonly Del Convert = LinqEmit.CreateDynamicMethod<Del>(
+					OpCodes.Ldarg_1,
+					OpCodes.Ldarg_0,
+					new Instruction(OpCodes.Refanyval, typeof(T)),
+					new Instruction(OpCodes.Call, Invoke),
+					OpCodes.Ret
+				);
 			}
 		}
 	}

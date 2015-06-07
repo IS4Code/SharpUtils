@@ -2,7 +2,7 @@
 using System;
 using IllidanS4.SharpUtils.Interop;
 
-namespace IllidanS4.SharpUtils.Math
+namespace IllidanS4.SharpUtils.Numerics
 {
 	public static class Extensions
 	{

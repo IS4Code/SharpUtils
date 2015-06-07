@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Accessing;
 
 namespace IllidanS4.SharpUtils.Reflection.Linq
@@ -26,7 +27,7 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 		private readonly object argument;
 		public object Argument{
 			get{
-				if(!hasArg) return false;
+				if(!hasArg) return null;
 				if(argument != null)
 				{
 					var read = argument as IReadAccessor;
@@ -46,15 +47,16 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 		
 		private readonly Action<ILGenerator> emit;
 		
-		public Instruction(OpCode opcode) : this()
+		public Instruction(OpCode opcode) : this(opcode, false)
 		{
-			OpCode = opcode;
+			
 		}
 		
-		private Instruction(OpCode opcode, bool hasArg) : this(opcode)
+		private Instruction(OpCode opcode, bool hasArg) : this()
 		{
+			OpCode = opcode;
 			this.hasArg = hasArg;
-			if(!hasArg) emit = il => {il.Emit(opcode);};
+			if(!hasArg) emit = il => il.Emit(opcode);
 		}
 		
 		private Instruction(object arg, Action<ILGenerator> emit) : this()
@@ -68,80 +70,80 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 		public Instruction(OpCode opcode, byte arg) : this(opcode, true)
 		{
 			ByteArgument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		[CLSCompliant(false)]
 		public Instruction(OpCode opcode, sbyte arg) : this(opcode, true)
 		{
 			SByteArgument= arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, short arg) : this(opcode, true)
 		{
 			Int16Argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, int arg) : this(opcode, true)
 		{
 			Int32Argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, long arg) : this(opcode, true)
 		{
 			Int64Argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, float arg) : this(opcode, true)
 		{
 			SingleArgument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, double arg) : this(opcode, true)
 		{
 			DoubleArgument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, IReadAccessor<Label> arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg.Item);};
+			emit = il => il.Emit(opcode, arg.Item);
 		}
 		
 		public Instruction(OpCode opcode, Type arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, MethodInfo arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, FieldInfo arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, SignatureHelper arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, string arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
 		}
 		
 		public Instruction(OpCode opcode, IReadAccessor<LocalBuilder> arg) : this(opcode, true)
@@ -159,7 +161,25 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 		public Instruction(OpCode opcode, ConstructorInfo arg) : this(opcode, true)
 		{
 			argument = arg;
-			emit = il => {il.Emit(opcode, arg);};
+			emit = il => il.Emit(opcode, arg);
+		}
+		
+		public Instruction(OpCode opcode, MethodInfo methodInfo, Type[] optionalParameterTypes) : this(opcode, true)
+		{
+			argument = new object[]{methodInfo, optionalParameterTypes};
+			emit = il => il.EmitCall(opcode, methodInfo, optionalParameterTypes);
+		}
+		
+		public Instruction(OpCode opcode, CallingConventions callingConvetions, Type returnType, Type[] parameterTypes, Type[] optionalParameterTypes) : this(opcode, true)
+		{
+			argument = new object[]{callingConvetions, returnType, parameterTypes, optionalParameterTypes};
+			emit = il => il.EmitCalli(opcode, callingConvetions, returnType, parameterTypes, optionalParameterTypes);
+		}
+		
+		public Instruction(OpCode opcode, CallingConvention callingConvention, Type returnType, Type[] parameterTypes) : this(opcode, true)
+		{
+			argument = new object[]{callingConvention, returnType, parameterTypes};
+			emit = il => il.EmitCalli(opcode, callingConvention, returnType, parameterTypes);
 		}
 		
 		public void Emit(ILGenerator il)
@@ -222,6 +242,21 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 			);
 		}
 		
+		public static Instruction DeclareLocal(Type localType)
+		{
+			return DeclareLocal(localType, false);
+		}
+		
+		public static Instruction DeclareLocal(Type localType, bool pinned)
+		{
+			return new Instruction(
+				null,
+				il => {
+					il.DeclareLocal(localType, pinned);
+				}
+			);
+		}
+		
 		public static implicit operator Instruction(OpCode opcode)
 		{
 			return new Instruction(opcode);
@@ -270,6 +305,24 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 		public static bool operator !=(Instruction left, Instruction right)
 		{
 			return !left.Equals(right);
+		}
+		
+		public override string ToString()
+		{
+			object arg = Argument;
+			if(arg == null)
+			{
+				return OpCode.ToString();
+			}else{
+				object[] arr = arg as object[];
+				if(arr != null)
+				{
+					return OpCode.ToString()+" "+String.Join(" ", arr.Select(o => (o??"").ToString()));
+				}else{
+					return OpCode.ToString()+" "+arg;
+				}
+			}
+			
 		}
 		#endregion
 	}

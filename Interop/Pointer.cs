@@ -10,7 +10,7 @@ namespace IllidanS4.SharpUtils.Interop
 	/// Generic equivalent of <see cref="System.IntPtr"/>.
 	/// </summary>
 	[Unsafe]
-	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T> where T : struct
+	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T>, ITypedReference where T : struct
 	{
 		void* ptr;
 		private static readonly Type ptrType = TypeOf<T>.TypeID;
@@ -26,7 +26,8 @@ namespace IllidanS4.SharpUtils.Interop
 			ptr = pointer;
 		}
 		
-		public Pointer(ref T value) : this(__makeref(value))
+		[Obsolete("Converting managed pointer to unmanaged needs pinning, use UnsafeTools.GetPointer.", true)]
+ 		public Pointer(ref T value) : this(__makeref(value))
 		{
 			
 		}
@@ -48,9 +49,9 @@ namespace IllidanS4.SharpUtils.Interop
 			return (void*)ptr;
 		}
 		
-		public Type PointerType{
+		public Type Type{
 			get{
-				return TypeOf<T>.TypeID.MakePointerType();
+				return ptrType.MakePointerType();
 			}
 		}
 		
@@ -68,13 +69,16 @@ namespace IllidanS4.SharpUtils.Interop
 			tptr[1] = ptrType.TypeHandle.Value;
 		}
 		
-		[return: Boxed(typeof(TypedReference))]
-		public ValueType GetReference()
-		{
-			TypedReference tr;
-			GetReference(&tr);
-			return UnsafeTools.Box(tr);
+		[Boxed(typeof(TypedReference))]
+		public ValueType Reference{
+			get{
+				TypedReference tr;
+				GetReference(&tr);
+				return UnsafeTools.Box(tr);
+			}
 		}
+		
+		
 		
 		public T Value{
 			get{
@@ -103,7 +107,7 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		Type IStorageAccessor.ItemType{
 			get{
-				return typeof(T);
+				return ptrType;
 			}
 		}
 		

@@ -221,34 +221,6 @@ namespace IllidanS4.SharpUtils
 		{
 			return __refvalue(__makeref(arg), TTo);
 		}
-		
-		public static void Fill<T>(out T variable)
-		{
-			variable = default(T);
-		}
-		
-		public static void Use<T>(out T variable)
-		{
-			UseHelper<T>.Use(out variable);
-		}
-		
-		private static class UseHelper<T>
-		{
-			public delegate void UseDelegate(out T variable);
-			
-			public static readonly UseDelegate Use;
-			
-			static UseHelper()
-			{
-				Type t = TypeOf<T>.TypeID;
-				DynamicMethod method = new DynamicMethod("Use", null, new[]{t.MakeByRefType()}, typeof(UseHelper<T>));
-				method.DefineParameter(1, ParameterAttributes.Out, "variable");
-				var il = method.GetILGenerator();
-				il.Emit(OpCodes.Ret);
-				Use = method.CreateDelegate(TypeOf<UseDelegate>.TypeID) as UseDelegate;
-			}
-		}
-		
 		private static ResourceManager clr_resources;
 		
 		static Extensions()

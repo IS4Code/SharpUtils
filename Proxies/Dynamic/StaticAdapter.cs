@@ -71,5 +71,10 @@ namespace IllidanS4.SharpUtils.Proxies.Dynamic
 			args = AdapterTools.Marshal(oArgs);
 			return AdapterTools.Marshal(ret);
 		}
+		
+		public static StaticProxy CreateProxy(StaticAdapter adapter)
+		{
+			return new StaticProxy(adapter);
+		}
 	}
 }

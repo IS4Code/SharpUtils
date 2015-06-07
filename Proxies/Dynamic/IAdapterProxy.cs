@@ -9,7 +9,5 @@ namespace IllidanS4.SharpUtils.Proxies.Dynamic
 	public interface IAdapterProxy
 	{
 		StaticAdapter Adapter{get;}
-		Type ProxyType{get;}
-		string ProxyTypeString{get;}
 	}
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Reflection;
 using IllidanS4.SharpUtils.Reflection.Emit;
 
@@ -16,7 +17,7 @@ namespace IllidanS4.SharpUtils
 		private Hacks(){}
 	}
 	
-	public abstract class HacksBase<TDelegateBase> where TDelegateBase : class
+	public abstract class HacksBase<TDelegateBase> where TDelegateBase : class, ICloneable, ISerializable
 	{
 		internal HacksBase(){}
 		
@@ -69,8 +70,7 @@ namespace IllidanS4.SharpUtils
 			if(!mi.IsStatic)
 			{
 				add = 1;
-				il.Emit(OpCodes.Ldarg_0);
-				EmitCast(il, tParams[0], mi.DeclaringType);
+				EmitThis(il, tParams[0], mi.DeclaringType);
 			}
 			for(int i = add; i < tParams.Length; i++)
 			{
@@ -128,7 +128,7 @@ namespace IllidanS4.SharpUtils
 			{
 				il.Emit(OpCodes.Ldsfld, fi);
 			}else{
-				il.Emit(OpCodes.Ldarg_0);
+				EmitThis(il, tParams[0], fi.DeclaringType);
 				il.Emit(OpCodes.Ldfld, fi);
 			}
 			EmitCast(il, fi.FieldType, retType);
@@ -164,8 +164,7 @@ namespace IllidanS4.SharpUtils
 					EmitCast(il, tParams[i+add], fi.FieldType);
 					il.Emit(OpCodes.Stsfld, fi);
 				}else{
-					il.Emit(OpCodes.Ldarg_0);
-					EmitCast(il, tParams[0], fi.DeclaringType);
+					EmitThis(il, tParams[0], fi.DeclaringType);
 					il.EmitLdarg(i+add);
 					EmitCast(il, tParams[i+add], fi.FieldType);
 					il.Emit(OpCodes.Stfld, fi);
@@ -193,6 +192,28 @@ namespace IllidanS4.SharpUtils
 		public static TDelegate GetPropertySetter<TDelegate>(PropertyInfo pi) where TDelegate : TDelegateBase
 		{
 			return GetInvoker<TDelegate>(pi.GetSetMethod(true));
+		}
+		
+		private static void EmitThis(ILGenerator il, Type argType, Type privateType)
+		{
+			il.Emit(OpCodes.Ldarg_0);
+			if(argType.IsByRef || argType.IsPointer)
+			{
+				argType = argType.GetElementType();
+				if(argType == privateType)
+				{
+					if(argType.IsValueType)
+					{
+						return;
+					}else{
+						il.Emit(OpCodes.Ldobj, argType);
+					}
+				}else if(argType.IsValueType)
+				{
+					il.Emit(OpCodes.Ldobj, argType);
+				}
+			}
+			EmitCast(il, argType, privateType);
 		}
 		
 		private static void EmitCast(ILGenerator il, Type from, Type to)

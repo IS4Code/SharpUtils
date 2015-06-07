@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace IllidanS4.SharpUtils
+namespace IllidanS4.SharpUtils.Numerics
 {
 	/// <summary>
 	/// Native-size floating point number.

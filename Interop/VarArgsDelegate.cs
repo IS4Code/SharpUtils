@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Reflection;
 using IllidanS4.SharpUtils.Reflection.Emit;
 
@@ -13,7 +14,7 @@ namespace IllidanS4.SharpUtils.Interop
 		public abstract object Invoke(__arglist);
 	}
 	
-	public abstract class VarAgsDelegateBase<TDelegateBase>
+	public abstract class VarAgsDelegateBase<TDelegateBase> where TDelegateBase : class, ICloneable, ISerializable
 	{
 		private static readonly MethodInfo InvokeMethod = typeof(VarArgsDelegate).GetMethod("Invoke");
 		

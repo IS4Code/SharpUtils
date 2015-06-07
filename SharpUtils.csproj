@@ -91,6 +91,9 @@
     <Compile Include="Empty.cs" />
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
+    <Compile Include="Interop\Collections\IIndexReferable.cs" />
+    <Compile Include="Interop\Collections\ReferenceArray.cs" />
+    <Compile Include="Interop\Collections\ReferenceList.cs" />
     <Compile Include="Interop\FnPtrCaller.cs" />
     <Compile Include="Interop\FunctionPointer.cs" />
     <Compile Include="Interop\InteropToolsHacks.cs">
@@ -102,19 +105,25 @@
     <Compile Include="Interop\VarArgsGenerator.cs" />
     <Compile Include="Interop\VarArgsInvoke.cs" />
     <Compile Include="Interop\VarArgsInvoker.cs" />
-    <Compile Include="Proxies\Dynamic\AdapterProxy.cs" />
+    <Compile Include="Numerics\Extensions.cs" />
+    <Compile Include="Numerics\FloatPtr.cs" />
+    <Compile Include="Proxies\Dynamic\IAdapterProxy.cs" />
     <Compile Include="Proxies\Dynamic\AdapterTools.cs" />
     <Compile Include="Proxies\Dynamic\BindingInfo.cs" />
     <Compile Include="Proxies\Dynamic\DelegateAdapter.cs" />
     <Compile Include="Proxies\Dynamic\DynamicAdapter.cs" />
     <Compile Include="Proxies\Dynamic\DynamicProxy.cs" />
     <Compile Include="Proxies\Dynamic\IDynamicAdapterProvider.cs" />
+    <Compile Include="Proxies\Dynamic\ImplementationProxy.cs" />
     <Compile Include="Proxies\Dynamic\IStaticAdapterProvider.cs" />
+    <Compile Include="Proxies\Dynamic\MarshalByAddressAttribute.cs" />
     <Compile Include="Proxies\Dynamic\MarshallerProxy.cs" />
     <Compile Include="Proxies\Dynamic\ObjectTypeHandle.cs" />
     <Compile Include="Proxies\Dynamic\StaticAdapter.cs" />
     <Compile Include="Proxies\Dynamic\StaticProxy.cs" />
     <Compile Include="Proxies\Dynamic\TaskAdapter.cs" />
+    <Compile Include="Proxies\Dynamic\UnsafeHandle.cs" />
+    <Compile Include="Reference.cs" />
     <Compile Include="Reflection\IOperand.cs" />
     <Compile Include="Reflection\Linq\Instruction.cs" />
     <Compile Include="Proxies\IProxyReplacer.cs" />
@@ -138,9 +147,9 @@
     <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
     <Compile Include="Serialization\ObjectConstructInfo.cs" />
     <Compile Include="Unsafe\IMemoryUnion.cs" />
+    <Compile Include="Unsafe\VariadicUnion.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="FloatPtr.cs" />
     <Compile Include="Globalization\Term.cs" />
     <Compile Include="Hacks.cs" />
     <Compile Include="Interop\BitUtils.cs" />
@@ -151,7 +160,6 @@
     <Compile Include="Interop\TypedReferenceTools.cs" />
     <Compile Include="Interop\VarArgsDelegateGenerator.cs" />
     <Compile Include="Reflection\Linq\LinqEmit.cs" />
-    <Compile Include="Math\Extensions.cs" />
     <Compile Include="Metadata\BoxedAttribute.cs" />
     <Compile Include="Metadata\DataAttribute.cs" />
     <Compile Include="Metadata\IIdentifiable.cs" />
@@ -296,16 +304,16 @@
     <Compile Include="Unsafe\ObjectHandle.cs" />
     <Compile Include="Unsafe\UnmanagedInstance.cs" />
     <Compile Include="Unsafe\UnsafeTools.cs" />
-    <Compile Include="VariadicUnion.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Coroutines" />
     <Folder Include="Globalization" />
     <Folder Include="Accessing" />
+    <Folder Include="Interop\Collections" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />
-    <Folder Include="Math" />
+    <Folder Include="Numerics" />
     <Folder Include="Proxies\Dynamic" />
     <Folder Include="Reflection\Linq" />
     <Folder Include="Proxies" />

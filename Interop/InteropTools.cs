@@ -132,18 +132,7 @@ namespace IllidanS4.SharpUtils.Interop
 			return SizeOfHacks.SizeOfHelper(t, true);
 		}
 		#endregion
-		
-		/// <summary>
-		/// Compares two references for equality.
-		/// </summary>
-		/// <param name="a">The first reference.</param>
-		/// <param name="b">The second reference.</param>
-		/// <returns>true if they are equal (point to the same location).</returns>
-		public static bool Equals<T>(ref T a, ref T b)
-		{
-			return __makeref(a).Equals(__makeref(b));
-		}
-		
+				
 		[Obsolete("Use System.RuntimeMethodHandle.GetFunctionPointer.")]
 		public static IntPtr GetFunctionPointer(MethodInfo method)
 		{

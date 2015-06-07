@@ -37,7 +37,7 @@ namespace IllidanS4.SharpUtils.Proxies.Dynamic
 			Task = task;
 		}
 		
-		internal void RegisterMarshaller(AdapterTools.TaskMarshaller marshaller)
+		private void RegisterMarshaller(TaskMarshaller marshaller)
 		{
 			Task.ContinueWith(
 				t => {
@@ -58,6 +58,69 @@ namespace IllidanS4.SharpUtils.Proxies.Dynamic
 					}
 				}
 			);
+		}
+		
+		public static Task CreateTask(TaskAdapter adapter)
+		{
+			Type resType = adapter.ResultType;
+			TaskMarshaller marshal;
+			if(resType != null)
+			{
+				marshal = (TaskMarshaller)Activator.CreateInstance(TaskMarshaller.Type.MakeGenericType(resType));
+			}else{
+				marshal = new TaskMarshaller<NoResult>();
+			}
+			adapter.RegisterMarshaller(marshal);
+			return marshal.Task;
+		}
+		
+		private abstract class TaskMarshaller : MarshalByRefObject
+		{
+			internal static readonly Type Type = typeof(TaskMarshaller<>);
+			
+			public abstract void SetException(Exception[] exc);
+			public abstract void SetCanceled();
+			public abstract void SetResult(ObjectTypeHandle result);
+			internal abstract Task Task{get;}
+		}
+		
+		private sealed class NoResult
+		{
+			private NoResult()
+			{
+				
+			}
+		}
+		
+		private class TaskMarshaller<T> : TaskMarshaller
+		{
+			private readonly TaskCompletionSource<T> tcs;
+			
+			public TaskMarshaller()
+			{
+				tcs = new TaskCompletionSource<T>();
+			}
+			
+			internal override Task Task{
+				get{
+					return tcs.Task;
+				}
+			}
+			
+			public override void SetResult(ObjectTypeHandle result)
+			{
+				tcs.SetResult((T)AdapterTools.Unmarshal(result));
+			}
+			
+			public override void SetException(Exception[] exc)
+			{
+				tcs.SetException(exc);
+			}
+			
+			public override void SetCanceled()
+			{
+				tcs.SetCanceled();
+			}
 		}
 	}
 }

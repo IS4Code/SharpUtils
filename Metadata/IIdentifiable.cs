@@ -11,6 +11,6 @@ namespace IllidanS4.SharpUtils.Metadata
 		/// <summary>
 		/// The identifier of this object.
 		/// </summary>
-		TIdentifier ID{get;}
+		TIdentifier Id{get;}
 	}
 }

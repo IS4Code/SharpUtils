@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		public OutputAccessor(out T value)
 		{
-			Extensions.Use(out value);
+			IllidanS4.SharpUtils.Reference.Use(out value);
 			m_ref = UnsafeTools.Box(__makeref(value));
 		}
 		

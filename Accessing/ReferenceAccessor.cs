@@ -43,33 +43,5 @@ namespace IllidanS4.SharpUtils.Accessing
 				return this.Item;
 			}
 		}
-		
-		/*public ReferenceAccessor(ref T value) : this(__makeref(value))
-		{
-			
-		}
-		
-		[CLSCompliant(false)]
-		public ReferenceAccessor(TypedReference value)
-		{
-			@ref = UnsafeTools.Box(value);
-		}
-		
-		public ReferenceAccessor(ValueType value)
-		{
-			if(value == null)throw new ArgumentNullException("value");
-			if(!(value is T))throw new ArgumentException("Argument must be of type "+TypeOf<T>.TypeID.ToString()+".", "value");
-			
-			@ref = TypedReferenceTools.MakeTypedReference(value);
-		}
-		
-		public T Value{
-			get{
-				return __refvalue((TypedReference)@ref, T);
-			}
-			set{
-				__refvalue((TypedReference)@ref, T) = value;
-			}
-		}*/
 	}
 }

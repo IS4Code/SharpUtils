@@ -7,7 +7,7 @@ namespace IllidanS4.SharpUtils.Interop
 	public interface IPointer
 	{
 		IntPtr ToIntPtr();
-		Type PointerType{get;}
+		Type Type{get;}
 		bool IsNull{get;}
 	}
 }
