@@ -8,7 +8,7 @@ using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Interop.Collections
 {
-	public class ReferenceList<T> : IList<T>, IIndexReferable<int, T>
+	public class ReferenceList<T> : IList<T>, IIndexRefReferable<int, T>
 	{
 		private T[] _items;
 		private int count;
@@ -132,16 +132,24 @@ namespace IllidanS4.SharpUtils.Interop.Collections
 			return this.GetEnumerator();
 		}
 		
-		[CLSCompliant(false)]
-		public unsafe void GetReference(int index, [Out]TypedReference* tref)
+		public TRet GetReference<TRet>(int index, Reference.RefFunc<T, TRet> func)
 		{
-			TypedReferenceTools.ArrayAddress(_items, tref, index);
+			if(index < 0 || index >= count) throw new ArgumentOutOfRangeException("index");
+			return func(ref _items[index]);
 		}
 		
-		[return: Boxed(typeof(TypedReference))]
-		public ValueType GetReference(int index)
+		public TRet GetReference<TRet>(int index, Reference.OutFunc<T, TRet> func)
 		{
-			return TypedReferenceTools.ArrayAddress(_items, index);
+			if(index < 0 || index >= count) throw new ArgumentOutOfRangeException("index");
+			return func(out _items[index]);
+		}
+		
+		[CLSCompliant(false)]
+		public TRet GetReference<TRet>(object index, TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			int idx = (int)index;
+			if(idx < 0 || idx >= count) throw new ArgumentOutOfRangeException("index");
+			return func(__makeref(_items[idx]));
 		}
 	}
 }

@@ -1,30 +1,15 @@
 ﻿/* Date: ‎20.12.‎2012, Time: ‏‎17:00 */
 using System;
+using System.Runtime.CompilerServices;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
 using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class ReferenceAccessor<T> : OutputAccessor<T>, IReadAccessor<T>
+	public class ReferenceAccessor<T> : OutputAccessor<T>, IReadAccessor<T>, IRefReference<T>, ITypedReference
 	{
-		public ReferenceAccessor(ref T value) : base(out value)
-		{
-			
-		}
-		
-		[CLSCompliant(false)]
-		public ReferenceAccessor(TypedReference tr) : base(tr)
-		{
-			
-		}
-		
-		public ReferenceAccessor([Boxed(typeof(TypedReference))]ValueType tr) : base(tr)
-		{
-			
-		}
-		
-		public ReferenceAccessor(object boxed) : base(boxed)
+		public ReferenceAccessor(SafeReference r) : base(r)
 		{
 			
 		}
@@ -34,7 +19,7 @@ namespace IllidanS4.SharpUtils.Accessing
 				base.Item = value;
 			}
 			get{
-				return __refvalue((TypedReference)m_ref, T);
+				return Ref.GetValue<T>();
 			}
 		}
 		
@@ -42,6 +27,42 @@ namespace IllidanS4.SharpUtils.Accessing
 			get{
 				return this.Item;
 			}
+		}
+		
+		public static void Create(ref T value, Action<ReferenceAccessor<T>> act)
+		{
+			SafeReference.Create(
+				ref value,
+				r => act(new ReferenceAccessor<T>(r))
+			);
+		}
+		
+		public static TRet Create<TRet>(ref T value, Func<ReferenceAccessor<T>, TRet> func)
+		{
+			return SafeReference.Create(
+				ref value,
+				r => func(new ReferenceAccessor<T>(r))
+			);
+		}
+		
+		object IStrongBox.Value{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
+			}
+		}
+		
+		public TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func)
+		{
+			return Ref.GetReference(tr => tr.AsRef(func));
+		}
+		
+		[CLSCompliant(false)]
+		public TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			return Ref.GetReference(func);
 		}
 	}
 }

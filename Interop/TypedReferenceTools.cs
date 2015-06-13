@@ -40,18 +40,18 @@ namespace IllidanS4.SharpUtils.Interop
 			((TypedRef*)target)->Type = newType.TypeHandle.Value;
 		}
 		
-		public static unsafe void ChangeType([Boxed(typeof(TypedReference))]ValueType target, Type newType)
+		internal static unsafe void ChangeType([Boxed(typeof(TypedReference))]ValueType target, Type newType)
 		{
 			TypedReference* ptr = (TypedReference*)UnsafeTools.GetDataPointer(target);
 			ChangeType(ptr, newType);
 		}
 		
-		public static Type GetType([Boxed(typeof(TypedReference))]ValueType target)
+		internal static Type GetType([Boxed(typeof(TypedReference))]ValueType target)
 		{
 			return __reftype((TypedReference)target);
 		}
 		
-		public static IntPtr GetReferencePointer([Boxed(typeof(TypedReference))]ValueType target)
+		internal static IntPtr GetReferencePointer([Boxed(typeof(TypedReference))]ValueType target)
 		{
 			return ((TypedReference)target).ToPointer();
 		}
@@ -62,23 +62,23 @@ namespace IllidanS4.SharpUtils.Interop
 			((TypedRef*)target)->Value = ptr;
 		}
 		
-		public static unsafe void ChangePointer([Boxed(typeof(TypedReference))]ValueType target, IntPtr ptr)
+		internal static unsafe void ChangePointer([Boxed(typeof(TypedReference))]ValueType target, IntPtr ptr)
 		{
 			TypedReference* trptr = (TypedReference*)UnsafeTools.GetDataPointer(target);
 			ChangePointer(trptr, ptr);
 		}
 		
-		public static void SetValue([Boxed(typeof(TypedReference))]ValueType target, object value)
+		internal static void SetValue([Boxed(typeof(TypedReference))]ValueType target, object value)
 		{
 			((TypedReference)target).SetValue(value);
 		}
 		
-		public static void SetValue([Boxed(typeof(TypedReference))]ValueType target, [Boxed(typeof(TypedReference))]ValueType value)
+		internal static void SetValue([Boxed(typeof(TypedReference))]ValueType target, [Boxed(typeof(TypedReference))]ValueType value)
 		{
 			((TypedReference)target).SetValue((TypedReference)value);
 		}
 		
-		public static void SetValue<T>([Boxed(typeof(TypedReference))]ValueType target, T value)
+		internal static void SetValue<T>([Boxed(typeof(TypedReference))]ValueType target, T value)
 		{
 			((TypedReference)target).SetValue<T>(value);
 		}
@@ -93,12 +93,12 @@ namespace IllidanS4.SharpUtils.Interop
 			__refvalue(target, T) = __refvalue(value, T);
 		}
 		
-		public static object GetValue([Boxed(typeof(TypedReference))]ValueType target)
+		internal static object GetValue([Boxed(typeof(TypedReference))]ValueType target)
 		{
 			return ((TypedReference)target).GetValue();
 		}
 		
-		public static T GetValue<T>([Boxed(typeof(TypedReference))]ValueType target)
+		internal static T GetValue<T>([Boxed(typeof(TypedReference))]ValueType target)
 		{
 			return ((TypedReference)target).GetValue<T>();
 		}
@@ -110,7 +110,7 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 		
 		[return: Boxed(typeof(TypedReference))]
-		public static ValueType GetTypedReference<T>(ref T reference)
+		internal static ValueType GetTypedReference<T>(ref T reference)
 		{
 			TypedReference tr = __makeref(reference);
 			return UnsafeTools.Box(tr);
@@ -128,17 +128,17 @@ namespace IllidanS4.SharpUtils.Interop
 			return func(__makeref(reference));
 		}
 		
-		public static bool Equals([Boxed(typeof(TypedReference))]ValueType tr, [Boxed(typeof(TypedReference))]ValueType other)
+		internal static bool Equals([Boxed(typeof(TypedReference))]ValueType tr, [Boxed(typeof(TypedReference))]ValueType other)
 		{
 			return ((TypedReference)tr).Equals((TypedReference)other);
 		}
 		
-		public static bool Equals([Boxed(typeof(TypedReference))]ValueType tr)
+		internal static bool Equals([Boxed(typeof(TypedReference))]ValueType tr)
 		{
 			return ((TypedReference)tr).IsNull();
 		}
 		
-		public static bool IsEmpty([Boxed(typeof(TypedReference))]ValueType tr)
+		internal static bool IsEmpty([Boxed(typeof(TypedReference))]ValueType tr)
 		{
 			return ((TypedReference)tr).IsEmpty();
 		}
@@ -169,9 +169,9 @@ namespace IllidanS4.SharpUtils.Interop
 				MakeStaticTypedReference(result, fields);
 				return;
 			}
-			IntPtr[] flds = new IntPtr[fields.Length];
+			IntPtr[] flds = new IntPtr[fields==null?0:fields.Length];
 			Type lastType = target.GetType();
-			for(int i = 0; i < fields.Length; i++)
+			for(int i = 0; i < flds.Length; i++)
 			{
 				var field = fields[i];
 				if(field.IsStatic)
@@ -185,7 +185,7 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 		
 		[return: Boxed(typeof(TypedReference))]
-		public unsafe static ValueType MakeTypedReference(object target, params FieldInfo[] fields)
+		internal unsafe static ValueType MakeTypedReference(object target, params FieldInfo[] fields)
 		{
 			TypedReference tr;
 			MakeTypedReference(&tr, target, fields);
@@ -262,7 +262,7 @@ namespace IllidanS4.SharpUtils.Interop
 		/// <param name="indices">The indices of the element.</param>
 		/// <returns>The boxed reference to the element.</returns>
 		[return: Boxed(typeof(TypedReference))]
-		public static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : TArrayBase
+		internal static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : TArrayBase
 		{
 			TypedReference tr;
 			ArrayAddress<TArray>(arr, &tr, indices);
@@ -300,7 +300,7 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 		
 		[return: Boxed(typeof(TypedReference))]
-		public static unsafe ValueType ArrayAddress(Array arr, params int[] indices)
+		internal static unsafe ValueType ArrayAddress(Array arr, params int[] indices)
 		{
 			TypedReference tr;
 			ArrayAddress(arr, &tr, indices);
@@ -469,7 +469,7 @@ namespace IllidanS4.SharpUtils.Interop
 				OpCodes.Ldarg_1,
 				OpCodes.Ldarg_0,
 				new Instruction(OpCodes.Refanyval, typeof(T)),
-				new Instruction(OpCodes.Call, Invoke),
+				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
 			
@@ -482,7 +482,7 @@ namespace IllidanS4.SharpUtils.Interop
 					OpCodes.Ldarg_1,
 					OpCodes.Ldarg_0,
 					new Instruction(OpCodes.Refanyval, typeof(T)),
-					new Instruction(OpCodes.Call, Invoke),
+					new Instruction(OpCodes.Callvirt, Invoke),
 					OpCodes.Ret
 				);
 			}

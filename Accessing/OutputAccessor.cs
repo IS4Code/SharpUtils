@@ -7,57 +7,40 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class OutputAccessor<T> : BasicWriteAccessor<T>, ITypedReference
+	public class OutputAccessor<T> : BasicWriteAccessor<T>, IOutReference<T>
 	{
-		[Boxed(typeof(TypedReference))]
-		protected readonly ValueType m_ref;
+		public SafeReference Ref{get; private set;}
 		
-		public OutputAccessor(out T value)
+		public OutputAccessor(SafeReference r)
 		{
-			IllidanS4.SharpUtils.Reference.Use(out value);
-			m_ref = UnsafeTools.Box(__makeref(value));
-		}
-		
-		[CLSCompliant(false)]
-		public OutputAccessor(TypedReference tr) : this(UnsafeTools.Box(tr))
-		{
-			
-		}
-		
-		public OutputAccessor([Boxed(typeof(TypedReference))]ValueType tr)
-		{
-			m_ref = tr;
-		}
-		
-		public unsafe OutputAccessor(object boxed) : this(TypedReferenceTools.MakeTypedReference(boxed))
-		{
-			if(boxed == null)throw new ArgumentNullException("value");
-			if(!(boxed is T))throw new ArgumentException("Argument must be of type "+TypeOf<T>.TypeID.ToString()+".", "value");
+			Ref = r;
 		}
 		
 		public override T Item{
 			set{
-				__refvalue((TypedReference)m_ref, T) = value;
+				Ref.SetValue<T>(value);
 			}
 		}
 		
-		[Boxed(typeof(TypedReference))]
-		public ValueType Reference{
-			get{
-				return m_ref;
-			}
-		}
-		
-		[CLSCompliant(false)]
-		public unsafe void GetReference([Out]TypedReference* tr)
+		public TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func)
 		{
-			*tr = (TypedReference)m_ref;
+			return Ref.GetReference(tr => tr.AsRef(Reference.OutToRefFunc(func)));
 		}
 		
-		Type ITypedReference.Type{
-			get{
-				return __reftype((TypedReference)m_ref);
-			}
+		public static void Create(out T value, Action<OutputAccessor<T>> act)
+		{
+			SafeReference.CreateOut(
+				out value,
+				r => act(new OutputAccessor<T>(r))
+			);
+		}
+		
+		public static TRet Create<TRet>(out T value, Func<OutputAccessor<T>, TRet> func)
+		{
+			return SafeReference.CreateOut(
+				out value,
+				r => func(new OutputAccessor<T>(r))
+			);
 		}
 	}
 }

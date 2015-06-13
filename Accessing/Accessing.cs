@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Accessing
@@ -12,7 +13,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// </summary>
 	public interface IStorageAccessor
 	{
-		Type ItemType{get;}
+		Type Type{get;}
 	}
 	
 	/// <summary>
@@ -51,16 +52,26 @@ namespace IllidanS4.SharpUtils.Accessing
 		new T Item{set;}
 	}
 	
-	/// <summary>
-	/// An accessor that contains a typed reference.
-	/// </summary>
 	[CLSCompliant(false)]
-	public interface ITypedReference
+	public interface ITypedReference : IReadAccessor, IWriteAccessor, IStrongBox
 	{
-		[Boxed(typeof(TypedReference))]
-		ValueType Reference{get;}
-		Type Type{get;}
-		unsafe void GetReference([Out]TypedReference* tr);
+		TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func);
+	}
+	
+	/// <summary>
+	/// An accessor that provides an "out" reference.
+	/// </summary>
+	public interface IOutReference<T> : IWriteAccessor<T>, IStorageAccessor
+	{
+		TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func);
+	}
+	
+	/// <summary>
+	/// An accessor that provides a "ref" reference.
+	/// </summary>
+	public interface IRefReference<T> : IReadAccessor<T>, IWriteAccessor<T>, IOutReference<T>
+	{
+		TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func);
 	}
 	
 	/// <summary>
@@ -68,7 +79,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// </summary>
 	public abstract class BasicAccessor<T> : IStorageAccessor
 	{
-		public Type ItemType{
+		public Type Type{
 			get{
 				return typeof(T);
 			}

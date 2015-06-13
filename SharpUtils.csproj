@@ -89,6 +89,9 @@
     <Compile Include="Coroutines\Coroutine.cs" />
     <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
+    <Compile Include="Reflection\Emit\StackValueType.cs" />
+    <Compile Include="SafeReference.cs" />
+    <Compile Include="Unit.cs" />
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />
     <Compile Include="Interop\Collections\IIndexReferable.cs" />
@@ -156,7 +159,6 @@
     <Compile Include="Interop\InteropTools.cs" />
     <Compile Include="Interop\IPointer.cs" />
     <Compile Include="Interop\Pointer.cs" />
-    <Compile Include="Interop\ReferenceHelper.cs" />
     <Compile Include="Interop\TypedReferenceTools.cs" />
     <Compile Include="Interop\VarArgsDelegateGenerator.cs" />
     <Compile Include="Reflection\Linq\LinqEmit.cs" />

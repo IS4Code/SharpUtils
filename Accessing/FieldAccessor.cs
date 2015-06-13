@@ -1,13 +1,14 @@
 ﻿/* Date: ‎20.12.‎2012, Time: ‏‎17:02 */
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public sealed class FieldAccessor<T> : ReadFieldAccessor<T>, IWriteAccessor<T>
+	public sealed class FieldAccessor<T> : ReadFieldAccessor<T>, IWriteAccessor<T>, IRefReference<T>, ITypedReference
 	{
 		readonly Action<T> setter;
 		
@@ -31,9 +32,34 @@ namespace IllidanS4.SharpUtils.Accessing
 				setter((T)value);
 			}
 		}
+		
+		public TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func)
+		{
+			return GetReference<TRet>(tr => tr.AsRef(func));
+		}
+		
+		public TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func)
+		{
+			return GetReference<TRet>(tr => tr.AsRef(Reference.OutToRefFunc(func)));
+		}
+		
+		[CLSCompliant(false)]
+		public TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			return TypedReferenceTools.MakeTypedReference(Target, new[]{Field}, func);
+		}
+		
+		object IStrongBox.Value{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
+			}
+		}
 	}
 	
-	public class ReadFieldAccessor<T> : BasicReadAccessor<T>, ITypedReference
+	public class ReadFieldAccessor<T> : BasicReadAccessor<T>, IFieldAccessor
 	{
 		readonly Func<T> getter;
 		
@@ -56,24 +82,11 @@ namespace IllidanS4.SharpUtils.Accessing
 				return getter();
 			}
 		}
-		
-		[Boxed(typeof(TypedReference))]
-		public ValueType Reference{
-			get{
-				return TypedReferenceTools.MakeTypedReference(Target, Field);
-			}
-		}
-		
-		[CLSCompliant(false)]
-		public unsafe void GetReference([Out]TypedReference* tr)
-		{
-			TypedReferenceTools.MakeTypedReference(tr, Target, Field);
-		}
-		
-		Type ITypedReference.Type{
-			get{
-				return typeof(T);
-			}
-		}
+	}
+	
+	public interface IFieldAccessor : IReadAccessor
+	{
+		FieldInfo Field{get;}
+		object Target{get;}
 	}
 }

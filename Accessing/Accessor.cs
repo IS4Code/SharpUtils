@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using IllidanS4.SharpUtils.Interop;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
@@ -32,10 +33,10 @@ namespace IllidanS4.SharpUtils.Accessing
 			}
 		}
 		
-		public static ReferenceAccessor<T> Access<T>(ref T value)
+		/*public static ReferenceAccessor<T> Access<T>(ref T value)
 		{
 			return new ReferenceAccessor<T>(ref value);
-		}
+		}*/
 		
 		public static IndexGetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexableGetter<TKey, TValue> indexable, TKey key)
 		{
@@ -60,6 +61,22 @@ namespace IllidanS4.SharpUtils.Accessing
 			}else{
 				return new FieldAccessor<T>(field, target);
 			}
+		}
+		
+		public static void GetReference<T>(this IRefReference<T> r, Reference.RefAction<T> act)
+		{
+			r.GetReference<Unit>((ref T rf)=>{act(ref rf); return 0;});
+		}
+		
+		public static void GetReference<T>(this IOutReference<T> r, Reference.OutAction<T> act)
+		{
+			r.GetReference<Unit>((out T rf)=>{act(out rf); return 0;});
+		}
+		
+		[CLSCompliant(false)]
+		public static void GetReference(this ITypedReference tr, TypedReferenceTools.TypedRefAction act)
+		{
+			tr.GetReference<Unit>(r => {act(r); return 0;});
 		}
 	}
 }

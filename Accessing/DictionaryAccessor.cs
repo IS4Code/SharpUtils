@@ -1,10 +1,11 @@
 ﻿/* Date: 3.4.2015, Time: 20:41 */
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class DictionaryAccessor<TKey, TValue> : ReadDictionaryAccessor<TKey, TValue>, IWriteAccessor<TValue>
+	public class DictionaryAccessor<TKey, TValue> : ReadDictionaryAccessor<TKey, TValue>, IWriteAccessor<TValue>, IStrongBox
 	{
 		public DictionaryAccessor(IDictionary<TKey, TValue> dictionary, TKey key) : base(dictionary, key)
 		{
@@ -26,6 +27,15 @@ namespace IllidanS4.SharpUtils.Accessing
 		object IWriteAccessor.Item{
 			set{
 				this.Item = (TValue)value;
+			}
+		}
+		
+		object IStrongBox.Value{
+			get{
+				return Item;
+			}
+			set{
+				Item = (TValue)value;
 			}
 		}
 	}

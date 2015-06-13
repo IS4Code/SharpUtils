@@ -1,5 +1,6 @@
 ﻿/* Date: 28.3.2015, Time: 16:24 */
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
@@ -9,7 +10,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an accessor to an array element.
 	/// </summary>
-	public class ArrayAccessor<T> : ListAccessor<T>, ITypedReference
+	public class ArrayAccessor<T> : ListAccessor<T>, IRefReference<T>, ITypedReference, IArrayAccessor
 	{
 		public T[] Array{get; private set;}
 		
@@ -27,23 +28,40 @@ namespace IllidanS4.SharpUtils.Accessing
 			}
 		}
 		
-		[Boxed(typeof(TypedReference))]
-		public ValueType Reference{
-			get{
-				return TypedReferenceTools.ArrayAddress(Array, Index);
-			}
+		public TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func)
+		{
+			return GetReference<TRet>(Reference.OutToRefFunc(func));
+		}
+		
+		public TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func)
+		{
+			return func(ref Array[Index]);
 		}
 		
 		[CLSCompliant(false)]
-		public unsafe void GetReference([Out]TypedReference* tr)
+		public TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
 		{
-			TypedReferenceTools.ArrayAddress(Array, tr, Index);
+			return func(__makeref(Array[Index]));
 		}
 		
-		Type ITypedReference.Type{
+		Array IArrayAccessor.Array{
 			get{
-				return typeof(T);
+				return Array;
 			}
 		}
+		
+		object IStrongBox.Value{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
+			}
+		}
+	}
+	
+	public interface IArrayAccessor : ICollectionAccessor
+	{
+		Array Array{get;}
 	}
 }

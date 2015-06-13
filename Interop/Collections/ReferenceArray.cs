@@ -5,7 +5,7 @@ using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Interop.Collections
 {
-	public class ReferenceArray<T> : IIndexReferable<int, T>
+	public class ReferenceArray<T> : IIndexRefReferable<int, T>
 	{
 		public T[] Array{get; private set;}
 		
@@ -23,16 +23,20 @@ namespace IllidanS4.SharpUtils.Interop.Collections
 			}
 		}
 		
-		[CLSCompliant(false)]
-		public unsafe void GetReference(int index, [Out]TypedReference* tref)
+		public TRet GetReference<TRet>(int index, Reference.RefFunc<T, TRet> func)
 		{
-			TypedReferenceTools.ArrayAddress(Array, tref, index);
+			return func(ref Array[index]);
 		}
 		
-		[return: Boxed(typeof(TypedReference))]
-		public ValueType GetReference(int index)
+		public TRet GetReference<TRet>(int index, Reference.OutFunc<T, TRet> func)
 		{
-			return TypedReferenceTools.ArrayAddress(Array, index);
+			return func(out Array[index]);
+		}
+		
+		[CLSCompliant(false)]
+		public TRet GetReference<TRet>(object index, TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			return func(__makeref(Array[(int)index]));
 		}
 	}
 }

@@ -111,12 +111,12 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		public static void SetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr, object value)
+		internal static void SetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr, object value)
 		{
 			fi.SetValueDirect((TypedReference)tr, value);
 		}
 		
-		public static object GetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr)
+		internal static object GetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr)
 		{
 			return fi.GetValueDirect((TypedReference)tr);
 		}
@@ -143,6 +143,38 @@ namespace IllidanS4.SharpUtils.Reflection
 			TypedReference tr;
 			TypedReferenceTools.MakeTypedReference(&tr, obj, fi);
 			return __refvalue(tr, TField);
+		}
+		
+		/*public static void SetValue<T, TField>(this FieldInfo fi, ref T obj, TField value) where T : struct
+		{
+			FieldHelper<T, TField>.SetValue(fi.Offset, ref obj, value);
+		}
+		
+		public static TField GetValue<T, TField>(this FieldInfo fi, ref T obj) where T : struct
+		{
+			return FieldHelper<T, TField>.GetValue(fi.Offset, ref obj);
+		}*/
+		
+		private static class FieldHelper<T, TField> where T : struct
+		{
+			public delegate void Set(int offset, ref T obj, TField value);
+			public delegate TField Get(int offset, ref T obj);
+			
+			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
+				SysEmit.OpCodes.Ldarg_1,
+				SysEmit.OpCodes.Ldarg_0,
+				SysEmit.OpCodes.Ldarg_2,
+				new Instruction(SysEmit.OpCodes.Stobj, TypeOf<TField>.TypeID),
+				SysEmit.OpCodes.Ret
+			);
+			
+			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
+				SysEmit.OpCodes.Ldarg_1,
+				SysEmit.OpCodes.Ldarg_0,
+				SysEmit.OpCodes.Add,
+				new Instruction(SysEmit.OpCodes.Ldobj, TypeOf<TField>.TypeID),
+				SysEmit.OpCodes.Ret
+			);
 		}
 		
 		//TODO Type safety (TProperty == pi.PropertyType)
@@ -189,12 +221,12 @@ namespace IllidanS4.SharpUtils.Reflection
 			return PropertyRefHelper<TProperty>.GetValue(pi.GetGetMethod(true).MethodHandle.GetFunctionPointer(), tr);
 		}
 		
-		public static void SetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr, TProperty value)
+		internal static void SetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr, TProperty value)
 		{
 			SetValueDirect<TProperty>(pi, (TypedReference)tr, value);
 		}
 		
-		public static TProperty GetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr)
+		internal static TProperty GetValueDirect<TProperty>(this PropertyInfo pi, [Boxed(typeof(TypedReference))]ValueType tr)
 		{
 			return GetValueDirect<TProperty>(pi, (TypedReference)tr);
 		}
@@ -207,6 +239,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
 				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
 				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Conv_U,
 				SysEmit.OpCodes.Ldarg_2,
 				SysEmit.OpCodes.Ldarg_0,
 				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, Types.Void, new[]{typeof(TypedReference), TypeOf<TProperty>.TypeID}, null),
@@ -216,6 +249,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
 				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
 				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Conv_U,
 				SysEmit.OpCodes.Ldarg_0,
 				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, TypeOf<TProperty>.TypeID, new[]{typeof(TypedReference)}, null),
 				SysEmit.OpCodes.Ret
@@ -407,8 +441,61 @@ namespace IllidanS4.SharpUtils.Reflection
 			return new PartialGenericType(type, typeArgs);
 		}
 		
-		#region RuntimeMethodHandle extensions
+		/*#region RuntimeMethodHandle extensions
 		
-		#endregion
+		#endregion*/
+		
+		public static StackValueType[] GetTypes(this StackBehaviour stackBehaviour)
+		{
+			switch(stackBehaviour)
+			{
+				case StackBehaviour.Push0:
+				case StackBehaviour.Pop0: return new StackValueType[0];
+				
+				case StackBehaviour.Push1:
+				case StackBehaviour.Pop1: return new[]{StackValueType.Val};
+				
+				case StackBehaviour.Push1_push1:
+				case StackBehaviour.Pop1_pop1: return new[]{StackValueType.Val, StackValueType.Val};
+				
+				case StackBehaviour.Pushi:
+				case StackBehaviour.Popi: return new[]{StackValueType.I};
+				
+				case StackBehaviour.Popi_pop1: return new[]{StackValueType.I, StackValueType.Val};
+				case StackBehaviour.Popi_popi: return new[]{StackValueType.I, StackValueType.I};
+				case StackBehaviour.Popi_popi8: return new[]{StackValueType.I, StackValueType.I8};
+				case StackBehaviour.Popi_popi_popi: return new[]{StackValueType.I, StackValueType.I, StackValueType.I};
+				case StackBehaviour.Popi_popr4: return new[]{StackValueType.I, StackValueType.R4};
+				case StackBehaviour.Popi_popr8: return new[]{StackValueType.I, StackValueType.R8};
+				case StackBehaviour.Pushref:
+				case StackBehaviour.Popref: return new[]{StackValueType.Ref};
+				case StackBehaviour.Popref_pop1: return new[]{StackValueType.Ref, StackValueType.Val};
+				case StackBehaviour.Popref_popi: return new[]{StackValueType.Ref, StackValueType.I};
+				case StackBehaviour.Popref_popi_pop1: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.Val};
+				case StackBehaviour.Popref_popi_popi: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.I};
+				case StackBehaviour.Popref_popi_popi8: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.I8};
+				case StackBehaviour.Popref_popi_popr4: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.R4};
+				case StackBehaviour.Popref_popi_popr8: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.R8};
+				case StackBehaviour.Popref_popi_popref: return new[]{StackValueType.Ref, StackValueType.I, StackValueType.Ref};
+				
+				case StackBehaviour.Pushi8: return new[]{StackValueType.I8};
+				case StackBehaviour.Pushr4: return new[]{StackValueType.R4};
+				case StackBehaviour.Pushr8: return new[]{StackValueType.R8};
+				case StackBehaviour.Varpop: return null;
+				case StackBehaviour.Varpush: return null;
+				
+				default: throw new ArgumentException("stackBehaviour");
+			}
+		}
+		
+		public static int GetCount(this StackBehaviour stackBehaviour)
+		{
+			return GetTypes(stackBehaviour).Length;
+		}
+		
+		public static int GetStackChange(this OpCode opCode)
+		{
+			return GetCount(opCode.StackBehaviourPush) - GetCount(opCode.StackBehaviourPop);
+		}
 	}
 }

@@ -9,11 +9,19 @@ namespace IllidanS4.SharpUtils.Interop.Collections
 	/// <summary>
 	/// Represents an indexable collections to which's elements references can be obtained.
 	/// </summary>
-	[CLSCompliant(false)]
-	public interface IIndexReferable<TKey, TValue> : IIndexableSetter<TKey, TValue>, IIndexableGetter<TKey, TValue>
+	public interface IIndexRefReferable<TKey, TValue> : IIndexableSetter<TKey, TValue>, IIndexOutReferable<TKey, TValue>//, IIndexTypedRefReferable
 	{
-		unsafe void GetReference(TKey index, [Out]TypedReference* tref);
-		[return: Boxed(typeof(TypedReference))]
-		ValueType GetReference(TKey index);
+		TRet GetReference<TRet>(TKey index, Reference.RefFunc<TValue, TRet> func);
+	}
+	
+	public interface IIndexOutReferable<TKey, TValue> : IIndexableGetter<TKey, TValue>
+	{
+		TRet GetReference<TRet>(TKey index, Reference.OutFunc<TValue, TRet> func);
+	}
+	
+	[CLSCompliant(false)]
+	public interface IIndexTypedRefReferable
+	{
+		TRet GetReference<TRet>(object index, TypedReferenceTools.TypedRefFunc<TRet> func);
 	}
 }

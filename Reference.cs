@@ -60,6 +60,26 @@ namespace IllidanS4.SharpUtils
 			return CacheHelper<T>.WithRet<TRet>.Unbox(boxed, func);
 		}
 		
+		public static void Pin<T>(out T variable, OutAction<T> act)
+		{
+			CacheHelper<T>.Pin(out variable, OutToRefAction(act));
+		}
+		
+		public static void Pin<T>(ref T variable, RefAction<T> act)
+		{
+			CacheHelper<T>.Pin(out variable, act);
+		}
+		
+		public static TRet Pin<T, TRet>(out T variable, OutFunc<T, TRet> func)
+		{
+			return CacheHelper<T>.WithRet<TRet>.Pin(out variable, OutToRefFunc(func));
+		}
+		
+		public static TRet Pin<T, TRet>(ref T variable, RefFunc<T, TRet> func)
+		{
+			return CacheHelper<T>.WithRet<TRet>.Pin(out variable, func);
+		}
+		
 		internal static class CacheHelper<T>
 		{
 			private static readonly MethodInfo Invoke = typeof(RefAction<T>).GetMethod("Invoke");
@@ -92,7 +112,7 @@ namespace IllidanS4.SharpUtils
 				OpCodes.Ldarg_0,
 				OpCodes.Ldc_I4_0,
 				OpCodes.Conv_U,
-				new Instruction(OpCodes.Call, Invoke),
+				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
 			
@@ -100,7 +120,7 @@ namespace IllidanS4.SharpUtils
 				OpCodes.Ldarg_1,
 				OpCodes.Ldarg_0,
 				new Instruction(OpCodes.Unbox, typeof(T)),
-				new Instruction(OpCodes.Call, Invoke),
+				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
 			
@@ -108,9 +128,9 @@ namespace IllidanS4.SharpUtils
 			
 			public static readonly Action<IntPtr,RefAction<T>> FromPtr = LinqEmit.CreateDynamicMethod<Action<IntPtr,RefAction<T>>>(
 				OpCodes.Ldarg_1,
-				OpCodes.Ldarg_0,
-				new Instruction(OpCodes.Call, ToPointer),
-				new Instruction(OpCodes.Call, Invoke),
+				new Instruction(OpCodes.Ldarga_S, 0),
+				new Instruction(OpCodes.Callvirt, ToPointer),
+				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
 			
@@ -124,10 +144,22 @@ namespace IllidanS4.SharpUtils
 				OpCodes.Ldarg_1,
 				OpCodes.Ldloc_0,
 				OpCodes.Conv_I,
-				new Instruction(OpCodes.Call, typeof(PtrDel).GetMethod("Invoke")),
+				new Instruction(OpCodes.Callvirt, typeof(PtrDel).GetMethod("Invoke")),
 				OpCodes.Ldc_I4_0,
 				OpCodes.Conv_U,
 				OpCodes.Stloc_0,
+				OpCodes.Ret
+			);
+			
+			public delegate void PinDel(out T variable, RefAction<T> act);
+			
+			public static readonly PinDel Pin = LinqEmit.CreateDynamicMethod<PinDel>(
+				Instruction.DeclareLocal(typeof(T).MakeByRefType(), true),
+				OpCodes.Ldarg_0,
+				OpCodes.Stloc_0,
+				OpCodes.Ldarg_1,
+				OpCodes.Ldloc_0,
+				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
 			
@@ -139,7 +171,7 @@ namespace IllidanS4.SharpUtils
 					OpCodes.Ldarg_0,
 					OpCodes.Ldc_I4_0,
 					OpCodes.Conv_U,
-					new Instruction(OpCodes.Call, Invoke),
+					new Instruction(OpCodes.Callvirt, Invoke),
 					OpCodes.Ret
 				);
 			
@@ -147,15 +179,16 @@ namespace IllidanS4.SharpUtils
 					OpCodes.Ldarg_1,
 					OpCodes.Ldarg_0,
 					new Instruction(OpCodes.Unbox, typeof(T)),
-					new Instruction(OpCodes.Call, Invoke),
+					new Instruction(OpCodes.Callvirt, Invoke),
 					OpCodes.Ret
 				);
 			
 				public static readonly Func<IntPtr,RefFunc<T,TRet>,TRet> FromPtr = LinqEmit.CreateDynamicMethod<Func<IntPtr,RefFunc<T,TRet>,TRet>>(
 					OpCodes.Ldarg_1,
-					OpCodes.Ldarg_0,
-					new Instruction(OpCodes.Call, ToPointer),
-					new Instruction(OpCodes.Call, Invoke),
+					new Instruction(OpCodes.Ldarga_S, 0),
+					new Instruction(OpCodes.Callvirt, ToPointer),
+					OpCodes.Conv_U,
+					new Instruction(OpCodes.Callvirt, Invoke),
 					OpCodes.Ret
 				);
 				
@@ -173,6 +206,18 @@ namespace IllidanS4.SharpUtils
 					OpCodes.Ldc_I4_0,
 					OpCodes.Conv_U,
 					OpCodes.Stloc_0,
+					OpCodes.Ret
+				);
+			
+				public delegate TRet PinDel(out T variable, RefFunc<T, TRet> act);
+				
+				public static readonly PinDel Pin = LinqEmit.CreateDynamicMethod<PinDel>(
+					Instruction.DeclareLocal(typeof(T).MakeByRefType(), true),
+					OpCodes.Ldarg_0,
+					OpCodes.Stloc_0,
+					OpCodes.Ldarg_1,
+					OpCodes.Ldloc_0,
+					new Instruction(OpCodes.Call, Invoke),
 					OpCodes.Ret
 				);
 			}

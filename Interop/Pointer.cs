@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Accessing;
 using IllidanS4.SharpUtils.Metadata;
@@ -10,7 +11,7 @@ namespace IllidanS4.SharpUtils.Interop
 	/// Generic equivalent of <see cref="System.IntPtr"/>.
 	/// </summary>
 	[Unsafe]
-	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T>, ITypedReference where T : struct
+	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T>, IRefReference<T>, ITypedReference where T : struct
 	{
 		void* ptr;
 		private static readonly Type ptrType = TypeOf<T>.TypeID;
@@ -33,6 +34,7 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 		
 		[CLSCompliant(false)]
+		[Obsolete("Converting managed pointer to unmanaged needs pinning, use UnsafeTools.GetPointer.", true)]
 		public Pointer(TypedReference reference)
 		{
 			ptr = (void*)reference.ToPointer();
@@ -57,39 +59,32 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		public bool IsNull{
 			get{
-				return ptr == default(void*);
+				return ptr == null;
 			}
+		}
+		
+		public TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func)
+		{
+			return GetReference(Reference.OutToRefFunc(func));
+		}
+		
+		public TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func)
+		{
+			return UnsafeTools.GetReference(this, func);
 		}
 		
 		[CLSCompliant(false)]
-		public void GetReference([Out]TypedReference* tr)
+		public TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
 		{
-			var tptr = (IntPtr*)tr;
-			tptr[0] = ToIntPtr();
-			tptr[1] = ptrType.TypeHandle.Value;
+			return GetReference<TRet>((ref T v)=>func(__makeref(v)));
 		}
-		
-		[Boxed(typeof(TypedReference))]
-		public ValueType Reference{
-			get{
-				TypedReference tr;
-				GetReference(&tr);
-				return UnsafeTools.Box(tr);
-			}
-		}
-		
-		
 		
 		public T Value{
 			get{
-				TypedReference tr;
-				GetReference(&tr);
-				return __refvalue(tr, T);
+				return GetReference((ref T r)=>r);
 			}
 			set{
-				TypedReference tr;
-				GetReference(&tr);
-				__refvalue(tr, T) = value;
+				GetReference((ref T r)=>r = value);
 			}
 		}
 		
@@ -105,7 +100,7 @@ namespace IllidanS4.SharpUtils.Interop
 			}
 		}
 		
-		Type IStorageAccessor.ItemType{
+		Type IStorageAccessor.Type{
 			get{
 				return ptrType;
 			}
@@ -118,6 +113,15 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 		
 		object IWriteAccessor.Item{
+			set{
+				Value = (T)value;
+			}
+		}
+		
+		object IStrongBox.Value{
+			get{
+				return Value;
+			}
 			set{
 				Value = (T)value;
 			}
