@@ -7,10 +7,10 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils
 {
-	public sealed class SafeReference : IDisposable, ITypedReference, IReadAccessor, IWriteAccessor
+	public sealed class SafeReference : IDisposable, ITypedReference, IReadAccessor, IWriteAccessor, IEquatable<SafeReference>
 	{
 		[Boxed(typeof(TypedReference))]
-		private ValueType m_ref{get; set;}
+		internal ValueType m_ref{get; set;}
 		
 		public bool IsOut{get; private set;}
 		
@@ -117,6 +117,42 @@ namespace IllidanS4.SharpUtils
 		~SafeReference()
 		{
 			Dispose();
+		}
+		
+		public bool IsNull{
+			get{
+				return ((TypedReference)m_ref).IsNull();
+			}
+		}
+		
+		public bool IsEmpty{
+			get{
+				return ((TypedReference)m_ref).IsEmpty();
+			}
+		}
+		
+		public bool Equals(SafeReference other)
+		{
+			return ((TypedReference)m_ref).Equals((TypedReference)other.m_ref);
+		}
+		
+		public override bool Equals(object obj)
+		{
+			SafeReference other = obj as SafeReference;
+			if (other == null)
+				return false;
+			return Equals(other);
+		}
+		
+		public override int GetHashCode()
+		{
+			int hashCode = 0;
+			unchecked {
+				if (m_ref != null)
+					hashCode += 1000000007 * m_ref.GetHashCode();
+				hashCode += 1000000009 * IsOut.GetHashCode();
+			}
+			return hashCode;
 		}
 	}
 }

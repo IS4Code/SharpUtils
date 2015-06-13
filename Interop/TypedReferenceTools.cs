@@ -40,20 +40,15 @@ namespace IllidanS4.SharpUtils.Interop
 			((TypedRef*)target)->Type = newType.TypeHandle.Value;
 		}
 		
-		internal static unsafe void ChangeType([Boxed(typeof(TypedReference))]ValueType target, Type newType)
+		public static unsafe void ChangeType(SafeReference target, Type newType)
 		{
-			TypedReference* ptr = (TypedReference*)UnsafeTools.GetDataPointer(target);
+			TypedReference* ptr = (TypedReference*)UnsafeTools.GetDataPointer(target.m_ref);
 			ChangeType(ptr, newType);
 		}
 		
-		internal static Type GetType([Boxed(typeof(TypedReference))]ValueType target)
+		public static IntPtr GetReferencePointer(SafeReference target)
 		{
-			return __reftype((TypedReference)target);
-		}
-		
-		internal static IntPtr GetReferencePointer([Boxed(typeof(TypedReference))]ValueType target)
-		{
-			return ((TypedReference)target).ToPointer();
+			return ((TypedReference)target.m_ref).ToPointer();
 		}
 		
 		[CLSCompliant(false)]
@@ -62,25 +57,15 @@ namespace IllidanS4.SharpUtils.Interop
 			((TypedRef*)target)->Value = ptr;
 		}
 		
-		internal static unsafe void ChangePointer([Boxed(typeof(TypedReference))]ValueType target, IntPtr ptr)
+		public static unsafe void ChangePointer(SafeReference target, IntPtr ptr)
 		{
-			TypedReference* trptr = (TypedReference*)UnsafeTools.GetDataPointer(target);
+			TypedReference* trptr = (TypedReference*)UnsafeTools.GetDataPointer(target.m_ref);
 			ChangePointer(trptr, ptr);
 		}
 		
-		internal static void SetValue([Boxed(typeof(TypedReference))]ValueType target, object value)
+		public static void SetValue(SafeReference target, SafeReference value)
 		{
-			((TypedReference)target).SetValue(value);
-		}
-		
-		internal static void SetValue([Boxed(typeof(TypedReference))]ValueType target, [Boxed(typeof(TypedReference))]ValueType value)
-		{
-			((TypedReference)target).SetValue((TypedReference)value);
-		}
-		
-		internal static void SetValue<T>([Boxed(typeof(TypedReference))]ValueType target, T value)
-		{
-			((TypedReference)target).SetValue<T>(value);
+			((TypedReference)target.m_ref).SetValue((TypedReference)value.m_ref);
 		}
 		
 		private static void SetTypedReference<T>(TypedReference target, object value)
@@ -93,27 +78,10 @@ namespace IllidanS4.SharpUtils.Interop
 			__refvalue(target, T) = __refvalue(value, T);
 		}
 		
-		internal static object GetValue([Boxed(typeof(TypedReference))]ValueType target)
-		{
-			return ((TypedReference)target).GetValue();
-		}
-		
-		internal static T GetValue<T>([Boxed(typeof(TypedReference))]ValueType target)
-		{
-			return ((TypedReference)target).GetValue<T>();
-		}
-		
 		[CLSCompliant(false)]
 		public static unsafe void GetTypedReference<T>(ref T reference, [Out]TypedReference* tr)
 		{
 			*tr = __makeref(reference);
-		}
-		
-		[return: Boxed(typeof(TypedReference))]
-		internal static ValueType GetTypedReference<T>(ref T reference)
-		{
-			TypedReference tr = __makeref(reference);
-			return UnsafeTools.Box(tr);
 		}
 		
 		[CLSCompliant(false)]
@@ -126,21 +94,6 @@ namespace IllidanS4.SharpUtils.Interop
 		public static TRet GetTypedReference<T, TRet>(ref T reference, TypedRefFunc<TRet> func)
 		{
 			return func(__makeref(reference));
-		}
-		
-		internal static bool Equals([Boxed(typeof(TypedReference))]ValueType tr, [Boxed(typeof(TypedReference))]ValueType other)
-		{
-			return ((TypedReference)tr).Equals((TypedReference)other);
-		}
-		
-		internal static bool Equals([Boxed(typeof(TypedReference))]ValueType tr)
-		{
-			return ((TypedReference)tr).IsNull();
-		}
-		
-		internal static bool IsEmpty([Boxed(typeof(TypedReference))]ValueType tr)
-		{
-			return ((TypedReference)tr).IsEmpty();
 		}
 		
 		#region Field typedref
