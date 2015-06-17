@@ -8,7 +8,7 @@ using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public sealed class FieldAccessor<T> : ReadFieldAccessor<T>, IWriteAccessor<T>, IRefReference<T>, ITypedReference
+	public sealed class FieldAccessor<T> : ReadFieldAccessor<T>, IReadWriteAccessor<T>, IRefReference<T>, ITypedReference
 	{
 		readonly Action<T> setter;
 		
@@ -29,7 +29,15 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		object IWriteAccessor.Item{
 			set{
-				setter((T)value);
+				Item = (T)value;
+			}
+		}
+		object IReadWriteAccessor.Item{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
 			}
 		}
 		

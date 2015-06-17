@@ -34,6 +34,12 @@ namespace IllidanS4.SharpUtils.Accessing
 		object Item{set;}
 	}
 	
+	[DefaultMember("Item")]
+	public interface IReadWriteAccessor : IReadAccessor, IWriteAccessor
+	{
+		new object Item{get;set;}
+	}
+	
 	/// <summary>
 	/// The interface for "get" accessors.
 	/// </summary>
@@ -52,8 +58,14 @@ namespace IllidanS4.SharpUtils.Accessing
 		new T Item{set;}
 	}
 	
+	[DefaultMember("Item")]
+	public interface IReadWriteAccessor<T> : IReadAccessor<T>, IWriteAccessor<T>, IReadWriteAccessor
+	{
+		new T Item{get;set;}
+	}
+	
 	[CLSCompliant(false)]
-	public interface ITypedReference : IReadAccessor, IWriteAccessor, IStrongBox
+	public interface ITypedReference : IReadWriteAccessor, IStrongBox
 	{
 		TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func);
 	}
@@ -69,7 +81,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// An accessor that provides a "ref" reference.
 	/// </summary>
-	public interface IRefReference<T> : IReadAccessor<T>, IWriteAccessor<T>, IOutReference<T>
+	public interface IRefReference<T> : IReadWriteAccessor<T>, IOutReference<T>
 	{
 		TRet GetReference<TRet>(Reference.RefFunc<T, TRet> func);
 	}
@@ -109,7 +121,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	}
 	
 	[DefaultMember("Item")]
-	public abstract class BasicReadWriteAccessor<T> : BasicAccessor<T>, IReadAccessor<T>, IWriteAccessor<T>, IStrongBox
+	public abstract class BasicReadWriteAccessor<T> : BasicAccessor<T>, IReadWriteAccessor<T>, IStrongBox
 	{
 		public abstract T Item{get; set;}
 		object IReadAccessor.Item{
@@ -118,6 +130,14 @@ namespace IllidanS4.SharpUtils.Accessing
 			}
 		}
 		object IWriteAccessor.Item{
+			set{
+				Item = (T)value;
+			}
+		}
+		object IReadWriteAccessor.Item{
+			get{
+				return this.Item;
+			}
 			set{
 				Item = (T)value;
 			}

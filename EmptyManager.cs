@@ -7,8 +7,16 @@ using System.Reflection;
 
 namespace IllidanS4.SharpUtils
 {
+	/// <summary>
+	/// A class that creates empty instances of types.
+	/// </summary>
 	public static class EmptyManager
 	{
+		/// <summary>
+		/// Creates an empty value for a type.
+		/// </summary>
+		/// <param name="t">The type.</param>
+		/// <returns>The empty value.</returns>
 		public static object GetEmpty(Type t)
 		{
 			if(t.IsArray)

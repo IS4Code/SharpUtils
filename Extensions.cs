@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Resources;
+using IllidanS4.SharpUtils.Reflection.Linq;
 using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils
@@ -105,9 +106,9 @@ namespace IllidanS4.SharpUtils
 			return new Enumerator<T>(enumerator);
 		}
 		
-		private class Enumerator : IEnumerable
+		class Enumerator : IEnumerable
 		{
-			private IEnumerator enumerator;
+			readonly IEnumerator enumerator;
 			
 			public Enumerator(IEnumerator ienum)
 			{
@@ -120,9 +121,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
-		private class Enumerator<T> : IEnumerable<T>
+		class Enumerator<T> : IEnumerable<T>
 		{
-			private IEnumerator<T> enumerator;
+			readonly IEnumerator<T> enumerator;
 			
 			public Enumerator(IEnumerator<T> ienum)
 			{
@@ -145,10 +146,10 @@ namespace IllidanS4.SharpUtils
 			return new ArgListEnumerable(arglist);
 		}
 		
-		private class ArgListEnumerable : IEnumerable
+		class ArgListEnumerable : IEnumerable
 		{
-			private object Arglist;
-			private object Initial;
+			object Arglist;
+			readonly object Initial;
 			
 			public ArgListEnumerable(ArgIterator arglist)
 			{
@@ -163,10 +164,10 @@ namespace IllidanS4.SharpUtils
 				return enumerator;
 			}
 			
-			private class ArgListEnumerator : IEnumerator
+			class ArgListEnumerator : IEnumerator
 			{
-				private object Arglist;
-				private object Initial;
+				object Arglist;
+				object Initial;
 				
 				public ArgListEnumerator(object arglist)
 				{
@@ -174,8 +175,8 @@ namespace IllidanS4.SharpUtils
 					Initial = arglist;
 				}
 				
-				private object current;
-				private int state = -1;
+				object current;
+				int state = -1;
 				
 				public object Current
 				{
@@ -221,7 +222,7 @@ namespace IllidanS4.SharpUtils
 		{
 			return __refvalue(__makeref(arg), TTo);
 		}
-		private static ResourceManager clr_resources;
+		static ResourceManager clr_resources;
 		
 		static Extensions()
 		{

@@ -11,7 +11,7 @@ namespace IllidanS4.SharpUtils.Interop
 	/// Generic equivalent of <see cref="System.IntPtr"/>.
 	/// </summary>
 	[Unsafe]
-	public unsafe struct Pointer<T> : IPointer, IReadAccessor<T>, IWriteAccessor<T>, IRefReference<T>, ITypedReference where T : struct
+	public unsafe struct Pointer<T> : IPointer, IReadWriteAccessor<T>, IRefReference<T>, ITypedReference where T : struct
 	{
 		void* ptr;
 		private static readonly Type ptrType = TypeOf<T>.TypeID;
@@ -100,6 +100,15 @@ namespace IllidanS4.SharpUtils.Interop
 			}
 		}
 		
+		T IReadWriteAccessor<T>.Item{
+			get{
+				return Value;
+			}
+			set{
+				Value = value;
+			}
+		}
+		
 		Type IStorageAccessor.Type{
 			get{
 				return ptrType;
@@ -111,8 +120,15 @@ namespace IllidanS4.SharpUtils.Interop
 				return Value;
 			}
 		}
-		
 		object IWriteAccessor.Item{
+			set{
+				Value = (T)value;
+			}
+		}
+		object IReadWriteAccessor.Item{
+			get{
+				return Value;
+			}
 			set{
 				Value = (T)value;
 			}

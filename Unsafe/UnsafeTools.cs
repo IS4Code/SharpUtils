@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
+using IllidanS4.SharpUtils.Reflection.Linq;
 
 namespace IllidanS4.SharpUtils.Unsafe
 {
@@ -86,7 +87,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			_UnmanagedSizeOf = (Func<Type,bool,int>)Delegate.CreateDelegate(TypeOf<Func<Type,bool,int>>.TypeID, null, mi);
 		}
 		
-		private static readonly Func<object,IntPtr> GetPtr = CreateUnsafeCast<object,IntPtr>();
+		/*private static readonly Func<object,IntPtr> GetPtr = CreateUnsafeCast<object,IntPtr>();
 		private static readonly Func<IntPtr,object> GetO = CreateUnsafeCast<IntPtr,object>();
 		
 		public static Func<TFrom,TTo> CreateUnsafeCast<TFrom,TTo>()
@@ -96,7 +97,22 @@ namespace IllidanS4.SharpUtils.Unsafe
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ret);
 			return (Func<TFrom,TTo>)dm.CreateDelegate(TypeOf<Func<TFrom,TTo>>.TypeID);
-		}
+		}*/
+		
+		private static readonly Func<object,IntPtr> GetPtr = LinqEmit.CreateDynamicMethod<Func<object,IntPtr>>(
+			OpCodes.Ldarg_0,
+			OpCodes.Conv_I,
+			new Instruction(OpCodes.Newobj, typeof(IntPtr).GetConstructor(new[]{typeof(void*)})),
+			OpCodes.Ret
+		);
+		
+		private static readonly Func<IntPtr,object> GetO = LinqEmit.CreateDynamicMethod<Func<IntPtr,object>>(
+			new Instruction(OpCodes.Ldarga_S, 0),
+			new Instruction(OpCodes.Call, typeof(IntPtr).GetMethod("ToPointer")),
+			OpCodes.Conv_U,
+			new Instruction(OpCodes.Castclass, typeof(object)),
+			OpCodes.Ret
+		);
 		
 		public static unsafe IntPtr GetDataPointer(ValueType obj)
 		{
@@ -198,6 +214,21 @@ namespace IllidanS4.SharpUtils.Unsafe
 		public static TRet GetPointer<T, TRet>(TypedReference tr, Func<Pointer<T>, TRet> func) where T : struct
 		{
 			return tr.AsRef((ref T r)=>GetPointer<T, TRet>(out r, func));
+		}
+		
+		public static unsafe void ChangeType(SafeReference target, Type newType)
+		{
+			target.ChangeType(newType);
+		}
+		
+		public static IntPtr GetAddress(SafeReference target)
+		{
+			return target.GetAddress();
+		}
+		
+		public static void ChangeAddress(SafeReference target, IntPtr addr)
+		{
+			target.ChangeAddress(addr);
 		}
 		
 		// Boxing these non-nullable types is actually safer now thanks to GetUninitializedObject.

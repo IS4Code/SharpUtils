@@ -26,18 +26,13 @@ namespace IllidanS4.SharpUtils
 		public static TDelegate GetInvoker<TDelegate>(Type type, string method, bool instance, int ord=0) where TDelegate : TDelegateBase
 		{
 			BindingFlags flags = privflags;
-			if(instance)
-			{
-				flags &=~ BindingFlags.Static;
-			}else{
-				flags &=~ BindingFlags.Instance;
-			}
+			flags &= instance ? ~BindingFlags.Static : ~BindingFlags.Instance;
 			MethodInfo mi;
 			try{
 				mi = type.GetMethod(method, flags);
 			}catch(AmbiguousMatchException)
 			{
-				var tParams = ReflectionTools.GetDelegateSignature(typeof(TDelegate)).ParameterTypes;
+				var tParams = typeof(TDelegate).GetDelegateSignature().ParameterTypes;
 				if(instance == true)
 				{
 					tParams = tParams.Skip(1).ToArray();
@@ -51,7 +46,7 @@ namespace IllidanS4.SharpUtils
 		public static TDelegate GetInvoker<TDelegate>(MethodInfo mi) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
-			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			MethodSignature delSig = delType.GetDelegateSignature();
 			Type[] tParams = delSig.ParameterTypes;
 			Type retType = delSig.ReturnType;
 			
@@ -91,7 +86,7 @@ namespace IllidanS4.SharpUtils
 		public static TDelegate GetConstructor<TDelegate>(ConstructorInfo ctor) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
-			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			MethodSignature delSig = delType.GetDelegateSignature();
 			Type[] tParams = delSig.ParameterTypes;
 			Type retType = delSig.ReturnType;
 			
@@ -144,7 +139,7 @@ namespace IllidanS4.SharpUtils
 		public static TDelegate GetFieldSetter<TDelegate>(IList<FieldInfo> fields) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
-			MethodSignature delSig = ReflectionTools.GetDelegateSignature(delType);
+			MethodSignature delSig = delType.GetDelegateSignature();
 			Type[] tParams = delSig.ParameterTypes;
 			Type retType = delSig.ReturnType;
 			

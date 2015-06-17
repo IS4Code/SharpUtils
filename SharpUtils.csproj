@@ -149,6 +149,7 @@
     <Compile Include="Reflection\TypeSupport\TypeContainer.cs" />
     <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
     <Compile Include="Serialization\ObjectConstructInfo.cs" />
+    <Compile Include="Unsafe\Experimental\PinHandle.cs" />
     <Compile Include="Unsafe\IMemoryUnion.cs" />
     <Compile Include="Unsafe\VariadicUnion.cs" />
     <Compile Include="_Examples.cs" />
@@ -332,6 +333,7 @@
     <Folder Include="Templates" />
     <Folder Include="Serialization" />
     <Folder Include="Unsafe" />
+    <Folder Include="Unsafe\Experimental" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

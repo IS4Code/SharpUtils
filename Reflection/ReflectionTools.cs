@@ -111,14 +111,14 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		internal static void SetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr, object value)
+		internal static void SetValueDirect(this FieldInfo fi, SafeReference sr, object value)
 		{
-			fi.SetValueDirect((TypedReference)tr, value);
+			sr.GetReference(tr => fi.SetValueDirect(tr, value));
 		}
 		
-		internal static object GetValueDirect(this FieldInfo fi, [Boxed(typeof(TypedReference))]ValueType tr)
+		internal static object GetValueDirect(this FieldInfo fi, SafeReference sr)
 		{
-			return fi.GetValueDirect((TypedReference)tr);
+			return sr.GetReference(tr => fi.GetValueDirect(tr));
 		}
 		
 		public static void SetValue<T>(this FieldInfo fi, ref T obj, object value) where T : struct

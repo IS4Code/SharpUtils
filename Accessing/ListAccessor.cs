@@ -9,7 +9,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an accessor to a list element.
 	/// </summary>
-	public class ListAccessor<T> : ReadListAccessor<T>, IWriteAccessor<T>, IStrongBox
+	public class ListAccessor<T> : ReadListAccessor<T>, IReadWriteAccessor<T>, IStrongBox
 	{
 		public ListAccessor(IList<T> list, int index) : base(list, index)
 		{
@@ -30,7 +30,15 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		object IWriteAccessor.Item{
 			set{
-				List[Index] = (T)value;
+				Item = (T)value;
+			}
+		}
+		object IReadWriteAccessor.Item{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
 			}
 		}
 		

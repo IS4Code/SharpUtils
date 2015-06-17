@@ -1,5 +1,6 @@
 ﻿/* Date: 13.6.2015, Time: 13:34 */
 using System;
+using System.Reflection;
 using IllidanS4.SharpUtils.Accessing;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
@@ -7,10 +8,9 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils
 {
-	public sealed class SafeReference : IDisposable, ITypedReference, IReadAccessor, IWriteAccessor, IEquatable<SafeReference>
+	public sealed class SafeReference : IDisposable, ITypedReference, IEquatable<SafeReference>
 	{
-		[Boxed(typeof(TypedReference))]
-		internal ValueType m_ref{get; set;}
+		private TypedRef? m_ref{get; set;}
 		
 		public bool IsOut{get; private set;}
 		
@@ -20,9 +20,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
-		private SafeReference(TypedReference tr, bool isOut)
+		private unsafe SafeReference(TypedReference tr, bool isOut)
 		{
-			m_ref = UnsafeTools.Box(tr);
+			m_ref = *(TypedRef*)(&tr);
 			IsOut = isOut;
 		}
 		
@@ -62,49 +62,87 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
-		public Type Type{
-			get{
-				return __reftype((TypedReference)m_ref);
-			}
-		}
-		
-		public object Value{
-			get{
-				if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
-				return ((TypedReference)m_ref).GetValue();
-			}
-			set{
-				((TypedReference)m_ref).SetValue(value);
-			}
-		}
-		
-		public void SetValue<T>(T value)
+		[CLSCompliant(false)]
+		public static void Create(TypedReference tr, Action<SafeReference> act)
 		{
-			__refvalue((TypedReference)m_ref, T) = value;
-		}
-		
-		public T GetValue<T>()
-		{
-			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
-			return __refvalue((TypedReference)m_ref, T);
+			tr.Pin(
+				tr2 => {using(var r = new SafeReference(tr2, false))act(r);}
+			);
 		}
 		
 		[CLSCompliant(false)]
-		public TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
+		public static TRet Create<TRet>(TypedReference tr, Func<SafeReference, TRet> func)
 		{
-			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
-			return func((TypedReference)m_ref);
+			return tr.Pin(
+				tr2 => {using(var r = new SafeReference(tr2, false))return func(r);}
+			);
 		}
 		
-		object IReadAccessor.Item{
+		public unsafe Type Type{
+			get{
+				var tr = m_ref.Value;
+				return __reftype(*(TypedReference*)(&tr));
+			}
+		}
+		
+		public unsafe object Value{
+			get{
+				if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
+				var tr = m_ref.Value;
+				return (*(TypedReference*)(&tr)).GetValue();
+			}
+			set{
+				var tr = m_ref.Value;
+				(*(TypedReference*)(&tr)).SetValue(value);
+			}
+		}
+		
+		public unsafe void SetValue<T>(T value)
+		{
+			var tr = m_ref.Value;
+			__refvalue(*(TypedReference*)(&tr), T) = value;
+		}
+		
+		public unsafe T GetValue<T>()
+		{
+			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
+			var tr = m_ref.Value;
+			return __refvalue(*(TypedReference*)(&tr), T);
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe void GetReference(TypedReferenceTools.TypedRefAction act)
+		{
+			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
+			var tr = m_ref.Value;
+			act(*(TypedReference*)(&tr));
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
+			var tr = m_ref.Value;
+			return func(*(TypedReference*)(&tr));
+		}
+		
+		object IReadWriteAccessor.Item{
 			get{
 				return Value;
+			}
+			set{
+				Value = value;
 			}
 		}
 		
 		object IWriteAccessor.Item{
 			set{
-				Value = this;
+				Value = value;
+			}
+		}
+		object IReadAccessor.Item{
+			get{
+				return Value;
 			}
 		}
 		
@@ -121,25 +159,25 @@ namespace IllidanS4.SharpUtils
 		
 		public bool IsNull{
 			get{
-				return ((TypedReference)m_ref).IsNull();
+				return m_ref.Value.Value == IntPtr.Zero;
 			}
 		}
 		
 		public bool IsEmpty{
 			get{
-				return ((TypedReference)m_ref).IsEmpty();
+				return m_ref.Value == default(TypedRef);
 			}
 		}
 		
 		public bool Equals(SafeReference other)
 		{
-			return ((TypedReference)m_ref).Equals((TypedReference)other.m_ref);
+			return m_ref == other.m_ref;
 		}
 		
 		public override bool Equals(object obj)
 		{
 			SafeReference other = obj as SafeReference;
-			if (other == null)
+			if(other == null)
 				return false;
 			return Equals(other);
 		}
@@ -153,6 +191,63 @@ namespace IllidanS4.SharpUtils
 				hashCode += 1000000009 * IsOut.GetHashCode();
 			}
 			return hashCode;
+		}
+		
+		
+		public static void MakeReference(object target, FieldInfo[] fields, Action<SafeReference> act)
+		{
+			TypedReferenceTools.MakeTypedReference(target, fields, tr => Create(tr, act));
+		}
+		
+		public static TRet MakeReference<TRet>(object target, FieldInfo[] fields, Func<SafeReference, TRet> func)
+		{
+			return TypedReferenceTools.MakeTypedReference(target, fields, tr => Create(tr, func));
+		}
+		
+		public static void MakeReference(object target, Action<SafeReference> act, params FieldInfo[] fields)
+		{
+			MakeReference(target, fields, act);
+		}
+		
+		public static TRet MakeReference<TRet>(object target, Func<SafeReference, TRet> func, params FieldInfo[] fields)
+		{
+			return MakeReference(target, fields, func);
+		}
+		
+		public static void GetBoxedReference(ValueType target, Action<SafeReference> act)
+		{
+			MakeReference(target, act);
+		}
+		
+		public static TRet GetBoxedReference<TRet>(ValueType target, Func<SafeReference,TRet> func)
+		{
+			return MakeReference(target, func);
+		}
+		
+		internal void ChangeType(Type newType)
+		{
+			var tr = m_ref.Value;
+			tr.Type = newType.TypeHandle.Value;
+			m_ref = tr;
+		}
+		
+		internal IntPtr GetAddress()
+		{
+			return m_ref.Value.Value;
+		}
+		
+		internal void ChangeAddress(IntPtr addr)
+		{
+			var tr = m_ref.Value;
+			tr.Value = addr;
+			m_ref = tr;
+		}
+		
+		public unsafe void SetValue(SafeReference value)
+		{
+			var tr1 = m_ref.Value;
+			var tr2 = value.m_ref.Value;
+			(*(TypedReference*)(&tr1)).SetValue(*(TypedReference*)(&tr2));
 		}
 	}
 }

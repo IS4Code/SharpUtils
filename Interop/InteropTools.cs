@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection;
+using IllidanS4.SharpUtils.Reflection.Linq;
 using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Interop
@@ -183,6 +184,59 @@ namespace IllidanS4.SharpUtils.Interop
 		public static unsafe void InitBlock(void* destination, byte initValue, uint size)
 		{
 			initblk((IntPtr)destination, initValue, size);
+		}
+		
+		/// <summary>
+		/// Pins an object on the heap, so its address will not be changed by GC.
+		/// </summary>
+		/// <param name="o">The object to pin.</param>
+		/// <param name="act">The action during which the object will stay pinned.</param>
+		public static void Pin(object o, Action<object> act)
+		{
+			PinHelper.Pin(o, act);
+		}
+		
+		/// <summary>
+		/// Pins an object on the heap, so its address will not be changed by GC.
+		/// </summary>
+		/// <param name="o">The object to pin.</param>
+		/// <param name="func">The function during which the object will stay pinned.</param>
+		/// <returns>The value returned from <paramref name="func"/>.</returns>
+		public static TRet Pin<TRet>(object o, Func<object, TRet> func)
+		{
+			return PinHelper.WithRet<TRet>.Pin(o, func);
+		}
+		
+		private static class PinHelper
+		{
+			private static readonly MethodInfo Invoke = typeof(Action<object>).GetMethod("Invoke");
+			
+			public delegate void Del(object o, Action<object> act);
+			public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
+				Instruction.DeclareLocal(TypeOf<object>.TypeID, true),
+				OpCodes.Ldarg_0,
+				OpCodes.Stloc_0,
+				OpCodes.Ldarg_1,
+				OpCodes.Ldloc_0,
+				new Instruction(OpCodes.Callvirt, Invoke),
+				OpCodes.Ret
+			);
+			
+			public static class WithRet<TRet>
+			{
+				private static readonly MethodInfo Invoke = typeof(Func<object,TRet>).GetMethod("Invoke");
+				
+				public delegate TRet Del(object o, Func<object,TRet> func);
+				public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
+					Instruction.DeclareLocal(TypeOf<object>.TypeID, true),
+					OpCodes.Ldarg_0,
+					OpCodes.Stloc_0,
+					OpCodes.Ldarg_1,
+					OpCodes.Ldloc_0,
+					new Instruction(OpCodes.Callvirt, Invoke),
+					OpCodes.Ret
+				);
+			}
 		}
 	}
 }

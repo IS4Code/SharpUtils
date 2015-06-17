@@ -40,32 +40,10 @@ namespace IllidanS4.SharpUtils.Interop
 			((TypedRef*)target)->Type = newType.TypeHandle.Value;
 		}
 		
-		public static unsafe void ChangeType(SafeReference target, Type newType)
-		{
-			TypedReference* ptr = (TypedReference*)UnsafeTools.GetDataPointer(target.m_ref);
-			ChangeType(ptr, newType);
-		}
-		
-		public static IntPtr GetReferencePointer(SafeReference target)
-		{
-			return ((TypedReference)target.m_ref).ToPointer();
-		}
-		
 		[CLSCompliant(false)]
 		public static unsafe void ChangePointer(TypedReference* target, IntPtr ptr)
 		{
 			((TypedRef*)target)->Value = ptr;
-		}
-		
-		public static unsafe void ChangePointer(SafeReference target, IntPtr ptr)
-		{
-			TypedReference* trptr = (TypedReference*)UnsafeTools.GetDataPointer(target.m_ref);
-			ChangePointer(trptr, ptr);
-		}
-		
-		public static void SetValue(SafeReference target, SafeReference value)
-		{
-			((TypedReference)target.m_ref).SetValue((TypedReference)value.m_ref);
 		}
 		
 		private static void SetTypedReference<T>(TypedReference target, object value)
@@ -137,14 +115,6 @@ namespace IllidanS4.SharpUtils.Interop
 			InternalMakeTypedReference(result, target, flds, lastType);
 		}
 		
-		[return: Boxed(typeof(TypedReference))]
-		internal unsafe static ValueType MakeTypedReference(object target, params FieldInfo[] fields)
-		{
-			TypedReference tr;
-			MakeTypedReference(&tr, target, fields);
-			return UnsafeTools.Box(tr);
-		}
-		
 		[CLSCompliant(false)]
 		public unsafe static void MakeTypedReference(object target, FieldInfo[] fields, TypedRefAction act)
 		{
@@ -155,6 +125,22 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		[CLSCompliant(false)]
 		public unsafe static TRet MakeTypedReference<TRet>(object target, FieldInfo[] fields, TypedRefFunc<TRet> func)
+		{
+			TypedReference tr;
+			MakeTypedReference(&tr, target, fields);
+			return func(tr);
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe static void MakeTypedReference(object target, TypedRefAction act, params FieldInfo[] fields)
+		{
+			TypedReference tr;
+			MakeTypedReference(&tr, target, fields);
+			act(tr);
+		}
+		
+		[CLSCompliant(false)]
+		public unsafe static TRet MakeTypedReference<TRet>(object target, TypedRefFunc<TRet> func, params FieldInfo[] fields)
 		{
 			TypedReference tr;
 			MakeTypedReference(&tr, target, fields);
@@ -297,10 +283,40 @@ namespace IllidanS4.SharpUtils.Interop
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	internal struct TypedRef
+	internal struct TypedRef : IEquatable<TypedRef>
 	{
 		public IntPtr Value;
 		public IntPtr Type;
+		
+		public override bool Equals(object obj)
+		{
+			return (obj is TypedRef) && Equals((TypedRef)obj);
+		}
+		
+		public bool Equals(TypedRef other)
+		{
+			return this.Value == other.Value && this.Type == other.Type;
+		}
+		
+		public override int GetHashCode()
+		{
+			int hashCode = 0;
+			unchecked {
+				hashCode += 1000000007 * Value.GetHashCode();
+				hashCode += 1000000009 * Type.GetHashCode();
+			}
+			return hashCode;
+		}
+		
+		public static bool operator ==(TypedRef tr1, TypedRef tr2)
+		{
+			return tr1.Equals(tr2);
+		}
+		
+		public static bool operator !=(TypedRef tr1, TypedRef tr2)
+		{
+			return !(tr1==tr2);
+		}
 	}
 	
 	public static class TypedReferenceToolsExtensions
@@ -411,6 +427,54 @@ namespace IllidanS4.SharpUtils.Interop
 		public static TRet AsRef<T, TRet>(this TypedReference tr, Reference.RefFunc<T, TRet> act)
 		{
 			return ConvHelper<T>.WithRet<TRet>.Convert(tr, act);
+		}
+		
+		[CLSCompliant(false)]
+		public static void Pin(this TypedReference tr, TypedReferenceTools.TypedRefAction act)
+		{
+			PinHelper.Pin(tr, act);
+		}
+		
+		[CLSCompliant(false)]
+		public static TRet Pin<TRet>(this TypedReference tr, TypedReferenceTools.TypedRefFunc<TRet> func)
+		{
+			return PinHelper.WithRet<TRet>.Pin(tr, func);
+		}
+		
+		private static class PinHelper
+		{
+			private static readonly MethodInfo Invoke = typeof(TypedReferenceTools.TypedRefAction).GetMethod("Invoke");
+			
+			public delegate void Del(TypedReference tr, TypedReferenceTools.TypedRefAction act);
+			public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
+				Instruction.DeclareLocal(typeof(void).MakeByRefType(), true),
+				new Instruction(OpCodes.Ldarga_S, 0),
+				new Instruction(OpCodes.Ldobj, typeof(void*)),
+				OpCodes.Conv_U,
+				OpCodes.Stloc_0,
+				OpCodes.Ldarg_1,
+				OpCodes.Ldloc_0,
+				new Instruction(OpCodes.Callvirt, Invoke),
+				OpCodes.Ret
+			);
+			
+			public static class WithRet<TRet>
+			{
+				private static readonly MethodInfo Invoke = typeof(TypedReferenceTools.TypedRefFunc<TRet>).GetMethod("Invoke");
+				
+				public delegate TRet Del(TypedReference tr, TypedReferenceTools.TypedRefFunc<TRet> func);
+				public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
+					Instruction.DeclareLocal(typeof(void).MakeByRefType(), true),
+					new Instruction(OpCodes.Ldarga_S, 0),
+					new Instruction(OpCodes.Ldobj, typeof(void*)),
+					OpCodes.Conv_U,
+					OpCodes.Stloc_0,
+					OpCodes.Ldarg_1,
+					OpCodes.Ldloc_0,
+					new Instruction(OpCodes.Callvirt, Invoke),
+					OpCodes.Ret
+				);
+			}
 		}
 		
 		private static class ConvHelper<T>

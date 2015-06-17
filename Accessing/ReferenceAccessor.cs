@@ -7,7 +7,7 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class ReferenceAccessor<T> : OutputAccessor<T>, IReadAccessor<T>, IRefReference<T>, ITypedReference
+	public class ReferenceAccessor<T> : OutputAccessor<T>, IReadWriteAccessor<T>, IRefReference<T>, ITypedReference
 	{
 		public ReferenceAccessor(SafeReference r) : base(r)
 		{
@@ -25,7 +25,15 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		object IReadAccessor.Item{
 			get{
-				return this.Item;
+				return Item;
+			}
+		}
+		object IReadWriteAccessor.Item{
+			get{
+				return Item;
+			}
+			set{
+				Item = (T)value;
 			}
 		}
 		
