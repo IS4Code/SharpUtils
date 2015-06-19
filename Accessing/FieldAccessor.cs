@@ -57,6 +57,11 @@ namespace IllidanS4.SharpUtils.Accessing
 			return TypedReferenceTools.MakeTypedReference(Target, new[]{Field}, func);
 		}
 		
+		public TRet GetReference<TRet>(Func<SafeReference,TRet> func)
+		{
+			return TypedReferenceTools.MakeTypedReference(Target, new[]{Field}, tr => SafeReference.Create(tr, func));
+		}
+		
 		object IStrongBox.Value{
 			get{
 				return Item;

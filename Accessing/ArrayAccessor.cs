@@ -44,6 +44,11 @@ namespace IllidanS4.SharpUtils.Accessing
 			return func(__makeref(Array[Index]));
 		}
 		
+		public TRet GetReference<TRet>(Func<SafeReference,TRet> func)
+		{
+			return SafeReference.Create(__makeref(Array[Index]), func);
+		}
+		
 		Array IArrayAccessor.Array{
 			get{
 				return Array;

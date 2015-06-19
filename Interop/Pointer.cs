@@ -79,6 +79,11 @@ namespace IllidanS4.SharpUtils.Interop
 			return GetReference<TRet>((ref T v)=>func(__makeref(v)));
 		}
 		
+		public TRet GetReference<TRet>(Func<SafeReference,TRet> func)
+		{
+			return GetReference<TRet>(tr => SafeReference.Create(tr, func));
+		}
+		
 		public T Value{
 			get{
 				return GetReference((ref T r)=>r);

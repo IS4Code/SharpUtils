@@ -9,12 +9,14 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Security.Permissions;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
 using IllidanS4.SharpUtils.Reflection.Emit;
 using IllidanS4.SharpUtils.Reflection.Linq;
 using IllidanS4.SharpUtils.Reflection.TypeSupport;
+using IllidanS4.SharpUtils.Unsafe;
 using Microsoft.CSharp.RuntimeBinder;
 
 namespace IllidanS4.SharpUtils.Reflection
@@ -145,15 +147,15 @@ namespace IllidanS4.SharpUtils.Reflection
 			return __refvalue(tr, TField);
 		}
 		
-		/*public static void SetValue<T, TField>(this FieldInfo fi, ref T obj, TField value) where T : struct
+		public static void SetValue<T, TField>(this FieldInfo fi, ref T obj, TField value) where T : struct
 		{
-			FieldHelper<T, TField>.SetValue(fi.Offset, ref obj, value);
+			FieldHelper<T, TField>.SetValue(fi.GetOffset(), ref obj, value);
 		}
 		
 		public static TField GetValue<T, TField>(this FieldInfo fi, ref T obj) where T : struct
 		{
-			return FieldHelper<T, TField>.GetValue(fi.Offset, ref obj);
-		}*/
+			return FieldHelper<T, TField>.GetValue(fi.GetOffset(), ref obj);
+		}
 		
 		private static class FieldHelper<T, TField> where T : struct
 		{
@@ -163,6 +165,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
 				SysEmit.OpCodes.Ldarg_1,
 				SysEmit.OpCodes.Ldarg_0,
+				SysEmit.OpCodes.Add,
 				SysEmit.OpCodes.Ldarg_2,
 				new Instruction(SysEmit.OpCodes.Stobj, TypeOf<TField>.TypeID),
 				SysEmit.OpCodes.Ret
@@ -253,6 +256,22 @@ namespace IllidanS4.SharpUtils.Reflection
 				SysEmit.OpCodes.Ldarg_0,
 				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, TypeOf<TProperty>.TypeID, new[]{typeof(TypedReference)}, null),
 				SysEmit.OpCodes.Ret
+			);
+		}
+		
+		public static unsafe int GetOffset(this FieldInfo field)
+		{
+			return InteropTools.Pin(
+				FormatterServices.GetUninitializedObject(field.DeclaringType),
+				delegate(object inst)
+				{
+					TypedReference tr0, tr1;
+					TypedReferenceTools.MakeTypedReference(&tr0, inst);
+					TypedReferenceTools.MakeTypedReference(&tr1, inst, field);
+					byte* p0 = (byte*)tr0.ToPointer();
+					byte* p1 = (byte*)tr1.ToPointer();
+					return (int)(p1-p0);
+				}
 			);
 		}
 		

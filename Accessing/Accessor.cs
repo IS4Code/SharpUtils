@@ -73,8 +73,7 @@ namespace IllidanS4.SharpUtils.Accessing
 			r.GetReference<Unit>((out T rf)=>{act(out rf); return 0;});
 		}
 		
-		[CLSCompliant(false)]
-		public static void GetReference(this ITypedReference tr, TypedReferenceTools.TypedRefAction act)
+		public static void GetReference(this ITypedReference tr, Action<SafeReference> act)
 		{
 			tr.GetReference<Unit>(r => {act(r); return 0;});
 		}

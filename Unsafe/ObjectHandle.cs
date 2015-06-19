@@ -28,7 +28,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			Marshal.Copy(zero, 0, handle, size);
 			IntPtr ptr = handle+4;
 			Marshal.WriteIntPtr(ptr, tptr);//write type ptr
-			value = UnsafeTools.GetObject(ptr) as T;
+			value = (T)UnsafeTools.GetObject(ptr);
 		}
 		
 		public T Value{
@@ -46,6 +46,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 		
 		protected virtual void Dispose(bool disposing)
@@ -55,7 +56,6 @@ namespace IllidanS4.SharpUtils.Unsafe
 				Marshal.FreeHGlobal(handle);
 				freed = true;
 			}
-			GC.SuppressFinalize(this);
 		}
 		
 		~ObjectHandle()

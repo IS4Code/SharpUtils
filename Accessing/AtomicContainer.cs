@@ -45,5 +45,10 @@ namespace IllidanS4.SharpUtils.Accessing
 		{
 			return func(__makeref(Value));
 		}
+		
+		public TRet GetReference<TRet>(Func<SafeReference,TRet> func)
+		{
+			return SafeReference.Create(__makeref(Value), func);
+		}
 	}
 }

@@ -27,6 +27,11 @@ namespace IllidanS4.SharpUtils.Accessing
 			return Ref.GetReference(tr => tr.AsRef(Reference.OutToRefFunc(func)));
 		}
 		
+		public TRet GetReference<TRet>(Func<SafeReference, TRet> func)
+		{
+			return func(Ref);
+		}
+		
 		public static void Create(out T value, Action<OutputAccessor<T>> act)
 		{
 			SafeReference.CreateOut(

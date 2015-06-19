@@ -8,7 +8,7 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils
 {
-	public sealed class SafeReference : IDisposable, ITypedReference, IEquatable<SafeReference>
+	public sealed class SafeReference : IDisposable, ITypedReference, IReadWriteAccessor, IEquatable<SafeReference>
 	{
 		private TypedRef? m_ref{get; set;}
 		
@@ -124,6 +124,11 @@ namespace IllidanS4.SharpUtils
 			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
 			var tr = m_ref.Value;
 			return func(*(TypedReference*)(&tr));
+		}
+		
+		TRet ITypedReference.GetReference<TRet>(Func<SafeReference,TRet> func)
+		{
+			return func(this);
 		}
 		
 		object IReadWriteAccessor.Item{

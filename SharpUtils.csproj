@@ -72,6 +72,7 @@
     <Compile Include="Accessing\AccessorGenerator.cs" />
     <Compile Include="Accessing\ArrayAccessor.cs" />
     <Compile Include="Accessing\AtomicContainer.cs" />
+    <Compile Include="Accessing\BoxedAccessor.cs" />
     <Compile Include="Accessing\DefinedReadAccessor.cs" />
     <Compile Include="Accessing\DefinedReadWriteAccessor.cs" />
     <Compile Include="Accessing\DefinedWriteAccessor.cs" />

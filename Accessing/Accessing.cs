@@ -35,7 +35,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	}
 	
 	[DefaultMember("Item")]
-	public interface IReadWriteAccessor : IReadAccessor, IWriteAccessor
+	public interface IReadWriteAccessor : IReadAccessor, IWriteAccessor, IStrongBox
 	{
 		new object Item{get;set;}
 	}
@@ -64,16 +64,15 @@ namespace IllidanS4.SharpUtils.Accessing
 		new T Item{get;set;}
 	}
 	
-	[CLSCompliant(false)]
-	public interface ITypedReference : IReadWriteAccessor, IStrongBox
+	public interface ITypedReference : IStorageAccessor
 	{
-		TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func);
+		TRet GetReference<TRet>(Func<SafeReference,TRet> func);
 	}
 	
 	/// <summary>
 	/// An accessor that provides an "out" reference.
 	/// </summary>
-	public interface IOutReference<T> : IWriteAccessor<T>, IStorageAccessor
+	public interface IOutReference<T> : IWriteAccessor<T>, IStorageAccessor, ITypedReference
 	{
 		TRet GetReference<TRet>(Reference.OutFunc<T, TRet> func);
 	}
@@ -89,7 +88,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Basic generic accessor.
 	/// </summary>
-	public abstract class BasicAccessor<T> : IStorageAccessor
+	public abstract class BasicAccessor<T> : MarshalByRefObject, IStorageAccessor
 	{
 		public Type Type{
 			get{
