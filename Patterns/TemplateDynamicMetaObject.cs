@@ -4,25 +4,25 @@ using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	partial class Template
+	partial class Pattern
 	{
 		static readonly Type typeofIDynamicMetaObjectProvider = TypeOf<IDynamicMetaObjectProvider>.TypeID;
 		static readonly Type typeofDynamicMetaObject = TypeOf<DynamicMetaObject>.TypeID;
-		static readonly Type typeofTemplateDynamicMetaObject = TypeOf<TemplateDynamicMetaObject>.TypeID;
+		static readonly Type typeofTemplateDynamicMetaObject = TypeOf<PatternDynamicMetaObject>.TypeID;
 		static readonly Type typeofExpression = TypeOf<Expression>.TypeID;
 		static readonly Type[] m_IDynamicMetaObjectProvider_GetMetaObject_parameters = new Type[]{typeofExpression};
-		static readonly Type[] c_TemplateDynamicMetaObject_parameters = new Type[]{typeofExpression, typeofITemplate};
+		static readonly Type[] c_TemplateDynamicMetaObject_parameters = new Type[]{typeofExpression, typeofIPattern};
 		static readonly MethodInfo m_IDynamicMetaObjectProvider_GetMetaObject = typeofIDynamicMetaObjectProvider.GetMethod("GetMetaObject");
 		static readonly ConstructorInfo c_TemplateDynamicMetaObject = typeofTemplateDynamicMetaObject.GetConstructor(c_TemplateDynamicMetaObject_parameters);
 		
-		public sealed class TemplateDynamicMetaObject : DynamicMetaObject
+		public sealed class PatternDynamicMetaObject : DynamicMetaObject
 		{
 			readonly Type m_class;
 			//readonly Expression m_class_expression;
 			
-			public TemplateDynamicMetaObject(Expression expression, ITemplate value) : base(expression, BindingRestrictions.Empty, value)
+			public PatternDynamicMetaObject(Expression expression, IPattern value) : base(expression, BindingRestrictions.Empty, value)
 			{
 				m_class = value.Class;
 			}

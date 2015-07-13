@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TSingleton<[StaticType]T> : ISingleton
+	[Pattern]
+	public abstract class PSingleton<[StaticType]T> : ISingleton
 	{
 		public abstract T Instance{
 			get;

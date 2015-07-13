@@ -282,26 +282,26 @@
     <Compile Include="Streaming\StreamEnumerable.cs" />
     <Compile Include="Streaming\TerminalWriter.cs" />
     <Compile Include="Streaming\TextToStreamWrapper.cs" />
-    <Compile Include="Templates\BindNameAttribute.cs" />
-    <Compile Include="Templates\IParseable.cs" />
-    <Compile Include="Templates\IRanged.cs" />
-    <Compile Include="Templates\ISingleton.cs" />
-    <Compile Include="Templates\IStaticComparer.cs" />
-    <Compile Include="Templates\IStaticEqualityComparer.cs" />
-    <Compile Include="Templates\ITemplate.cs" />
-    <Compile Include="Templates\Template.cs" />
-    <Compile Include="Templates\StaticTypeAttribute.cs" />
-    <Compile Include="Templates\TemplateAttribute.cs" />
-    <Compile Include="Templates\TemplateDynamicMetaObject.cs">
-      <DependentUpon>Template.cs</DependentUpon>
+    <Compile Include="Patterns\BindNameAttribute.cs" />
+    <Compile Include="Patterns\IParseable.cs" />
+    <Compile Include="Patterns\IRanged.cs" />
+    <Compile Include="Patterns\ISingleton.cs" />
+    <Compile Include="Patterns\IStaticComparer.cs" />
+    <Compile Include="Patterns\IStaticEqualityComparer.cs" />
+    <Compile Include="Patterns\IPattern.cs" />
+    <Compile Include="Patterns\Pattern.cs" />
+    <Compile Include="Patterns\StaticTypeAttribute.cs" />
+    <Compile Include="Patterns\PatternAttribute.cs" />
+    <Compile Include="Patterns\TemplateDynamicMetaObject.cs">
+      <DependentUpon>Pattern.cs</DependentUpon>
     </Compile>
-    <Compile Include="Templates\TSingleton.cs" />
-    <Compile Include="Templates\TStaticComparer.cs" />
-    <Compile Include="Templates\TStaticEqualityComparer.cs" />
-    <Compile Include="Templates\TParseable.cs" />
-    <Compile Include="Templates\TRanged.cs" />
-    <Compile Include="Templates\TStaticSingleTypeComparer.cs" />
-    <Compile Include="Templates\TStaticSingleTypeEqualityComparer.cs" />
+    <Compile Include="Patterns\PSingleton.cs" />
+    <Compile Include="Patterns\PStaticComparer.cs" />
+    <Compile Include="Patterns\PStaticEqualityComparer.cs" />
+    <Compile Include="Patterns\PParseable.cs" />
+    <Compile Include="Patterns\PRanged.cs" />
+    <Compile Include="Patterns\PStaticSingleTypeComparer.cs" />
+    <Compile Include="Patterns\PStaticSingleTypeEqualityComparer.cs" />
     <Compile Include="Threads\Async.cs" />
     <Compile Include="Tmp.cs" />
     <Compile Include="TypeOf.cs" />
@@ -332,7 +332,7 @@
     <Folder Include="Threads" />
     <Folder Include="Streaming" />
     <Folder Include="Reflection" />
-    <Folder Include="Templates" />
+    <Folder Include="Patterns" />
     <Folder Include="Serialization" />
     <Folder Include="Unsafe" />
     <Folder Include="Unsafe\Experimental" />

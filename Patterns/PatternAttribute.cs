@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-	public sealed class TemplateAttribute : Attribute
+	public sealed class PatternAttribute : Attribute
 	{
-		public TemplateAttribute()
+		public PatternAttribute()
 		{
 			
 		}

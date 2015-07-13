@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
 	[AttributeUsage(AttributeTargets.GenericParameter)]
 	public sealed class StaticTypeAttribute : Attribute

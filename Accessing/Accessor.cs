@@ -77,5 +77,19 @@ namespace IllidanS4.SharpUtils.Accessing
 		{
 			tr.GetReference<Unit>(r => {act(r); return 0;});
 		}
+		
+		public static void GetTempReference<T>(this IReadWriteAccessor<T> acc, Reference.RefAction<T> act)
+		{
+			T temp = acc.Item;
+			act(ref temp);
+			acc.Item = temp;
+		}
+		
+		public static void GetTempReference(this IReadWriteAccessor acc, Reference.RefAction<object> act)
+		{
+			var temp = acc.Item;
+			act(ref temp);
+			acc.Item = temp;
+		}
 	}
 }

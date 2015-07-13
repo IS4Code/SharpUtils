@@ -1,10 +1,10 @@
 ﻿using System;
 using IllidanS4.SharpUtils.Metadata;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TParseable<[StaticType]T> : IParseable
+	[Pattern]
+	public abstract class PParseable<[StaticType]T> : IParseable
 	{
 		public abstract T Parse(string s);
 		

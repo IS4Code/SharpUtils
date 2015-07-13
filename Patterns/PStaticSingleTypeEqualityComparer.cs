@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TStaticSingleTypeEqualityComparer<[StaticType]T> : TStaticEqualityComparer<T,T>, IEqualityComparer<T>, IEqualityComparer
+	[PatternAttribute]
+	public abstract class PStaticSingleTypeEqualityComparer<[StaticType]T> : PStaticEqualityComparer<T,T>, IEqualityComparer<T>, IEqualityComparer
 	{
 		int IEqualityComparer<T>.GetHashCode(T t)
 		{

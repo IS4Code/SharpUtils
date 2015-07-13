@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TStaticEqualityComparer<[StaticType]T1, T2> : IStaticEqualityComparer
+	[Pattern]
+	public abstract class PStaticEqualityComparer<[StaticType]T1, T2> : IStaticEqualityComparer
 	{
 		protected abstract bool op_Equality(T1 t1, T2 t2);
 		

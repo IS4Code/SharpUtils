@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 	public sealed class BindNameAttribute : Attribute

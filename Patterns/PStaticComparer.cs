@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TStaticComparer<[StaticType]T1, T2> : IStaticComparer
+	[Pattern]
+	public abstract class PStaticComparer<[StaticType]T1, T2> : IStaticComparer
 	{
 		protected abstract bool op_Equality(T1 t1, T2 t2);
 		protected abstract bool op_GreaterThan(T1 t1, T2 t2);

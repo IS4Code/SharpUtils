@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace IllidanS4.SharpUtils.Templates
+namespace IllidanS4.SharpUtils.Patterns
 {
-	[Template]
-	public abstract class TRanged<[StaticType]T> : IRanged
+	[Pattern]
+	public abstract class PRanged<[StaticType]T> : IRanged
 	{
 		public abstract T MaxValue{
 			get;
