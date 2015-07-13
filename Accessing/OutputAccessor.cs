@@ -48,4 +48,17 @@ namespace IllidanS4.SharpUtils.Accessing
 			);
 		}
 	}
+	
+	public static class OutputAccessor
+	{
+		public static void Create<T>(out T value, Action<OutputAccessor<T>> act)
+		{
+			OutputAccessor<T>.Create(out value, act);
+		}
+		
+		public static TRet Create<T, TRet>(out T value, Func<OutputAccessor<T>, TRet> func)
+		{
+			return OutputAccessor<T>.Create(out value, func);
+		}
+	}
 }

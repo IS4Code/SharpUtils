@@ -34,7 +34,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			public static readonly Type FnPtrSZArray = ReflectionTools.GetTypeFromFieldSignature(new byte[]{6, 0x1D, 27, 0, 0, 1});
 			public static readonly MDFnPtrArrayCreator FnPtrMDArray = MDFnPtrArrayCreator.Instance;
 			
-			public sealed class MDFnPtrArrayCreator : IIndexableGetter<int,Type>, IIndexableGetter<uint,Type>
+			public sealed class MDFnPtrArrayCreator : IIndexGet<int,Type>, IIndexGet<uint,Type>
 			{
 				internal static readonly MDFnPtrArrayCreator Instance = new MDFnPtrArrayCreator();
 				private static readonly byte[] sigstart = new byte[]{6, 20, 27, 0, 0, 1};

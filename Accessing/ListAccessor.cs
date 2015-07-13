@@ -86,4 +86,17 @@ namespace IllidanS4.SharpUtils.Accessing
 	{
 		IList<T> List{get;}
 	}
+	
+	public static class ListAccessor
+	{
+		public static ListAccessor<T> Create<T>(IList<T> list, int index)
+		{
+			return new ListAccessor<T>(list, index);
+		}
+		
+		public static ReadListAccessor<T> CreateReadOnly<T>(IList<T> list, int index)
+		{
+			return new ReadListAccessor<T>(list, index);
+		}
+	}
 }

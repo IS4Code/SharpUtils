@@ -8,12 +8,21 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils
 {
+	/// <summary>
+	/// Contains a reference to a variable.
+	/// </summary>
 	public sealed class SafeReference : IDisposable, ITypedReference, IReadWriteAccessor, IEquatable<SafeReference>
 	{
 		private TypedRef? m_ref{get; set;}
 		
+		/// <summary>
+		/// Checks whether this is 'out' (write-only) reference. If this has been written to with <see cref="Value"/> or <see cref="SetValue"/>, returns true.
+		/// </summary>
 		public bool IsOut{get; private set;}
 		
+		/// <summary>
+		/// Checks whether this reference is valid and not disposed.
+		/// </summary>
 		public bool IsValid{
 			get{
 				return m_ref != null;
@@ -94,6 +103,7 @@ namespace IllidanS4.SharpUtils
 			set{
 				var tr = m_ref.Value;
 				(*(TypedReference*)(&tr)).SetValue(value);
+				IsOut = false;
 			}
 		}
 		
@@ -101,6 +111,7 @@ namespace IllidanS4.SharpUtils
 		{
 			var tr = m_ref.Value;
 			__refvalue(*(TypedReference*)(&tr), T) = value;
+			IsOut = false;
 		}
 		
 		public unsafe T GetValue<T>()

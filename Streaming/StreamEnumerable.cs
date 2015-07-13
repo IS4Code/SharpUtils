@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using IllidanS4.SharpUtils.Interop;
 
 namespace IllidanS4.SharpUtils.Streaming
 {
@@ -73,7 +74,7 @@ namespace IllidanS4.SharpUtils.Streaming
 				byte[] buffer = new byte[size];
 				IntPtr ptr = Marshal.AllocHGlobal(size);
 				try{
-					Marshal.StructureToPtr(s, ptr, true);
+					InteropTools.StructureToPtr(s, ptr);
 					Marshal.Copy(ptr, buffer, 0, size);
 					output.Write(buffer, 0, size);
 				}finally{
@@ -145,7 +146,7 @@ namespace IllidanS4.SharpUtils.Streaming
 				while(input.Read(buffer, 0, size) == size)
 				{
 					Marshal.Copy(buffer, 0, ptr, size);
-					yield return Marshal.PtrToStructure<T>(ptr);
+					yield return InteropTools.PtrToStructure<T>(ptr);
 				}
 				throw new EndOfStreamException();
 			}finally{

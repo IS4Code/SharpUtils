@@ -6,24 +6,49 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Read-write accessor that uses a getter and setter method.
 	/// </summary>
-	public class DefinedReadWriteAccessor<T> : BasicReadWriteAccessor<T>
+	public class DefinedReadWriteAccessor<T> : BasicReadWriteAccessor<T>, IDefinedReadWriteAccessor
 	{
-		Func<T> getter;
-		Action<T> setter;
+		public Func<T> Getter{get; private set;}
+		public Action<T> Setter{get; private set;}
 		
 		public DefinedReadWriteAccessor(Func<T> getter, Action<T> setter)
 		{
-			this.getter = getter;
-			this.setter = setter;
+			Getter = getter;
+			Setter = setter;
 		}
 		
 		public override T Item{
 			get{
-				return getter();
+				return Getter();
 			}
 			set{
-				setter(value);
+				Setter(value);
 			}
+		}
+		
+		MulticastDelegate IDefinedWriteAccessor.Setter{
+			get{
+				return Setter;
+			}
+		}
+		
+		MulticastDelegate IDefinedReadAccessor.Getter{
+			get{
+				return Getter;
+			}
+		}
+	}
+	
+	public interface IDefinedReadWriteAccessor : IDefinedReadAccessor, IDefinedWriteAccessor, IReadWriteAccessor
+	{
+		
+	}
+	
+	public static class DefinedReadWriteAccessor
+	{
+		public static DefinedReadWriteAccessor<T> Create<T>(Func<T> getter, Action<T> setter)
+		{
+			return new DefinedReadWriteAccessor<T>(getter, setter);
 		}
 	}
 }

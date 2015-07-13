@@ -69,4 +69,12 @@ namespace IllidanS4.SharpUtils.Accessing
 	{
 		Array Array{get;}
 	}
+	
+	public static class ArrayAccessor
+	{
+		public static ArrayAccessor<T> Create<T>(T[] arr, int index)
+		{
+			return new ArrayAccessor<T>(arr, index);
+		}
+	}
 }

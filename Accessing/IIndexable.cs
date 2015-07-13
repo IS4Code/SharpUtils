@@ -7,7 +7,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an object which's index values can be obtained.
 	/// </summary>
-	public interface IIndexableGetter<in TKey, out TValue>
+	public interface IIndexGet<in TKey, out TValue>
 	{
 		TValue this[TKey index]{
 			get;
@@ -17,17 +17,24 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Represents an object which's index values can be set.
 	/// </summary>
-	public interface IIndexableSetter<in TKey, in TValue>
+	public interface IIndexSet<in TKey, in TValue>
 	{
 		TValue this[TKey index]{
 			set;
 		}
 	}
 	
+	public interface IIndexGetSet<in TKey, TValue> : IIndexGet<TKey, TValue>, IIndexSet<TKey, TValue>
+	{
+		new TValue this[TKey index]{
+			get; set;
+		}
+	}
+	
 	/// <summary>
 	/// Creates an indexable wrapper around a dictionary.
 	/// </summary>
-	public class IndexDictionaryWrapper<TKey,TValue> : IIndexableGetter<TKey,TValue>, IIndexableSetter<TKey,TValue>
+	public class IndexDictionaryWrapper<TKey,TValue> : IIndexGetSet<TKey,TValue>
 	{
 		private readonly IDictionary<TKey,TValue> dict;
 		
@@ -50,7 +57,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Creates an indexable wrapper around a list.
 	/// </summary>
-	public class IndexListWrapper<TElement> : IIndexableGetter<int,TElement>, IIndexableSetter<int,TElement>
+	public class IndexListWrapper<TElement> : IIndexGetSet<int,TElement>
 	{
 		private readonly IList<TElement> list;
 		
@@ -73,7 +80,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Creates an indexable wrapper around a dynamic object.
 	/// </summary>
-	public class DynamicIndexWrapper<TKey,TValue> : IIndexableGetter<TKey,TValue>, IIndexableSetter<TKey,TValue>
+	public class DynamicIndexWrapper<TKey,TValue> : IIndexGetSet<TKey,TValue>
 	{
 		private readonly dynamic obj;
 		

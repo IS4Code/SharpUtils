@@ -38,19 +38,19 @@ namespace IllidanS4.SharpUtils.Accessing
 			return new ReferenceAccessor<T>(ref value);
 		}*/
 		
-		public static IndexGetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexableGetter<TKey, TValue> indexable, TKey key)
+		public static IndexGetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexGet<TKey, TValue> indexable, TKey key)
 		{
 			return new IndexGetAccessor<TKey, TValue>(indexable, key);
 		}
 		
-		public static IndexSetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexableSetter<TKey, TValue> indexable, TKey key)
+		public static IndexSetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexSet<TKey, TValue> indexable, TKey key)
 		{
 			return new IndexSetAccessor<TKey, TValue>(indexable, key);
 		}
 		
-		public static IndexGetSetAccessor<TKey, TValue, TIndexable> Access<TKey, TValue, TIndexable>(this TIndexable indexable, TKey key) where TIndexable : IIndexableGetter<TKey, TValue>, IIndexableSetter<TKey, TValue>
+		public static IndexGetSetAccessor<TKey, TValue> Access<TKey, TValue>(this IIndexGetSet<TKey, TValue> indexable, TKey key)
 		{
-			return new IndexGetSetAccessor<TKey, TValue, TIndexable>(indexable, key);
+			return new IndexGetSetAccessor<TKey, TValue>(indexable, key);
 		}
 		
 		public static ReadFieldAccessor<T> Access<T>(this FieldInfo field, object target)

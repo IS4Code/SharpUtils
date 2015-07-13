@@ -194,20 +194,6 @@ namespace IllidanS4.SharpUtils.Interop
 			ArrayAddressCache<TArray>.ArrayAddress.Invoke(arr, tr, indices);
 		}
 		
-		/// <summary>
-		/// Obtains a reference to an element in an array.
-		/// </summary>
-		/// <param name="arr">The array where the element is located.</param>
-		/// <param name="indices">The indices of the element.</param>
-		/// <returns>The boxed reference to the element.</returns>
-		[return: Boxed(typeof(TypedReference))]
-		internal static unsafe ValueType ArrayAddress<TArray>(TArray arr, params int[] indices) where TArray : TArrayBase
-		{
-			TypedReference tr;
-			ArrayAddress<TArray>(arr, &tr, indices);
-			return UnsafeTools.Box(tr);
-		}
-		
 		[CLSCompliant(false)]
 		public static unsafe void ArrayAddress<TArray>(TArray arr, int[] indices, TypedRefAction act) where TArray : TArrayBase
 		{
@@ -236,14 +222,6 @@ namespace IllidanS4.SharpUtils.Interop
 		{
 			Type arrayType = arr.GetType();
 			method_ArrayAddressCache.MakeGenericMethod(arrayType).Invoke(null, new object[]{arr, (IntPtr)tr, indices});
-		}
-		
-		[return: Boxed(typeof(TypedReference))]
-		internal static unsafe ValueType ArrayAddress(Array arr, params int[] indices)
-		{
-			TypedReference tr;
-			ArrayAddress(arr, &tr, indices);
-			return UnsafeTools.Box(tr);
 		}
 		
 		private static unsafe class ArrayAddressCache<TArray> where TArray : TArrayBase
@@ -282,6 +260,9 @@ namespace IllidanS4.SharpUtils.Interop
 		}
 	}
 
+	/// <summary>
+	/// Structure with layout equal to <see cref="TypedReference"/>.
+	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct TypedRef : IEquatable<TypedRef>
 	{
@@ -449,7 +430,7 @@ namespace IllidanS4.SharpUtils.Interop
 			public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
 				Instruction.DeclareLocal(typeof(void).MakeByRefType(), true),
 				new Instruction(OpCodes.Ldarga_S, 0),
-				new Instruction(OpCodes.Ldobj, typeof(void*)),
+				OpCodes.Ldind_I,
 				OpCodes.Conv_U,
 				OpCodes.Stloc_0,
 				OpCodes.Ldarg_1,
@@ -466,7 +447,7 @@ namespace IllidanS4.SharpUtils.Interop
 				public static readonly Del Pin = LinqEmit.CreateDynamicMethod<Del>(
 					Instruction.DeclareLocal(typeof(void).MakeByRefType(), true),
 					new Instruction(OpCodes.Ldarga_S, 0),
-					new Instruction(OpCodes.Ldobj, typeof(void*)),
+					OpCodes.Ldind_I,
 					OpCodes.Conv_U,
 					OpCodes.Stloc_0,
 					OpCodes.Ldarg_1,

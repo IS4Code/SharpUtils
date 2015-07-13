@@ -5,9 +5,9 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// <summary>
 	/// Read accessor that uses a passed function that returns its value.
 	/// </summary>
-	public class DefinedReadAccessor<T> : BasicReadAccessor<T>
+	public class DefinedReadAccessor<T> : BasicReadAccessor<T>, IDefinedReadAccessor
 	{
-		Func<T> getter;
+		public Func<T> Getter{get; private set;}
 		
 		/// <summary>
 		/// Creates a new read accessor using a getter function.
@@ -15,7 +15,7 @@ namespace IllidanS4.SharpUtils.Accessing
 		/// <param name="getter">The getter function that returns the current value.</param>
 		public DefinedReadAccessor(Func<T> getter)
 		{
-			this.getter = getter;
+			Getter = getter;
 		}
 		
 		/// <summary>
@@ -38,8 +38,27 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		public override T Item{
 			get{
-				return getter();
+				return Getter();
 			}
+		}
+		
+		MulticastDelegate IDefinedReadAccessor.Getter{
+			get{
+				return Getter;
+			}
+		}
+	}
+	
+	public interface IDefinedReadAccessor : IReadAccessor
+	{
+		MulticastDelegate Getter{get;}
+	}
+	
+	public static class DefinedReadAccessor
+	{
+		public static DefinedReadAccessor<T> Create<T>(Func<T> getter)
+		{
+			return new DefinedReadAccessor<T>(getter);
 		}
 	}
 }

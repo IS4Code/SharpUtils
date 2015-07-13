@@ -3,12 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using IllidanS4.SharpUtils.Metadata;
 
-namespace IllidanS4.SharpUtils.Interop.Collections
+namespace IllidanS4.SharpUtils.Accessing
 {
-	public class ReferenceList<T> : IList<T>, IIndexRefReferable<int, T>
+	public class ReferenceList<T> : IList<T>, IIndexRefReference<int, T>
 	{
 		private T[] _items;
 		private int count;
@@ -144,12 +142,15 @@ namespace IllidanS4.SharpUtils.Interop.Collections
 			return func(out _items[index]);
 		}
 		
-		[CLSCompliant(false)]
-		public TRet GetReference<TRet>(object index, TypedReferenceTools.TypedRefFunc<TRet> func)
+		public TRet GetReference<TRet>(int index, Func<SafeReference, TRet> func)
 		{
-			int idx = (int)index;
-			if(idx < 0 || idx >= count) throw new ArgumentOutOfRangeException("index");
-			return func(__makeref(_items[idx]));
+			if(index < 0 || index >= count) throw new ArgumentOutOfRangeException("index");
+			return SafeReference.Create(ref _items[index], func);
+		}
+		
+		public TRet GetReference<TRet>(object index, Func<SafeReference, TRet> func)
+		{
+			return GetReference<TRet>((int)index, func);
 		}
 	}
 }

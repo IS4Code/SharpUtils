@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.Interop
 	[Obsolete("Use FnPtrInvoker.")]
 	public static class VarArgsInvoke<TDelegate>
 	{
-		public static readonly IIndexableGetter<int,TDelegate> Invoke;
+		public static readonly IIndexGet<int,TDelegate> Invoke;
 		
 		private static readonly Type delType = typeof(TDelegate);
 		private static readonly Type dynType;
@@ -84,7 +84,7 @@ namespace IllidanS4.SharpUtils.Interop
 			}
 		}
 		
-		private class InvokeCache : IIndexableGetter<int,TDelegate>
+		private class InvokeCache : IIndexGet<int,TDelegate>
 		{
 			public readonly Dictionary<int,TDelegate> dict;
 			

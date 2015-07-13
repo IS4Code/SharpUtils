@@ -90,7 +90,7 @@ namespace IllidanS4.SharpUtils.Accessing
 	/// </summary>
 	public abstract class BasicAccessor<T> : MarshalByRefObject, IStorageAccessor
 	{
-		public Type Type{
+		Type IStorageAccessor.Type{
 			get{
 				return typeof(T);
 			}

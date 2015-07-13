@@ -73,4 +73,17 @@ namespace IllidanS4.SharpUtils.Accessing
 			return Ref.GetReference(func);
 		}
 	}
+	
+	public static class ReferenceAccessor
+	{
+		public static void Create<T>(ref T value, Action<ReferenceAccessor<T>> act)
+		{
+			ReferenceAccessor<T>.Create(ref value, act);
+		}
+		
+		public static TRet Create<T, TRet>(ref T value, Func<ReferenceAccessor<T>, TRet> func)
+		{
+			return ReferenceAccessor<T>.Create(ref value, func);
+		}
+	}
 }

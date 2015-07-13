@@ -7,7 +7,7 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class AtomicContainer<T> : BasicReadWriteAccessor<T>, IRefReference<T>, ITypedReference
+	public class AtomicContainer<T> : BasicReadWriteAccessor<T>, IRefReference<T>, IAtomicContainer
 	{
 		public T Value;
 		
@@ -49,6 +49,24 @@ namespace IllidanS4.SharpUtils.Accessing
 		public TRet GetReference<TRet>(Func<SafeReference,TRet> func)
 		{
 			return SafeReference.Create(__makeref(Value), func);
+		}
+	}
+	
+	public interface IAtomicContainer : IReadWriteAccessor, ITypedReference
+	{
+		
+	}
+	
+	public static class AtomicContainer
+	{
+		public static AtomicContainer<T> Create<T>()
+		{
+			return new AtomicContainer<T>();
+		}
+		
+		public static AtomicContainer<T> Create<T>(T value)
+		{
+			return new AtomicContainer<T>(value);
 		}
 	}
 }

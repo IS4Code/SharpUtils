@@ -3,8 +3,8 @@ using System.Collections;
 
 namespace IllidanS4.SharpUtils.Templates
 {
-	public interface IStaticEqualityComparer
+	public interface IStaticEqualityComparer : IEqualityComparer
 	{
-		bool Equals(object a, object b);
+		//bool Equals(object a, object b);
 	}
 }

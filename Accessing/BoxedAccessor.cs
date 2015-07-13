@@ -4,7 +4,7 @@ using IllidanS4.SharpUtils.Interop;
 
 namespace IllidanS4.SharpUtils.Accessing
 {
-	public class BoxedAccessor<T> : BasicReadWriteAccessor<T>, IRefReference<T>, ITypedReference where T : struct
+	public class BoxedAccessor<T> : BasicReadWriteAccessor<T>, IRefReference<T>, IBoxedAccessor where T : struct
 	{
 		public ValueType Instance{get; private set;}
 		
@@ -47,5 +47,10 @@ namespace IllidanS4.SharpUtils.Accessing
 		{
 			return SafeReference.GetBoxedReference(Instance, func);
 		}
+	}
+	
+	public interface IBoxedAccessor : IReadWriteAccessor, ITypedReference
+	{
+		ValueType Instance{get;}
 	}
 }

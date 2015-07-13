@@ -113,12 +113,12 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
-		internal static void SetValueDirect(this FieldInfo fi, SafeReference sr, object value)
+		public static void SetValueDirect(this FieldInfo fi, SafeReference sr, object value)
 		{
 			sr.GetReference(tr => fi.SetValueDirect(tr, value));
 		}
 		
-		internal static object GetValueDirect(this FieldInfo fi, SafeReference sr)
+		public static object GetValueDirect(this FieldInfo fi, SafeReference sr)
 		{
 			return sr.GetReference(tr => fi.GetValueDirect(tr));
 		}
@@ -173,6 +173,55 @@ namespace IllidanS4.SharpUtils.Reflection
 			
 			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
 				SysEmit.OpCodes.Ldarg_1,
+				SysEmit.OpCodes.Ldarg_0,
+				SysEmit.OpCodes.Add,
+				new Instruction(SysEmit.OpCodes.Ldobj, TypeOf<TField>.TypeID),
+				SysEmit.OpCodes.Ret
+			);
+		}
+		
+		[CLSCompliant(false)]
+		public static void SetValueDirect<TField>(this FieldInfo fi, TypedReference tr, TField value)
+		{
+			FieldRefHelper<TField>.SetValue(fi.GetOffset(), tr, value);
+		}
+		
+		[CLSCompliant(false)]
+		public static TField GetValueDirect<TField>(this FieldInfo fi, TypedReference tr)
+		{
+			return FieldRefHelper<TField>.GetValue(fi.GetOffset(), tr);
+		}
+		
+		public static void SetValueDirect<TField>(this FieldInfo fi, SafeReference sr, TField value)
+		{
+			sr.GetReference(tr => SetValueDirect<TField>(fi, tr, value));
+		}
+		
+		public static TField GetValueDirect<TField>(this FieldInfo fi, SafeReference sr)
+		{
+			return sr.GetReference(tr => GetValueDirect<TField>(fi, tr));
+		}
+		
+		private static class FieldRefHelper<TField>
+		{
+			public delegate void Set(int offset, TypedReference tr, TField value);
+			public delegate TField Get(int offset, TypedReference tr);
+			
+			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
+				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
+				SysEmit.OpCodes.Ldind_I,
+				SysEmit.OpCodes.Conv_U,
+				SysEmit.OpCodes.Ldarg_0,
+				SysEmit.OpCodes.Add,
+				SysEmit.OpCodes.Ldarg_2,
+				new Instruction(SysEmit.OpCodes.Stobj, TypeOf<TField>.TypeID),
+				SysEmit.OpCodes.Ret
+			);
+			
+			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
+				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
+				SysEmit.OpCodes.Ldind_I,
+				SysEmit.OpCodes.Conv_U,
 				SysEmit.OpCodes.Ldarg_0,
 				SysEmit.OpCodes.Add,
 				new Instruction(SysEmit.OpCodes.Ldobj, TypeOf<TField>.TypeID),
@@ -241,7 +290,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			
 			public static readonly Set SetValue = LinqEmit.CreateDynamicMethod<Set>(
 				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
-				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Ldind_I,
 				SysEmit.OpCodes.Conv_U,
 				SysEmit.OpCodes.Ldarg_2,
 				SysEmit.OpCodes.Ldarg_0,
@@ -251,7 +300,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			
 			public static readonly Get GetValue = LinqEmit.CreateDynamicMethod<Get>(
 				new Instruction(SysEmit.OpCodes.Ldarga_S, 1),
-				new Instruction(SysEmit.OpCodes.Ldobj, typeof(void*)),
+				SysEmit.OpCodes.Ldind_I,
 				SysEmit.OpCodes.Conv_U,
 				SysEmit.OpCodes.Ldarg_0,
 				new Instruction(SysEmit.OpCodes.Calli, CallingConventions.Standard, TypeOf<TProperty>.TypeID, new[]{typeof(TypedReference)}, null),

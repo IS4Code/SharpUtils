@@ -6,7 +6,7 @@ using System.Resources;
 
 namespace IllidanS4.SharpUtils
 {
-	internal static class Resources
+	public static class Resources
 	{
 		static readonly ResourceManager manager = new ResourceManager("Microsoft.CSharp.RuntimeBinder.Errors", typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly);
 		

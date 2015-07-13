@@ -17,5 +17,10 @@ namespace IllidanS4.SharpUtils.Templates
 		{
 			return Equals((T1)t1, (T2)t2);
 		}
+		
+		int IEqualityComparer.GetHashCode(object o)
+		{
+			return o.GetHashCode();
+		}
 	}
 }

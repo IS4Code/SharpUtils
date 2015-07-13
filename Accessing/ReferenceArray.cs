@@ -1,11 +1,9 @@
 ﻿/* Date: 23.5.2015, Time: 15:41 */
 using System;
-using System.Runtime.InteropServices;
-using IllidanS4.SharpUtils.Metadata;
 
-namespace IllidanS4.SharpUtils.Interop.Collections
+namespace IllidanS4.SharpUtils.Accessing
 {
-	public class ReferenceArray<T> : IIndexRefReferable<int, T>
+	public class ReferenceArray<T> : IIndexRefReference<int, T>
 	{
 		public T[] Array{get; private set;}
 		
@@ -33,10 +31,14 @@ namespace IllidanS4.SharpUtils.Interop.Collections
 			return func(out Array[index]);
 		}
 		
-		[CLSCompliant(false)]
-		public TRet GetReference<TRet>(object index, TypedReferenceTools.TypedRefFunc<TRet> func)
+		public TRet GetReference<TRet>(int index, Func<SafeReference, TRet> func)
 		{
-			return func(__makeref(Array[(int)index]));
+			return SafeReference.Create(ref Array[index], func);
+		}
+		
+		public TRet GetReference<TRet>(object index, Func<SafeReference, TRet> func)
+		{
+			return GetReference<TRet>((object)index, func);
 		}
 	}
 }

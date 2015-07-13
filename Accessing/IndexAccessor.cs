@@ -5,10 +5,10 @@ namespace IllidanS4.SharpUtils.Accessing
 {
 	public class IndexGetAccessor<TKey, TValue> : BasicReadAccessor<TValue>
 	{
-		public IIndexableGetter<TKey, TValue> Indexable{get; private set;}
+		public IIndexGet<TKey, TValue> Indexable{get; private set;}
 		public TKey Key{get; private set;}
 		
-		public IndexGetAccessor(IIndexableGetter<TKey, TValue> indexable, TKey key)
+		public IndexGetAccessor(IIndexGet<TKey, TValue> indexable, TKey key)
 		{
 			Indexable = indexable;
 			Key = key;
@@ -23,10 +23,10 @@ namespace IllidanS4.SharpUtils.Accessing
 	
 	public class IndexSetAccessor<TKey, TValue> : BasicWriteAccessor<TValue>
 	{
-		public IIndexableSetter<TKey, TValue> Indexable{get; private set;}
+		public IIndexSet<TKey, TValue> Indexable{get; private set;}
 		public TKey Key{get; private set;}
 		
-		public IndexSetAccessor(IIndexableSetter<TKey, TValue> indexable, TKey key)
+		public IndexSetAccessor(IIndexSet<TKey, TValue> indexable, TKey key)
 		{
 			Indexable = indexable;
 			Key = key;
@@ -39,12 +39,12 @@ namespace IllidanS4.SharpUtils.Accessing
 		}
 	}
 	
-	public class IndexGetSetAccessor<TKey, TValue, TIndexable> : BasicReadWriteAccessor<TValue> where TIndexable : IIndexableGetter<TKey, TValue>, IIndexableSetter<TKey, TValue>
+	public class IndexGetSetAccessor<TKey, TValue> : BasicReadWriteAccessor<TValue>
 	{
-		public TIndexable Indexable{get; private set;}
+		public IIndexGetSet<TKey, TValue> Indexable{get; private set;}
 		public TKey Key{get; private set;}
 		
-		public IndexGetSetAccessor(TIndexable indexable, TKey key)
+		public IndexGetSetAccessor(IIndexGetSet<TKey, TValue> indexable, TKey key)
 		{
 			Indexable = indexable;
 			Key = key;
@@ -52,10 +52,10 @@ namespace IllidanS4.SharpUtils.Accessing
 		
 		public override TValue Item{
 			set{
-				((IIndexableSetter<TKey, TValue>)Indexable)[Key] = value;
+				Indexable[Key] = value;
 			}
 			get{
-				return ((IIndexableGetter<TKey, TValue>)Indexable)[Key];
+				return Indexable[Key];
 			}
 		}
 	}

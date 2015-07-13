@@ -16,8 +16,6 @@ namespace IllidanS4.SharpUtils.Unsafe
 	/// </summary>
 	public static class UnsafeTools
 	{
-		private static readonly Type thisType = typeof(UnsafeTools);
-		
 		public static int SizeOf(Type type)
 		{
 			if(!type.IsValueType) return IntPtr.Size;//throw new ArgumentException(Extensions.GetResourceString("Argument_NeedStructWithNoRefs"));
@@ -56,16 +54,10 @@ namespace IllidanS4.SharpUtils.Unsafe
 		
 		private static class SizeOfClass<T>
 		{
-			public static readonly int Size;
-			
-			static SizeOfClass()
-			{
-				DynamicMethod method = new DynamicMethod("sizeof", TypeOf<int>.TypeID, Type.EmptyTypes);
-				var il = method.GetILGenerator();
-				il.Emit(OpCodes.Sizeof, TypeOf<T>.TypeID);
-				il.Emit(OpCodes.Ret);
-				Size = (int)method.Invoke(null, null);
-			}
+			public static readonly int Size = LinqEmit.CreateDynamicMethod<Func<int>>(
+				new Instruction(OpCodes.Sizeof, TypeOf<T>.TypeID),
+				OpCodes.Ret
+			).Invoke();
 		}
 		
 		public static int BaseInstanceSizeOf(Type t)
@@ -73,19 +65,10 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return Marshal.ReadInt32(t.TypeHandle.Value, 4);
 		}
 		
-		//Marshal.SizeOfType
-		private static readonly Func<Type,uint> _SizeOf;
+		private static readonly Func<Type,uint> _SizeOf = Hacks.GetInvoker<Func<Type,uint>>(typeof(Marshal), "SizeOfType", false);
 		
-		//Marshal.SizeOfHelper
-		private static readonly Func<Type,bool,int> _UnmanagedSizeOf;
+		private static readonly Func<Type,bool,int> _UnmanagedSizeOf = Hacks.GetInvoker<Func<Type,bool,int>>(typeof(Marshal), "SizeOfHelper", false);
 		
-		static UnsafeTools()
-		{
-			MethodInfo mi = typeof(Marshal).GetMethod("SizeOfType", BindingFlags.Static | BindingFlags.NonPublic, null, new[]{TypeOf<Type>.TypeID}, null);
-			_SizeOf = (Func<Type,uint>)Delegate.CreateDelegate(TypeOf<Func<Type,uint>>.TypeID, null, mi);
-			mi = typeof(Marshal).GetMethod("SizeOfHelper", BindingFlags.Static | BindingFlags.NonPublic, null, new[]{TypeOf<Type>.TypeID, TypeOf<bool>.TypeID}, null);
-			_UnmanagedSizeOf = (Func<Type,bool,int>)Delegate.CreateDelegate(TypeOf<Func<Type,bool,int>>.TypeID, null, mi);
-		}
 		
 		/*private static readonly Func<object,IntPtr> GetPtr = CreateUnsafeCast<object,IntPtr>();
 		private static readonly Func<IntPtr,object> GetO = CreateUnsafeCast<IntPtr,object>();
