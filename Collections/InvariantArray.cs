@@ -4,8 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using IllidanS4.SharpUtils.Accessing;
 
-namespace IllidanS4.SharpUtils
+namespace IllidanS4.SharpUtils.Collections
 {
+	/// <summary>
+	/// Because arrays are covariant, type checks on accessing elements may slow the program a bit. This array has about 50 % faster element assignments.
+	/// </summary>
+	/// <remarks>
+	/// Because array covariance doesn't apply to arrays of value types, this solution creates an array of container value type.
+	/// </remarks>
 	public struct InvariantArray<T> : IList<T>, IEquatable<InvariantArray<T>>, IIndexRefReference<int, T> where T : class
 	{
 		static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
@@ -156,7 +162,8 @@ namespace IllidanS4.SharpUtils
 			return GetEnumerator();
 		}
 		
-		struct Element{
+		struct Element
+		{
 			public T Value;
 			
 			public Element(T value)
