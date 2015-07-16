@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace IllidanS4.SharpUtils
 {
 	/// <summary>
-	/// This is the opposite of <see cref="System.Nullable&lt;T&gt;"/>. Reference type enclosed in this structure should never be null.
+	/// This is the opposite of <see cref="System.Nullable{T}"/>. Reference type enclosed in this structure should never be null.
 	/// </summary>
 	public struct NonNullable<T> : IEquatable<NonNullable<T>> where T : class
 	{

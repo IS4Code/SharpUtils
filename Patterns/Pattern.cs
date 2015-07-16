@@ -14,17 +14,18 @@ namespace IllidanS4.SharpUtils.Patterns
 		static readonly Type typeofType = TypeOf<Type>.TypeID;
 		static readonly Type typeofStaticTypeAttribute = TypeOf<StaticTypeAttribute>.TypeID;
 		static readonly Type typeofBindNameAttribute = TypeOf<BindNameAttribute>.TypeID;
+		static readonly Type typeofStaticTypeArg = TypeOf<StaticTypeArg>.TypeID;
 		
 		static readonly MethodInfo m_Type_GetTypeFromHandle = typeofType.GetMethod("GetTypeFromHandle", BindingFlags.Public | BindingFlags.Static);
 		static readonly MethodInfo m_IPattern_get_Class = typeofIPattern.GetMethod("get_Class");
 		static readonly MethodInfo m_Object_ToString = typeofObject.GetMethod("ToString");
 		
-		public static object CreateTemplate(Type staticType)
+		public static object Create(Type staticType)
 		{
-			return CreateTemplate(typeofIPattern, staticType);
+			return Create(typeofIPattern, staticType);
 		}
 		
-		public static Type CreateTemplateType(Type templateType, Type staticType)
+		public static Type CreateType(Type templateType, Type staticType)
 		{
 			if(templateType == null) templateType = typeofIPattern;
 			
@@ -43,6 +44,18 @@ namespace IllidanS4.SharpUtils.Patterns
 					}
 				}
 				templateType = templateType.MakeGenericType(genArgs);
+			}else if(templateType.IsGenericType)
+			{
+				var def = templateType.GetGenericTypeDefinition();
+				Type[] genArgs = templateType.GetGenericArguments();
+				for(int i = 0; i < genArgs.Length; i++)
+				{
+					if(genArgs[i] == typeofStaticTypeArg)
+					{
+						genArgs[i] = staticType;
+					}
+				}
+				templateType = def.MakeGenericType(genArgs);
 			}
 			var tb = Resources.DynamicModule.DefineType("DynamicTemplate", TypeAttributes.Public);
 			if(templateType.IsInterface)
@@ -217,31 +230,31 @@ namespace IllidanS4.SharpUtils.Patterns
 			return createdType;
 		}
 		
-		public static Func<IPattern> CreateTemplateFactory(Type templateType, Type staticType)
+		public static Func<IPattern> CreateFactory(Type templateType, Type staticType)
 		{
-			Type createdType = CreateTemplateType(templateType, staticType);
+			Type createdType = CreateType(templateType, staticType);
 			return ()=>((IPattern)Activator.CreateInstance(createdType));
 		}
 		
-		public static IPattern CreateTemplate(Type templateType, Type staticType)
+		public static IPattern Create(Type templateType, Type staticType)
 		{
-			return (IPattern)Activator.CreateInstance(CreateTemplateType(templateType, staticType));
+			return (IPattern)Activator.CreateInstance(CreateType(templateType, staticType));
 		}
 		
 		public static Func<IPattern> CreateTemplateFactory<T>(Type staticType)
 		{
-			Type createdType = CreateTemplateType(TypeOf<T>.TypeID, staticType);
+			Type createdType = CreateType(TypeOf<T>.TypeID, staticType);
 			return ()=>((IPattern)Activator.CreateInstance(createdType));
 		}
 		
-		public static T CreateTemplate<T>(Type templateType, Type staticType) where T : class
+		public static T Create<T>(Type templateType, Type staticType) where T : class
 		{
-			return CreateTemplate(templateType, staticType) as T;
+			return Create(templateType, staticType) as T;
 		}
 		
-		public static T CreateTemplate<T>(Type staticType) where T : class
+		public static T Create<T>(Type staticType) where T : class
 		{
-			return CreateTemplate(TypeOf<T>.TypeID, staticType) as T;
+			return Create(TypeOf<T>.TypeID, staticType) as T;
 		}
 		
 		private static Type[] GetParameterTypes(ParameterInfo[] parameters)
@@ -303,55 +316,55 @@ namespace IllidanS4.SharpUtils.Patterns
 		static readonly Type typeofPParseable = typeof(PParseable<>);
 		public static IParseable GePParseable(Type t)
 		{
-			return CreateTemplate<IParseable>(typeofPParseable, t);
+			return Create<IParseable>(typeofPParseable, t);
 		}
 		
 		public static PParseable<T> GePParseable<T>()
 		{
-			return CreateTemplate<PParseable<T>>(TypeOf<T>.TypeID);
+			return Create<PParseable<T>>(TypeOf<T>.TypeID);
 		}
 		
 		static readonly Type typeofPRanged = typeof(PRanged<>);
 		public static IRanged GePRanged(Type t)
 		{
-			return CreateTemplate<IRanged>(typeofPRanged, t);
+			return Create<IRanged>(typeofPRanged, t);
 		}
 		
 		public static PRanged<T> GePRanged<T>()
 		{
-			return CreateTemplate<PRanged<T>>(TypeOf<T>.TypeID);
+			return Create<PRanged<T>>(TypeOf<T>.TypeID);
 		}
 		
 		static readonly Type typeofTStaticSingleTypeComparer = typeof(PStaticSingleTypeComparer<>);
 		public static IComparer GetComparer(Type t)
 		{
-			return CreateTemplate<IComparer>(typeofTStaticSingleTypeComparer, t);
+			return Create<IComparer>(typeofTStaticSingleTypeComparer, t);
 		}
 		
 		public static PStaticSingleTypeComparer<T> GetComparer<T>()
 		{
-			return CreateTemplate<PStaticSingleTypeComparer<T>>(TypeOf<T>.TypeID);
+			return Create<PStaticSingleTypeComparer<T>>(TypeOf<T>.TypeID);
 		}
 		
 		public static PStaticComparer<T1,T2> GetComparer<T1,T2>()
 		{
-			return CreateTemplate<PStaticComparer<T1,T2>>(TypeOf<T1>.TypeID);
+			return Create<PStaticComparer<T1,T2>>(TypeOf<T1>.TypeID);
 		}
 		
 		static readonly Type typeofTStaticSingleTypeEqualityComparer = typeof(PStaticSingleTypeComparer<>);
 		public static IEqualityComparer GetEqualityComparer(Type t)
 		{
-			return CreateTemplate<IEqualityComparer>(typeofTStaticSingleTypeEqualityComparer, t);
+			return Create<IEqualityComparer>(typeofTStaticSingleTypeEqualityComparer, t);
 		}
 		
 		public static PStaticSingleTypeEqualityComparer<T> GetEqualityComparer<T>()
 		{
-			return CreateTemplate<PStaticSingleTypeEqualityComparer<T>>(TypeOf<T>.TypeID);
+			return Create<PStaticSingleTypeEqualityComparer<T>>(TypeOf<T>.TypeID);
 		}
 		
 		public static PStaticEqualityComparer<T1,T2> GetEqualityComparer<T1,T2>()
 		{
-			return CreateTemplate<PStaticEqualityComparer<T1,T2>>(TypeOf<T1>.TypeID);
+			return Create<PStaticEqualityComparer<T1,T2>>(TypeOf<T1>.TypeID);
 		}
 	}
 }

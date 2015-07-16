@@ -7,9 +7,9 @@ namespace IllidanS4.SharpUtils
 	public static class Tmp<T>
 	{
 		/// <example>
-		/// <code>
-		/// SomeMethod(out Tmp&lt;object&gt;.Value);
-		/// </code>
+		/// <code><![CDATA[
+		/// SomeMethod(out Tmp<object>.Value);
+		/// ]]></code>
 		/// </example>
 		[ThreadStatic]
 		public static T Value;

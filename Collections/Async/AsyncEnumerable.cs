@@ -17,6 +17,34 @@ namespace IllidanS4.SharpUtils.Collections.Async
 			}
 		}*/
 		
+		public static IAsyncEnumerable<T> Run<T>(IEnumerable<T> ienum)
+		{
+			return new EnumerableAsyncWrapper<T>(ienum);
+		}
+		
+		/// <example>
+		/// This code creates a simple asynchronous enumerable.
+		/// <code><![CDATA[
+		/// public static IAsyncEnumerable<string> Test()
+		/// {
+		///     return AsyncEnumerable.Create<string>(
+		/// 		async yield =>
+		/// 		{
+		/// 			await Task.Delay(100);
+		/// 			await yield("A");
+		/// 			await Task.Delay(200);
+		/// 			await yield("B");
+		/// 			await Task.Delay(300);
+		/// 			await yield("C");
+		/// 			await Task.Delay(400);
+		/// 			await yield("D");
+		/// 			await Task.Delay(500);
+		/// 			await yield("E");
+		/// 		}
+		/// 	);
+		/// }
+		/// ]]></code>
+		/// </example>
 		public static IAsyncEnumerable<T> Create<T>(Func<Func<T, Task>,Task> task)
 		{
 			return new TaskEnumerableWrapper<T>(task);
@@ -112,32 +140,6 @@ namespace IllidanS4.SharpUtils.Collections.Async
 				public void Dispose()
 				{
 					throw new NotImplementedException();
-				}
-			}
-		}
-		
-		private class AsyncEnumerableWrapper<T> : IEnumerable<T>
-		{
-			private readonly IAsyncEnumerable<T> enumerable;
-			
-			public AsyncEnumerableWrapper(IAsyncEnumerable<T> enumerable)
-			{
-				this.enumerable = enumerable;
-			}
-			
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return this.GetEnumerator();
-			}
-			
-			public IEnumerator<T> GetEnumerator()
-			{
-				using(var en = enumerable.GetEnumerator())
-				{
-					while(en.MoveNext().Result)
-					{
-						yield return en.Current;
-					}
 				}
 			}
 		}

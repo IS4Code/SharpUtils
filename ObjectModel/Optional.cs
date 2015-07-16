@@ -6,10 +6,10 @@ using System.Collections.Generic;
 namespace IllidanS4.SharpUtils.ObjectModel
 {
 	/// <summary>
-	/// Represents an optional value. Similar to <see cref="System.Nullable&lt;T&gt;"/> except that the generic type parameter is not constrained in any way.
-	/// Implementation of ECMA TR/89.
+	/// Represents an optional value. Similar to <see cref="System.Nullable{T}"/> except that the generic type parameter is not constrained in any way.
+	/// Conforms to ECMA TR/89.
 	/// </summary>
-	public struct Optional<T> : IComparable, IComparable<Optional<T>?>, IComparable<Optional<T>>, IEquatable<Optional<T>?>, IEquatable<Optional<T>>, IEnumerable<T>
+	public struct Optional<T> : IComparable, IComparable<T>, IComparable<Optional<T>?>, IComparable<Optional<T>>, IEquatable<T>, IEquatable<Optional<T>?>, IEquatable<Optional<T>>, IEnumerable<T>
 	{
 		private readonly bool hasValue;
 		private readonly T value;
@@ -25,8 +25,9 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			if(other == null)
 			{
 				return hasValue ? 1 : 0;
+			}else{
+				return CompareTo((Optional<T>)other);
 			}
-			return CompareTo((Optional<T>)other);
 		}
 		
 		public int CompareTo(Optional<T>? other)
@@ -34,34 +35,37 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			if(other == null)
 			{
 				return hasValue ? 1 : 0;
+			}else{
+				return CompareTo(other.Value);
 			}
-			return CompareTo(other.Value);
 		}
 		
 		public int CompareTo(Optional<T> other)
 		{
-			if(!hasValue && !other.hasValue)
+			if(other.hasValue)
 			{
-				return 0;
+				return CompareTo(other.value);
+			}else{
+				return hasValue ? 1 : 0;
 			}
-			if(!hasValue && other.hasValue)
+		}
+		
+		public int CompareTo(T other)
+		{
+			if(!hasValue)
 			{
 				return -1;
-			}
-			if(hasValue && !other.hasValue)
-			{
-				return 1;
 			}
 			
 			var comp = value as IComparable<T>;
 			if(comp != null)
 			{
-				return comp.CompareTo(other.value);
+				return comp.CompareTo(other);
 			}
 			var comp2 = value as IComparable;
 			if(comp != null)
 			{
-				return comp.CompareTo(other.value);
+				return comp.CompareTo(other);
 			}
 			throw new ArgumentException("Argument doesn't implement IComparable.");
 		}
@@ -74,6 +78,9 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			}else if(other is Optional<T>)
 			{
 				return Equals((Optional<T>)other);
+			}else if(other is T)
+			{
+				return Equals((T)other);
 			}else{
 				return false;
 			}
@@ -90,11 +97,17 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		
 		public bool Equals(Optional<T> other)
 		{
-			if(!hasValue && !other.hasValue)
+			if(other.hasValue)
 			{
-				return true;
+				return Equals(other.value);
+			}else{
+				return !hasValue;
 			}
-			if((!hasValue && other.hasValue) || (hasValue && !other.hasValue))
+		}
+		
+		public bool Equals(T other)
+		{
+			if(!hasValue)
 			{
 				return false;
 			}
@@ -102,7 +115,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			var eq = value as IEquatable<T>;
 			if(eq != null)
 			{
-				return eq.Equals(other.value);
+				return eq.Equals(other);
 			}
 			return value.Equals(other);
 		}

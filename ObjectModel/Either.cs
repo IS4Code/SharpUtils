@@ -5,13 +5,46 @@ namespace IllidanS4.SharpUtils.ObjectModel
 {
 	/// <summary>
 	/// Contains a value of type TFirst or a value of type TSecond.
-	/// Implementation of ECMA TR/89.
+	/// Conforms to ECMA TR/89.
 	/// </summary>
-	public struct Either<TFirst, TSecond> : IEquatable<Either<TFirst, TSecond>>
+	public struct Either<TFirst, TSecond> : IEquatable<Either<TFirst, TSecond>>, IEquatable<TFirst>//, IEquatable<TSecond>
 	{
 		readonly bool isSecond;
 		readonly TFirst first;
 		readonly TSecond second;
+		
+		public TFirst First{
+			get{
+				if(!isSecond) return first;
+				throw new InvalidOperationException("The object doesn't contain this value.");
+			}
+		}
+		
+		public TSecond Second{
+			get{
+				if(isSecond) return second;
+				throw new InvalidOperationException("The object doesn't contain this value.");
+			}
+		}
+		
+		public object Value{
+			get{
+				if(isSecond) return second;
+				else return first;
+			}
+		}
+		
+		public bool IsFirst{
+			get{
+				return !isSecond;
+			}
+		}
+		
+		public bool IsSecond{
+			get{
+				return !isSecond;
+			}
+		}
 		
 		public Either(TFirst first) : this()
 		{
@@ -61,30 +94,25 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			}
 		}
 		
-		public TFirst First{
-			get{
-				if(!isSecond) return first;
-				throw new InvalidOperationException("The object doesn't contain this value.");
-			}
+		public bool Equals(TFirst other)
+		{
+			return EqualsElement(other);
 		}
 		
-		public TSecond Second{
-			get{
-				if(isSecond) return second;
-				throw new InvalidOperationException("The object doesn't contain this value.");
-			}
+		public bool Equals(TSecond other)
+		{
+			return EqualsElement(other);
 		}
 		
-		public bool IsFirst{
-			get{
-				return !isSecond;
+		private bool EqualsElement<TArg>(TArg other)
+		{
+			var val = Value;
+			var eq = val as IEquatable<TArg>;
+			if(eq != null)
+			{
+				return eq.Equals(other);
 			}
-		}
-		
-		public bool IsSecond{
-			get{
-				return !isSecond;
-			}
+			return val.Equals(other);
 		}
 		
 		public override int GetHashCode()

@@ -2,7 +2,7 @@
 namespace IllidanS4.SharpUtils.Interop
 {
 	/// <summary>
-	/// Non-generic base of <see cref="Pointer&lt;T&gt;"/>.
+	/// Non-generic base of <see cref="Pointer{T}"/>.
 	/// </summary>
 	public interface IPointer
 	{

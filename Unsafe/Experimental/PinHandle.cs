@@ -68,21 +68,25 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 						r.GetReference( //References are thread-unsafe!
 							tr => {
 								#if STORE_REFERENCE
-								SafeReference.Create(
-									tr,
-									r2 => {
-										Reference = r2;
-										re1.Set();
-										Reset.WaitOne();
-									}
-								);
+								{
+									SafeReference.Create(
+										tr,
+										r2 => {
+											Reference = r2;
+											re1.Set();
+											Reset.WaitOne();
+										}
+									);
+								}
 								#else
-								tr.Pin(
-									delegate{
-										re1.Set();
-										Reset.WaitOne();
-									}
-								);
+								{
+									tr.Pin(
+										delegate{
+											re1.Set();
+											Reset.WaitOne();
+										}
+									);
+								}
 								#endif
 							}
 						);
