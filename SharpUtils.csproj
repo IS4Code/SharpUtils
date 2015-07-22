@@ -170,6 +170,7 @@
     <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
     <Compile Include="Serialization\ObjectConstructInfo.cs" />
     <Compile Include="Unsafe\Experimental\PinHandle.cs" />
+    <Compile Include="Unsafe\Experimental\StackAllocated.cs" />
     <Compile Include="Unsafe\IMemoryUnion.cs" />
     <Compile Include="Unsafe\VariadicUnion.cs" />
     <Compile Include="_Examples.cs" />

@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Security.Permissions;
 using IllidanS4.SharpUtils.Reflection;
 using IllidanS4.SharpUtils.Reflection.Linq;
@@ -237,6 +238,61 @@ namespace IllidanS4.SharpUtils.Interop
 					OpCodes.Ret
 				);
 			}
+		}
+		
+		public static bool ContainsReferences<T>()
+		{
+			return ContainsReferencesCache<T>.Value;
+		}
+		
+		public static bool ContainsReferences(Type type)
+		{
+			if(type.IsArray)
+			{
+				var elem = type.GetElementType();
+				return !elem.IsValueType || ContainsReferences(elem);
+			}
+			if(type.IsPrimitive) return false;
+			foreach(var fi in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+			{
+				var ftype = fi.FieldType;
+				if(!ftype.IsValueType || ContainsReferences(ftype))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		private static class ContainsReferencesCache<T>
+		{
+			public static readonly bool Value = ContainsReferences(typeof(T));
+		}
+		
+		public static bool IsBlittable<T>()
+		{
+			return IsBlittableCache<T>.Value;
+		}
+		
+		public static bool IsBlittable(Type type)
+		{
+			if(type.IsArray)
+			{
+				var elem = type.GetElementType();
+				return !elem.IsValueType && IsBlittable(elem);
+			}
+	        try{
+				object instance = FormatterServices.GetUninitializedObject(type);
+				GCHandle.Alloc(instance, GCHandleType.Pinned).Free();
+				return true;
+	        }catch{
+				return false;
+			}
+		}
+		
+		private static class IsBlittableCache<T>
+		{
+			public static readonly bool Value = IsBlittable(typeof(T));
 		}
 	}
 }

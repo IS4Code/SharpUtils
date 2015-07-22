@@ -25,6 +25,11 @@ namespace IllidanS4.SharpUtils.Text
 			
 		}
 		
+		public StringChunk(char[] value, int startIndex, int length) : this(new string(value, startIndex, length))
+		{
+			
+		}
+		
 		private StringChunk(string source, int offset, int length)
 		{
 			this.source = source;

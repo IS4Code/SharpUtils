@@ -114,8 +114,8 @@ namespace IllidanS4.SharpUtils.Collections.Async
 				private Task OnNext(T value)
 				{
 					Current = value;
-					nextTask.SetResult(true);
 					yieldTask = new TaskCompletionSource<object>();
+					nextTask.SetResult(true);
 					return yieldTask.Task;
 				}
 				

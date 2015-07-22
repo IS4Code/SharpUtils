@@ -54,15 +54,16 @@ namespace IllidanS4.SharpUtils.Text
 			return new StringBuilderRef(builder);
 		}
 		
-		public static StringReference Create(string value)
-		{
-			return Create(AtomicContainer.Create(value));
-		}
-		
 		public static StringReference Create(IReadWriteAccessor<string> acc)
 		{
 			return new StringRef(acc);
 		}
+		
+		public static StringReference Create(IReadWriteAccessor<StringChunk> acc)
+		{
+			return new StringChunkRef(acc);
+		}
+		
 		
 		public static void Create(ref string reference, Action<StringReference> outputAct)
 		{
@@ -73,6 +74,18 @@ namespace IllidanS4.SharpUtils.Text
 		{
 			return ReferenceAccessor.Create(ref reference, r => outputFunc(Create(r)));
 		}
+		
+		
+		public static void Create(ref StringChunk reference, Action<StringReference> outputAct)
+		{
+			ReferenceAccessor.Create(ref reference, r => outputAct(Create(r)));
+		}
+		
+		public static TRet Create<TRet>(ref StringChunk reference, Func<StringReference, TRet> outputFunc)
+		{
+			return ReferenceAccessor.Create(ref reference, r => outputFunc(Create(r)));
+		}
+		
 		
 		private sealed class StringBuilderRef : StringReference
 		{
@@ -187,6 +200,61 @@ namespace IllidanS4.SharpUtils.Text
 			public override void Append(string value)
 			{
 				Item += value;
+			}
+		}
+		
+		private sealed class StringChunkRef : StringReference
+		{
+			readonly IReadWriteAccessor<StringChunk> acc;
+			
+			private StringChunk Item{
+				get{
+					return acc.Item;
+				}
+				set{
+					acc.Item = value;
+				}
+			}
+			
+			public StringChunkRef(IReadWriteAccessor<StringChunk> acc)
+			{
+				this.acc = acc;
+			}
+			
+			public override string ToString()
+			{
+				return Item.ToString();
+			}
+			
+			public override void Replace(string oldValue, string newValue)
+			{
+				Item = Item.ToString().Replace(oldValue, newValue);
+			}
+			
+			public override void Remove(int startIndex, int count)
+			{
+				Item = Item.ToString().Remove(startIndex, count);
+			}
+			
+			public override int Length{
+				get{
+					return Item.Length;
+				}
+			}
+			
+			public override void Insert(int index, string value)
+			{
+				Item = Item.ToString().Insert(index, value);
+			}
+			
+			public override void Clear()
+			{
+				Item = default(StringChunk);
+			}
+			
+			public override void Append(string value)
+			{
+				Item = Item.ToString()+value;
 			}
 		}
 	}
