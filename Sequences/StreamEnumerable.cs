@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Interop;
 
-namespace IllidanS4.SharpUtils.Streaming
+namespace IllidanS4.SharpUtils.Sequences
 {
 	public static class StreamEnumerable
 	{

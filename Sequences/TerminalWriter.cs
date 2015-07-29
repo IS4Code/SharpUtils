@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace IllidanS4.SharpUtils.Streaming
+namespace IllidanS4.SharpUtils.Sequences
 {
 	public class TerminalWriter : StreamWriter
 	{

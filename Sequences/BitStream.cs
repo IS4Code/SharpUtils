@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace IllidanS4.SharpUtils.Streaming
+namespace IllidanS4.SharpUtils.Sequences
 {
 	public class BitStream : IObjectReader<bool>, IObjectWriter<bool>
 	{

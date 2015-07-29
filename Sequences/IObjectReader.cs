@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace IllidanS4.SharpUtils.Streaming
+namespace IllidanS4.SharpUtils.Sequences
 {
 	public interface IObjectReader<out T> : IEnumerable<T>
 	{
