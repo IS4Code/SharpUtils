@@ -7,14 +7,14 @@ namespace IllidanS4.SharpUtils.Sequences
 {
 	public static class Randomizer
 	{
-		public static IInfiniteSequence<double> Double()
+		public static ISequence<double> Double()
 		{
-			return InfiniteSequence.Create(DoubleBase(new Random()));
+			return Sequence.Infinite(DoubleBase(new Random()));
 		}
 		
-		public static IInfiniteSequence<double> Double(int seed)
+		public static ISequence<double> Double(int seed)
 		{
-			return InfiniteSequence.Create(DoubleBase(new Random(seed)));
+			return Sequence.Infinite(DoubleBase(new Random(seed)));
 		}
 		
 		private static IEnumerable<double> DoubleBase(Random rnd)
@@ -26,14 +26,14 @@ namespace IllidanS4.SharpUtils.Sequences
 		}
 		
 		
-		public static IInfiniteSequence<byte[]> Bytes(int count)
+		public static ISequence<byte[]> Bytes(int count)
 		{
-			return InfiniteSequence.Create(BytesBase(count, new Random()));
+			return Sequence.Infinite(BytesBase(count, new Random()));
 		}
 		
-		public static IInfiniteSequence<byte[]> Bytes(int count, int seed)
+		public static ISequence<byte[]> Bytes(int count, int seed)
 		{
-			return InfiniteSequence.Create(BytesBase(count, new Random(seed)));
+			return Sequence.Infinite(BytesBase(count, new Random(seed)));
 		}
 		
 		private static IEnumerable<byte[]> BytesBase(int count, Random rnd)
@@ -47,14 +47,18 @@ namespace IllidanS4.SharpUtils.Sequences
 		}
 		
 		
-		public static IInfiniteSequence<byte[]> Bytes(IEnumerable<int> counts)
+		public static ISequence<byte[]> Bytes(IEnumerable<int> counts)
 		{
-			return InfiniteSequence.Create(BytesBase(counts, new Random()));
+			var seq = counts as ISequence<int>;
+			bool finite = seq != null && seq.IsFinite;
+			return Sequence.Create(BytesBase(counts, new Random()), finite);
 		}
 		
-		public static IInfiniteSequence<byte[]> Bytes(IEnumerable<int> counts, int seed)
+		public static ISequence<byte[]> Bytes(IEnumerable<int> counts, int seed)
 		{
-			return InfiniteSequence.Create(BytesBase(counts, new Random(seed)));
+			var seq = counts as ISequence<int>;
+			bool finite = seq != null && seq.IsFinite;
+			return Sequence.Create(BytesBase(counts, new Random(seed)), finite);
 		}
 		
 		private static IEnumerable<byte[]> BytesBase(IEnumerable<int> counts, Random rnd)
@@ -68,24 +72,24 @@ namespace IllidanS4.SharpUtils.Sequences
 		}
 		
 		
-		public static IInfiniteSequence<int> Integers()
+		public static ISequence<int> Integers()
 		{
 			return Integers(0, Int32.MaxValue);
 		}
 		
-		public static IInfiniteSequence<int> Integers(int maxValue)
+		public static ISequence<int> Integers(int maxValue)
 		{
 			return Integers(0, maxValue);
 		}
 		
-		public static IInfiniteSequence<int> Integers(int minValue, int maxValue)
+		public static ISequence<int> Integers(int minValue, int maxValue)
 		{
-			return InfiniteSequence.Create(IntegersBase(maxValue, minValue, new Random()));
+			return Sequence.Infinite(IntegersBase(maxValue, minValue, new Random()));
 		}
 		
-		public static IInfiniteSequence<int> Integers(int minValue, int maxValue, int seed)
+		public static ISequence<int> Integers(int minValue, int maxValue, int seed)
 		{
-			return InfiniteSequence.Create(IntegersBase(maxValue, minValue, new Random(seed)));
+			return Sequence.Infinite(IntegersBase(maxValue, minValue, new Random(seed)));
 		}
 		
 		private static IEnumerable<int> IntegersBase(int minValue, int maxValue, Random rnd)

@@ -112,12 +112,14 @@
     <Compile Include="Patterns\StaticTypeArg.cs" />
     <Compile Include="Reflection\Emit\StackValueType.cs" />
     <Compile Include="Reflection\TypedContainer.cs" />
+    <Compile Include="Reflection\TypeSystem.cs" />
     <Compile Include="SafeReference.cs" />
     <Compile Include="Sequences\BitStream.cs" />
     <Compile Include="Sequences\IInfiniteSequence.cs" />
     <Compile Include="Sequences\IObjectReader.cs" />
     <Compile Include="Sequences\IObjectWriter.cs" />
     <Compile Include="Sequences\Randomizer.cs" />
+    <Compile Include="Sequences\SequenceTools.cs" />
     <Compile Include="Sequences\StreamEnumerable.cs" />
     <Compile Include="Sequences\StreamExtensions.cs" />
     <Compile Include="Sequences\TerminalWriter.cs" />

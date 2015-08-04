@@ -2,24 +2,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using IllidanS4.SharpUtils.Metadata;
 
 namespace IllidanS4.SharpUtils.Sequences
 {
 	/// <summary>
-	/// Represents a sequence that might never end.
+	/// Represents a sequence that guarantees to be finite or not.
 	/// </summary>
-	public interface IInfiniteSequence<T> : IEnumerable<T>
+	public interface ISequence<T> : IEnumerable<T>
 	{
-		
+		/// <summary>
+		/// True if the sequence is guaranteed to be finite, otherwise false.
+		/// </summary>
+		bool IsFinite{get;}
 	}
 	
-	public sealed class InfiniteSequence<T> : IInfiniteSequence<T>
+	public sealed class Sequence<T> : ISequence<T>
 	{
 		readonly IEnumerable<T> seq;
+		public bool IsFinite{get; private set;}
 		
-		public InfiniteSequence(IEnumerable<T> seq)
+		public Sequence(IEnumerable<T> seq, bool finite)
 		{
 			this.seq = seq;
+			IsFinite = finite;
 		}
 		
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -33,11 +40,45 @@ namespace IllidanS4.SharpUtils.Sequences
 		}
 	}
 	
-	public static class InfiniteSequence
+	public static class Sequence
 	{
-		public static IInfiniteSequence<T> Create<T>(IEnumerable<T> seq)
+		public static ISequence<T> Create<T>(ICollection<T> list)
 		{
-			return new InfiniteSequence<T>(seq);
+			return new Sequence<T>(list, true);
+		}
+		
+		public static ISequence<T> Create<T>(IEnumerable<T> seq, bool finite)
+		{
+			var col = seq as ICollection<T>;
+			var col2 = seq as ICollection;
+			if(col != null || col2 != null)
+			{
+				if(!finite)
+				{
+					throw new ArgumentException("This collection is finite.", "seq");
+				}
+			}
+			return new Sequence<T>(seq, finite);
+		}
+		
+		public static ISequence<T> Infinite<T>(IEnumerable<T> seq)
+		{
+			return Create(seq, false);
+		}
+		
+		public static ISequence<T> Finite<T>(IEnumerable<T> seq)
+		{
+			return Create(seq, true);
+		}
+		
+		public static int Count<T>(this ISequence<T> source)
+		{
+			if(source.IsFinite)
+			{
+				return ((IEnumerable<T>)source).Count();
+			}else{
+				throw new ArgumentException("This sequence is infinite.", "source");
+			}
 		}
 	}
 }

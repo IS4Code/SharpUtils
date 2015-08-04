@@ -13,21 +13,27 @@ namespace IllidanS4.SharpUtils.Sequences
 	{
 		public static IEnumerable<byte> ToIEnumerable(this Stream input)
 		{
+			return ToIEnumerableInner(input, input.Position);
+		}
+		
+		private static IEnumerable<byte> ToIEnumerableInner(Stream input, long pos)
+		{
 			int c;
 			while((c = input.ReadByte()) != -1)
 			{
 				yield return (byte)c;
+				input.Position = ++pos;
 			}
 		}
 		
-		public static Stream ToStream(this IEnumerable<byte> enumerable)
+		public static Stream ToStream(this IEnumerator<byte> enumerator)
 		{
-			return new EnumerableStream(enumerable);
+			return new EnumerableStream(enumerator);
 		}
 		
 		public static void Write(this Stream output, params byte[] bytes)
 		{
-			Write(output, (IEnumerable<byte>)bytes);
+			output.Write(bytes, 0, bytes.Length);
 		}
 		
 		public static void Write(this Stream output, IEnumerable<byte> bytes)
@@ -52,7 +58,7 @@ namespace IllidanS4.SharpUtils.Sequences
 			try{
 				foreach(var s in structures)
 				{
-					Marshal.StructureToPtr(s, ptr, true);
+					InteropTools.StructureToPtr(s, ptr);
 					Marshal.Copy(ptr, buffer, 0, size);
 					output.Write(buffer, 0, size);
 				}
@@ -74,7 +80,7 @@ namespace IllidanS4.SharpUtils.Sequences
 				byte[] buffer = new byte[size];
 				IntPtr ptr = Marshal.AllocHGlobal(size);
 				try{
-					InteropTools.StructureToPtr(s, ptr);
+					Marshal.StructureToPtr(s, ptr, true);
 					Marshal.Copy(ptr, buffer, 0, size);
 					output.Write(buffer, 0, size);
 				}finally{
@@ -83,7 +89,7 @@ namespace IllidanS4.SharpUtils.Sequences
 			}
 		}
 		
-		/*[CLSCompliant(false)]
+		[CLSCompliant(false)]
 		public static void Write(this Stream output, __arglist)
 		{
 			ArgIterator iter = new ArgIterator(__arglist);
@@ -96,7 +102,7 @@ namespace IllidanS4.SharpUtils.Sequences
 					byte[] buffer = new byte[size];
 					IntPtr ptr = Marshal.AllocHGlobal(size);
 					try{
-						Marshal.StructureToPtr(__refvalue(tr), ptr, true);
+						InteropTools.StructureToPtrDirect(tr, ptr, size);
 						Marshal.Copy(ptr, buffer, 0, size);
 						output.Write(buffer, 0, size);
 					}finally{
@@ -106,7 +112,7 @@ namespace IllidanS4.SharpUtils.Sequences
 			}finally{
 				iter.End();
 			}
-		}*/
+		}
 		
 		/*static class GenericTypedRefMarshalHelper where T : struct
 		{
@@ -159,9 +165,9 @@ namespace IllidanS4.SharpUtils.Sequences
 			readonly IEnumerator<byte> enumerator;
 			bool end;
 			
-			public EnumerableStream(IEnumerable<byte> enumerable)
+			public EnumerableStream(IEnumerator<byte> enumerator)
 			{
-				enumerator = enumerable.GetEnumerator();
+				this.enumerator = enumerator;
 			}
 			
 			public override void Close()

@@ -44,7 +44,7 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		/// <param name="structure">The sturecture to be stored in the memory.</param>
 		/// <param name="ptr">The pointer to the memory location.</param>
-		public static void StructureToPtr<T>(ref T structure, IntPtr ptr)
+		public static void StructureToPtr<T>(ref T structure, IntPtr ptr) where T : struct
 		{
 			StructureToPtrDirect(__makeref(structure), ptr);
 		}
@@ -52,9 +52,9 @@ namespace IllidanS4.SharpUtils.Interop
 		/// <summary>
 		/// Stores a structure in the unmanaged memory.
 		/// </summary>
-		/// <param name="structure">The sturcture to be stored in the memory.</param>
+		/// <param name="structure">The structure to be stored in the memory.</param>
 		/// <param name="ptr">The pointer to the memory location.</param>
-		public static void StructureToPtr<T>(T structure, IntPtr ptr)
+		public static void StructureToPtr<T>(T structure, IntPtr ptr) where T : struct
 		{
 			StructureToPtrDirect(__makeref(structure), ptr);
 		}
@@ -87,7 +87,7 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
 		/// <param name="structure">Variable in which the structure will be stored.</param>
-		public static void PtrToStructure<T>(IntPtr ptr, out T structure)
+		public static void PtrToStructure<T>(IntPtr ptr, out T structure) where T : struct
 		{
 			structure = default(T);
 			PtrToStructureDirect(ptr, __makeref(structure));
@@ -98,7 +98,7 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		/// <param name="ptr">A pointer to the memory where the structure is stored.</param>
 		/// <returns>The structure in the memory.</returns>
-		public static T PtrToStructure<T>(IntPtr ptr)
+		public static T PtrToStructure<T>(IntPtr ptr) where T : struct
 		{
 			T obj;
 			PtrToStructure(ptr, out obj);
