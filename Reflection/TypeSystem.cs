@@ -107,12 +107,12 @@ namespace IllidanS4.SharpUtils.Reflection
 		
 		public IEnumerable<Type> AllTypes(IEnumerable<Type> source)
 		{
-			return SequenceTools.MergeInfinite(AllGenericTypes(source).Select(t => AllDerivedRecursive(t)));
+			return SequenceTools.SelectManyInfinite(AllGenericTypes(source).Select(t => AllDerivedRecursive(t)));
 		}
 		
 		private IEnumerable<Type> AllGenericTypes(IEnumerable<Type> source)
 		{
-			if(Generic) return SequenceTools.MergeInfinite(source.Select(t => AllGenericItself(t, AllTypes(source))));
+			if(Generic) return SequenceTools.SelectManyInfinite(source.Select(t => AllGenericItself(t, AllTypes(source))));
 			else return source;
 		}
 		
@@ -182,7 +182,7 @@ namespace IllidanS4.SharpUtils.Reflection
 				
 				var arrays = AllArrays(type).Select(t => AllDerivedRecursive(t));
 				
-				return SequenceTools.MergeFinite(new[]{byrefs, pointers}.Concat(arrays));
+				return SequenceTools.SelectManyOuter(new[]{byrefs, pointers}.Concat(arrays));
 			}else{
 				return Type.EmptyTypes;
 			}
@@ -238,7 +238,7 @@ namespace IllidanS4.SharpUtils.Reflection
 				{
 					yield return t;
 				}
-				args = SequenceTools.MergeFinite(args, tparams);
+				args = SequenceTools.SelectManyOuter(args, tparams);
 			}
 			foreach(Type t in AllGeneric(def, args))
 			{
@@ -251,7 +251,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			if(!def.IsGenericTypeDefinition) return Type.EmptyTypes;
 			Type[] tparams = def.GetGenericArguments();
 			Type[] targs = new Type[tparams.Length];
-			return SequenceTools.MergeInfinite(AllGenericBase(def, args, tparams, targs, 0));
+			return SequenceTools.SelectManyInfinite(AllGenericBase(def, args, tparams, targs, 0));
 		}
 		
 		private IEnumerable<IEnumerable<Type>> AllGenericBase(Type def, IEnumerable<Type> args, Type[] tparams, Type[] targs, int pos)
@@ -270,7 +270,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			{
 				if(!ConstraintsOkay(tparams[pos], t)) continue;
 				targs[pos] = t;
-				yield return SequenceTools.MergeInfinite(AllGenericBase(def, args, tparams, (Type[])targs.Clone(), pos+1));
+				yield return SequenceTools.SelectManyInfinite(AllGenericBase(def, args, tparams, (Type[])targs.Clone(), pos+1));
 			}
 		}
 		

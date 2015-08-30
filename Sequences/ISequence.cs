@@ -49,9 +49,7 @@ namespace IllidanS4.SharpUtils.Sequences
 		
 		public static ISequence<T> Create<T>(IEnumerable<T> seq, bool finite)
 		{
-			var col = seq as ICollection<T>;
-			var col2 = seq as ICollection;
-			if(col != null || col2 != null)
+			if(seq is ICollection<T> || seq is ICollection)
 			{
 				if(!finite)
 				{

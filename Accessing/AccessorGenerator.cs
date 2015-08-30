@@ -27,20 +27,20 @@ namespace IllidanS4.SharpUtils.Accessing
 			DynamicMethod setter = new DynamicMethod(
 				"set_"+fi.Name,
 				typeof(void),
-				target==null?new[]{t}:new[]{target.GetType(), t},
+				fi.IsStatic?new[]{t}:new[]{target.GetType(), t},
 				fi.DeclaringType
 			);
 			ILGenerator il = setter.GetILGenerator();
-			if(target!=null)
+			if(fi.IsStatic)
 			{
+				il.Emit(OpCodes.Ldarg_0);
+				if(t != fi.FieldType && t.IsValueType)il.Emit(OpCodes.Box, t);
+				il.Emit(OpCodes.Stsfld, fi);
+			}else{
 				il.Emit(OpCodes.Ldarg_0);
 				il.Emit(OpCodes.Ldarg_1);
 				if(t != fi.FieldType && t.IsValueType)il.Emit(OpCodes.Box, t);
 				il.Emit(OpCodes.Stfld, fi);
-			}else{
-				il.Emit(OpCodes.Ldarg_0);
-				if(t != fi.FieldType && t.IsValueType)il.Emit(OpCodes.Box, t);
-				il.Emit(OpCodes.Stsfld, fi);
 			}
 			il.Emit(OpCodes.Ret);
 			return (Action<T>)setter.CreateDelegate(TypeOf<Action<T>>.TypeID, target);
@@ -61,22 +61,22 @@ namespace IllidanS4.SharpUtils.Accessing
 			if(!t.IsAssignableFrom(fi.FieldType)) throw new ArgumentException("Field type does not match type argument.", "T");
 			
 			DynamicMethod getter = new DynamicMethod(
-				"set_"+fi.Name,
+				"get_"+fi.Name,
 				t,
-				target==null?Type.EmptyTypes:new[]{target.GetType()},
+				fi.IsStatic?Type.EmptyTypes:new[]{target.GetType()},
 				fi.DeclaringType
 			);
 			ILGenerator il = getter.GetILGenerator();
-			if(target!=null)
+			if(fi.IsStatic)
 			{
+				il.Emit(OpCodes.Ldsfld, fi);
+			}else{
 				il.Emit(OpCodes.Ldarg_0);
 				il.Emit(OpCodes.Ldfld, fi);
-			}else{
-				il.Emit(OpCodes.Ldsfld, fi);
 			}
 			if(fi.FieldType != t && fi.FieldType.IsValueType)il.Emit(OpCodes.Box, fi.FieldType);
 			il.Emit(OpCodes.Ret);
-			return (Func<T>)getter.CreateDelegate(TypeOf<Func<T>>.TypeID);
+			return (Func<T>)getter.CreateDelegate(TypeOf<Func<T>>.TypeID, target);
 		}
 	}
 }
