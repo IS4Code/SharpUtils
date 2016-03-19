@@ -173,7 +173,8 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 			if(tDelegate == null) throw new ArgumentNullException("tDelegate");
 			
 			MethodInfo invoke = tDelegate.GetMethod("Invoke");
-			return new MethodSignature(CallingConventions.Standard, invoke.ReturnType, invoke.GetParameters().Select(p => p.ParameterType).ToArray());
+			//return new MethodSignature(CallingConventions.Standard, invoke.ReturnType, invoke.GetParameters().Select(p => p.ParameterType).ToArray());
+			return MethodSignature.FromMethodInfo(invoke);
 		}
 		
 		public Type GetDelegateType()

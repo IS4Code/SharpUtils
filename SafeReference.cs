@@ -1,6 +1,9 @@
 ﻿/* Date: 13.6.2015, Time: 13:34 */
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using IllidanS4.SharpUtils.Accessing;
 using IllidanS4.SharpUtils.Interop;
 using IllidanS4.SharpUtils.Metadata;
@@ -85,6 +88,30 @@ namespace IllidanS4.SharpUtils
 			return tr.Pin(
 				tr2 => {using(var r = new SafeReference(tr2, false))return func(r);}
 			);
+		}
+		
+		public delegate void VarRefReceiver(IList<SafeReference> refs);
+		public delegate TRet VarRefReceiver<TRet>(IList<SafeReference> refs);
+		
+		public static void Create(VarRefReceiver act, __arglist)
+		{
+			Create(act, new ArgIterator(__arglist));
+		}
+		
+		public static void Create(VarRefReceiver act, ArgIterator refs)
+		{
+			Create<Unit>(r=>{act(r);return 0;}, refs);
+		}
+		
+		public static TRet Create<TRet>(VarRefReceiver<TRet> func, ArgIterator refs)
+		{
+			var arr = new SafeReference[refs.GetRemainingCount()];
+			if(arr.Length > 0)
+			{
+				return PinHelper<TRet>.PinRecursive(refs.GetNextArg(), refs, arr, func);
+			}else{
+				return func(arr);
+			}
 		}
 		
 		public unsafe Type Type{
@@ -264,6 +291,95 @@ namespace IllidanS4.SharpUtils
 			var tr1 = m_ref.Value;
 			var tr2 = value.m_ref.Value;
 			(*(TypedReference*)(&tr1)).SetValue(*(TypedReference*)(&tr2));
+		}
+		
+		private static class PinHelper<TRet>
+		{
+			public delegate TRet Del(TypedReference first, ArgIterator refs, SafeReference[] sr, VarRefReceiver<TRet> func);
+			
+			public static readonly Del PinRecursive = MakePinRecursive();
+			
+			static Del MakePinRecursive()
+			{
+				var tai = typeof(ArgIterator);
+				var tsr = typeof(SafeReference);
+				var tvr = typeof(VarRefReceiver<TRet>);
+				var trt = typeof(TRet);
+				var dyn = new DynamicMethod("PinRecursive", trt, new[]{typeof(TypedReference), tai, typeof(SafeReference[]), tvr}, typeof(PinHelper<TRet>));
+				
+				var ctor = tsr.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).Single();
+				
+				var il = dyn.GetILGenerator();
+				
+				var next = il.DefineLabel();
+				var end = il.DefineLabel();
+				
+				il.DeclareLocal(typeof(void).MakeByRefType(), true);
+				il.DeclareLocal(tsr); //SafeReference
+				il.DeclareLocal(trt); //TRet
+				
+				il.Emit(OpCodes.Ldarga_S, 0);
+				il.Emit(OpCodes.Ldind_I);
+				il.Emit(OpCodes.Stloc_0);
+				
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldc_I4_0);
+				il.Emit(OpCodes.Newobj, ctor);
+				il.Emit(OpCodes.Stloc_1);
+				
+				il.BeginExceptionBlock();
+				
+				/*il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Callvirt, typeof(ICollection<SafeReference>).GetMethod("Add"));*/
+				
+				il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Ldlen);
+				il.Emit(OpCodes.Ldarga_S, 1);
+				il.Emit(OpCodes.Call, tai.GetMethod("GetRemainingCount"));
+				il.Emit(OpCodes.Sub);
+				il.Emit(OpCodes.Ldc_I4_1);
+				il.Emit(OpCodes.Sub);
+				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Stelem_Ref);
+				
+				il.Emit(OpCodes.Ldarga_S, 1);
+				il.Emit(OpCodes.Call, tai.GetMethod("GetRemainingCount"));
+				il.Emit(OpCodes.Ldc_I4_0);
+				il.Emit(OpCodes.Bgt_S, next);
+				
+				il.Emit(OpCodes.Ldarg_3);
+				il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Callvirt, tvr.GetMethod("Invoke"));
+				il.Emit(OpCodes.Stloc_2);
+				
+				il.Emit(OpCodes.Br_S, end);
+				
+				il.MarkLabel(next);
+				
+				il.Emit(OpCodes.Ldarga_S, 1);
+				il.Emit(OpCodes.Call, tai.GetMethod("GetNextArg", Type.EmptyTypes));
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Ldarg_3);
+				il.Emit(OpCodes.Call, dyn);
+				il.Emit(OpCodes.Stloc_2);
+				
+				il.MarkLabel(end);
+				
+				il.BeginFinallyBlock();
+				
+				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Callvirt, tsr.GetMethod("Dispose"));
+				
+				il.EndExceptionBlock();
+				
+				il.Emit(OpCodes.Ldloc_2);
+				il.Emit(OpCodes.Ret);
+				
+				return (Del)dyn.CreateDelegate(typeof(Del));
+			}
 		}
 	}
 }

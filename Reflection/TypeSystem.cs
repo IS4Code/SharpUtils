@@ -30,7 +30,7 @@ namespace IllidanS4.SharpUtils.Reflection
 			
 		}
 		
-		public TypeSystem(BindingFlags visibility, bool arrays, bool mdarrays, bool byrefs, bool pointers, bool refpointers, bool generic, bool genparams, bool staticderived, bool opengenderived)
+		public TypeSystem(BindingFlags visibility, bool arrays = true, bool mdarrays = true, bool byrefs = true, bool pointers = true, bool refpointers = true, bool generic = true, bool genparams = true, bool staticderived = false, bool opengenderived = false)
 		{
 			VisibilityFlags = visibility;
 			Arrays = arrays;

@@ -312,17 +312,26 @@ namespace IllidanS4.SharpUtils.Reflection.Linq
 			object arg = Argument;
 			if(arg == null)
 			{
-				return OpCode.ToString();
+				return OpCodeString();
 			}else{
 				object[] arr = arg as object[];
 				if(arr != null)
 				{
-					return OpCode.ToString()+" "+String.Join(" ", arr.Select(o => (o??"").ToString()));
+					return OpCodeString()+" "+String.Join(" ", arr.Select(o => (o??"").ToString()));
 				}else{
-					return OpCode.ToString()+" "+arg;
+					return OpCodeString()+" "+arg;
 				}
 			}
-			
+		}
+		
+		private string OpCodeString()
+		{
+			try{
+				return OpCode.ToString();
+			}catch(NullReferenceException)
+			{
+				return null;
+			}
 		}
 		#endregion
 	}

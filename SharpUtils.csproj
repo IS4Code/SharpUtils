@@ -128,6 +128,7 @@
     <Compile Include="SomeException.cs" />
     <Compile Include="Text\StringChunk.cs" />
     <Compile Include="Text\StringReference.cs" />
+    <Compile Include="Threads\ThreadingTools.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="EmptyManager.cs" />
     <Compile Include="EnumTools.cs" />

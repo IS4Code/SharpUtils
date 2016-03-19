@@ -221,6 +221,11 @@ namespace IllidanS4.SharpUtils
 				il.Emit(OpCodes.Unbox, to);
 				return;
 			}
+			if(from.IsEnum && to == Enum.GetUnderlyingType(from) ||
+			   to.IsEnum && from == Enum.GetUnderlyingType(to))
+			{
+				return;
+			}
 			if(TryEmitCast(from, to) || TryEmitCast(to, from))
 			{
 				il.Emit(OpCodes.Castclass, to);

@@ -21,10 +21,21 @@ namespace IllidanS4.SharpUtils.Numerics
 		/// <param name="steps">n</param>
 		public static double Following(this double value, long steps)
 		{
+			if(steps < 0) return Preceding(value, -steps);
+			else if(steps == 0) return value;
 			if(Double.IsPositiveInfinity(value) || Double.IsNaN(value)) return value;
-			else if(Double.IsNegativeInfinity(value)) return Double.MinValue;
+			if(Double.IsNegativeInfinity(value))
+			{
+				value = Double.MinValue;
+				steps -= 1;
+			}else if(value == 0)
+		    {
+		    	value = Double.Epsilon;
+		    	steps -= 1;
+		    }
 		    var longRep = BitConverter.DoubleToInt64Bits(value);
-		    if(longRep >= 0)
+		    
+		    if(longRep > 0)
 		    {
 		        longRep += steps;
 		    }else if(longRep == Int64.MinValue) //-0
@@ -49,8 +60,18 @@ namespace IllidanS4.SharpUtils.Numerics
 		/// <param name="steps">n</param>
 		public static double Preceding(this double value, long steps)
 		{
+			if(steps < 0) return Following(value, -steps);
+			else if(steps == 0) return value;
 			if(Double.IsNegativeInfinity(value) || Double.IsNaN(value)) return value;
-			else if(Double.IsPositiveInfinity(value)) return Double.MaxValue;
+			if(Double.IsPositiveInfinity(value))
+			{
+				value = Double.MaxValue;
+				steps -= 1;
+			}else if(value == 0)
+			{
+				value = -Double.Epsilon;
+				steps -= 1;
+			}
 		    var longRep = BitConverter.DoubleToInt64Bits(value);
 		    if(longRep >= 0)
 		    {
