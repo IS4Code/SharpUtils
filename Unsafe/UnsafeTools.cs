@@ -16,22 +16,44 @@ namespace IllidanS4.SharpUtils.Unsafe
 	/// </summary>
 	public static class UnsafeTools
 	{
+		/// <summary>
+		/// Returns the CLR-size of a value.
+		/// The result should be consistent with <see cref="DynamicSizeOf"/>.
+		/// </summary>
+		/// <param name="type">The type of the value.</param>
+		/// <returns>The size of the value.</returns>
 		public static int SizeOf(Type type)
 		{
 			if(!type.IsValueType) return IntPtr.Size;//throw new ArgumentException(Extensions.GetResourceString("Argument_NeedStructWithNoRefs"));
 			return (int)_SizeOf(type);
 		}
 		
+		/// <summary>
+		/// Returns the size of a marshalled type corresponding to a CLR type.
+		/// </summary>
+		/// <param name="t">The CLR type.</param>
+		/// <returns>The unmanaged size.</returns>
 		public static int UnmanagedSizeOf(Type t)
 		{
 			return UnmanagedSizeOf(t, true);
 		}
 		
+		/// <summary>
+		/// Returns the size of a marshalled type corresponding to a CLR type.
+		/// </summary>
+		/// <param name="t">The CLR type.</param>
+		/// <param name="throwIfNotMarshalable">If true, an exception is thrown if the type cannot be marshalled.</param>
+		/// <returns>The unmanaged size.</returns>
 		public static int UnmanagedSizeOf(Type t, bool throwIfNotMarshalable)
 		{
 			return _UnmanagedSizeOf(t, throwIfNotMarshalable);
 		}
 		
+		/// <summary>
+		/// Returns the size defined in the type's metadata.
+		/// </summary>
+		/// <param name="t">The type.</param>
+		/// <returns>The defined size.</returns>
 		public static int DefinedSizeOf(Type t)
 		{
 			StructLayoutAttribute attr = t.StructLayoutAttribute;
@@ -42,11 +64,22 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return attr.Size;
 		}
 		
+		/// <summary>
+		/// Returns the size of a value, returned by "sizeof" IL instruction.
+		/// The result should be consistent with <see cref="SizeOf"/>.
+		/// </summary>
+		/// <param name="t">The type of the value.</param>
+		/// <returns>The size of the value.</returns>
 		public static int DynamicSizeOf(Type t)
 		{
 			return (int)typeof(SizeOfClass<>).MakeGenericType(t).GetField("Size").GetValue(null);
 		}
 		
+		/// <summary>
+		/// Returns the size of a value, returned by "sizeof" IL instruction.
+		/// The result should be consistent with <see cref="SizeOf"/>.
+		/// </summary>
+		/// <returns>The size of the value.</returns>
 		public static int DynamicSizeOf<T>()
 		{
 			return SizeOfClass<T>.Size;
@@ -60,6 +93,11 @@ namespace IllidanS4.SharpUtils.Unsafe
 			).Invoke();
 		}
 		
+		/// <summary>
+		/// Returns the minimum size of an instance of a specific type. The type is boxed for value types.
+		/// </summary>
+		/// <param name="t">The type of the instance.</param>
+		/// <returns>The size of the instance.</returns>
 		public static int BaseInstanceSizeOf(Type t)
 		{
 			return Marshal.ReadInt32(t.TypeHandle.Value, 4);
@@ -83,6 +121,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		}*/
 		
 		private static readonly Func<object,IntPtr> GetPtr = LinqEmit.CreateDynamicMethod<Func<object,IntPtr>>(
+			//return (IntPtr)(void*)obj
 			OpCodes.Ldarg_0,
 			OpCodes.Conv_I,
 			new Instruction(OpCodes.Newobj, typeof(IntPtr).GetConstructor(new[]{typeof(void*)})),
@@ -90,6 +129,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		);
 		
 		private static readonly Func<IntPtr,object> GetO = LinqEmit.CreateDynamicMethod<Func<IntPtr,object>>(
+			//return (object)(void*)ptr
 			new Instruction(OpCodes.Ldarga_S, 0),
 			new Instruction(OpCodes.Call, typeof(IntPtr).GetMethod("ToPointer")),
 			OpCodes.Conv_U,
@@ -97,6 +137,11 @@ namespace IllidanS4.SharpUtils.Unsafe
 			OpCodes.Ret
 		);
 		
+		/// <summary>
+		/// Returns the internal pointer to a boxed instance's value. DOESN'T pin the reference.
+		/// </summary>
+		/// <param name="obj">The boxed instance.</param>
+		/// <returns>The internal pointer.</returns>
 		public static unsafe IntPtr GetDataPointer(ValueType obj)
 		{
 			TypedReference tr;
@@ -105,7 +150,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 		}
 		
 		/// <summary>
-		/// Converts an object reference to a pointer.
+		/// Converts an object reference to a pointer. DOESN'T pin the reference.
 		/// </summary>
 		/// <param name="o">The object which's pointer to obtain.</param>
 		/// <returns>The address to the object's data (beginning with a type reference).</returns>
@@ -135,21 +180,43 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return GetO((IntPtr)address);
 		}
 		
+		/// <summary>
+		/// Converts a pointer to a reference.
+		/// </summary>
+		/// <param name="ptr">The pointer to convert.</param>
+		/// <param name="act">The action to receive the reference.</param>
 		public static void GetReference<T>(Pointer<T> ptr, Reference.RefAction<T> act) where T : struct
 		{
 			GetReference<T>(ptr.ToIntPtr(), act);
 		}
 		
+		/// <summary>
+		/// Converts a pointer to a reference.
+		/// </summary>
+		/// <param name="ptr">The pointer to convert.</param>
+		/// <param name="func">The function to receive the reference.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		public static TRet GetReference<T, TRet>(Pointer<T> ptr, Reference.RefFunc<T, TRet> func) where T : struct
 		{
 			return GetReference<T, TRet>(ptr.ToIntPtr(), func);
 		}
 		
+		/// <summary>
+		/// Converts a pointer to a reference.
+		/// </summary>
+		/// <param name="ptr">The pointer to convert.</param>
+		/// <param name="act">The action to receive the reference.</param>
 		public static void GetReference<T>(IntPtr ptr, Reference.RefAction<T> act) where T : struct
 		{
 			Reference.CacheHelper<T>.FromPtr(ptr, act);
 		}
 		
+		/// <summary>
+		/// Converts a pointer to a reference.
+		/// </summary>
+		/// <param name="ptr">The pointer to convert.</param>
+		/// <param name="func">The function to receive the reference.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		public static TRet GetReference<T, TRet>(IntPtr ptr, Reference.RefFunc<T, TRet> func) where T : struct
 		{
 			return Reference.CacheHelper<T>.WithRet<TRet>.FromPtr(ptr, func);
@@ -198,21 +265,39 @@ namespace IllidanS4.SharpUtils.Unsafe
 		{
 			return tr.AsRef((ref T r)=>GetPointer<T, TRet>(out r, func));
 		}
+		// I wonder if it's necessary not to return the actual pointer, since these functions
+		// don't attempt to pin the reference at all. I am not sure if the CLR would move it.
 		
+		/// <summary>
+		/// Changes the type of a <see cref="SafeReference"/> to a new one.
+		/// </summary>
+		/// <param name="target">The target reference.</param>
+		/// <param name="newType">The new type of the reference.</param>
 		public static unsafe void ChangeType(SafeReference target, Type newType)
 		{
 			target.ChangeType(newType);
 		}
 		
+		/// <summary>
+		/// Returns the address of a <see cref="SafeReference"/>.
+		/// </summary>
+		/// <param name="target">The target reference.</param>
+		/// <returns>The address of the reference.</returns>
 		public static IntPtr GetAddress(SafeReference target)
 		{
 			return target.GetAddress();
 		}
 		
+		/// <summary>
+		/// Changes the address of a <see cref="SafeReference"/>.
+		/// </summary>
+		/// <param name="target">The target reference.</param>
+		/// <param name="addr">The new address.</param>
 		public static void ChangeAddress(SafeReference target, IntPtr addr)
 		{
 			target.ChangeAddress(addr);
 		}
+		
 		
 		// Boxing these non-nullable types is actually safer now thanks to GetUninitializedObject.
 		
@@ -288,6 +373,12 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return arg;
 		}
 		
+		#region CreateUnion
+		public static TUnion CreateUnion<TUnion>() where TUnion : IMemoryUnion
+		{
+			return UnionCache<TUnion>.CreateNew();
+		}
+		
 		public static IMemoryUnion<T1, T2> CreateUnion<T1, T2>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2>>.CreateNew();
@@ -322,14 +413,11 @@ namespace IllidanS4.SharpUtils.Unsafe
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6, T7, T8>>.CreateNew();
 		}
-		
-		public static TUnion CreateUnion<TUnion>() where TUnion : IMemoryUnion
-		{
-			return UnionCache<TUnion>.CreateNew();
-		}
+		#endregion
 		
 		private struct NullableContainer<T> where T : struct
 		{
+			//It's layout should be indistinguishable from Nullable<T>.
 			public readonly T? Value;
 			
 			public NullableContainer(T? nullable)

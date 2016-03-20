@@ -11,7 +11,7 @@ using IllidanS4.SharpUtils.Unsafe;
 namespace IllidanS4.SharpUtils
 {
 	/// <summary>
-	/// This class contains various useful methods and extension methods. It is core class of SharpUtils.
+	/// This class contains various useful methods and extension methods.
 	/// </summary>
 	public static class Extensions
 	{

@@ -12,7 +12,7 @@ using IllidanS4.SharpUtils.Unsafe;
 namespace IllidanS4.SharpUtils
 {
 	/// <summary>
-	/// Contains a reference to a variable.
+	/// Contains a disposable reference to a variable.
 	/// </summary>
 	public sealed class SafeReference : IDisposable, ITypedReference, IReadWriteAccessor, IEquatable<SafeReference>
 	{
@@ -38,6 +38,11 @@ namespace IllidanS4.SharpUtils
 			IsOut = isOut;
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from a "ref" reference.
+		/// </summary>
+		/// <param name="obj">The reference to a variable.</param>
+		/// <param name="act">The action to receive the <see cref="SafeReference"/>.</param>
 		public static void Create<T>(ref T obj, Action<SafeReference> act)
 		{
 			Reference.Pin(
@@ -46,6 +51,11 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from an "out" reference.
+		/// </summary>
+		/// <param name="obj">The reference to a variable.</param>
+		/// <param name="act">The action to receive the <see cref="SafeReference"/>.</param>
 		public static void CreateOut<T>(out T obj, Action<SafeReference> act)
 		{
 			Reference.Pin(
@@ -56,6 +66,12 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from a "ref" reference.
+		/// </summary>
+		/// <param name="obj">The reference to a variable.</param>
+		/// <param name="func">The function to receive the <see cref="SafeReference"/>.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		public static TRet Create<T, TRet>(ref T obj, Func<SafeReference, TRet> func)
 		{
 			return Reference.Pin(
@@ -64,6 +80,12 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from an "out" reference.
+		/// </summary>
+		/// <param name="obj">The reference to a variable.</param>
+		/// <param name="func">The function to receive the <see cref="SafeReference"/>.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		public static TRet CreateOut<T, TRet>(out T obj, Func<SafeReference, TRet> func)
 		{
 			return Reference.Pin(
@@ -74,6 +96,11 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from a <see cref="TypedReference"/>.
+		/// </summary>
+		/// <param name="tr">The typed reference.</param>
+		/// <param name="act">The action to receive the <see cref="SafeReference"/>.</param>
 		[CLSCompliant(false)]
 		public static void Create(TypedReference tr, Action<SafeReference> act)
 		{
@@ -82,6 +109,12 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
+		/// <summary>
+		/// Creates a new <see cref="SafeReference"/> from a <see cref="TypedReference"/>.
+		/// </summary>
+		/// <param name="tr">The typed reference.</param>
+		/// <param name="func">The function to receive the <see cref="SafeReference"/>.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		[CLSCompliant(false)]
 		public static TRet Create<TRet>(TypedReference tr, Func<SafeReference, TRet> func)
 		{
@@ -90,20 +123,34 @@ namespace IllidanS4.SharpUtils
 			);
 		}
 		
-		public delegate void VarRefReceiver(IList<SafeReference> refs);
-		public delegate TRet VarRefReceiver<TRet>(IList<SafeReference> refs);
-		
-		public static void Create(VarRefReceiver act, __arglist)
+		/// <summary>
+		/// Obtains an array of <see cref="SafeReference"/> from a variable number of typed references.
+		/// </summary>
+		/// <param name="act">The action to receive the array of <see cref="SafeReference"/>.</param>
+		/// <param name="__arglist">A variable number of typed references.</param>
+		[CLSCompliant(false)]
+		public static void Create(Action<SafeReference[]> act, __arglist)
 		{
 			Create(act, new ArgIterator(__arglist));
 		}
 		
-		public static void Create(VarRefReceiver act, ArgIterator refs)
+		/// <summary>
+		/// Obtains an array of <see cref="SafeReference"/> from a variable number of typed references.
+		/// </summary>
+		/// <param name="act">The action to receive the array of <see cref="SafeReference"/>.</param>
+		/// <param name="refs">A variable number of typed references.</param>
+		public static void Create(Action<SafeReference[]> act, ArgIterator refs)
 		{
 			Create<Unit>(r=>{act(r);return 0;}, refs);
 		}
 		
-		public static TRet Create<TRet>(VarRefReceiver<TRet> func, ArgIterator refs)
+		/// <summary>
+		/// Obtains an array of <see cref="SafeReference"/> from a variable number of typed references.
+		/// </summary>
+		/// <param name="func">The function to receive the array of <see cref="SafeReference"/>.</param>
+		/// <param name="refs">A variable number of typed references.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
+		public static TRet Create<TRet>(Func<SafeReference[], TRet> func, ArgIterator refs)
 		{
 			var arr = new SafeReference[refs.GetRemainingCount()];
 			if(arr.Length > 0)
@@ -114,6 +161,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// The type of the <see cref="SafeReference"/>.
+		/// </summary>
 		public unsafe Type Type{
 			get{
 				var tr = m_ref.Value;
@@ -121,6 +171,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// The value of the <see cref="SafeReference"/>.
+		/// </summary>
 		public unsafe object Value{
 			get{
 				if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
@@ -134,6 +187,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// Sets the value of the <see cref="SafeReference"/>.
+		/// </summary>
 		public unsafe void SetValue<T>(T value)
 		{
 			var tr = m_ref.Value;
@@ -141,6 +197,10 @@ namespace IllidanS4.SharpUtils
 			IsOut = false;
 		}
 		
+		/// <summary>
+		/// Returns the value of the <see cref="SafeReference"/>.
+		/// </summary>
+		/// <returns>The value of the <see cref="SafeReference"/>.</returns>
 		public unsafe T GetValue<T>()
 		{
 			if(IsOut) throw new InvalidOperationException("This is a write-only reference.");
@@ -148,6 +208,10 @@ namespace IllidanS4.SharpUtils
 			return __refvalue(*(TypedReference*)(&tr), T);
 		}
 		
+		/// <summary>
+		/// Obtains a <see cref="TypedReference"/> from this object.
+		/// </summary>
+		/// <param name="act">The action to receive the typed reference.</param>
 		[CLSCompliant(false)]
 		public unsafe void GetReference(TypedReferenceTools.TypedRefAction act)
 		{
@@ -156,6 +220,11 @@ namespace IllidanS4.SharpUtils
 			act(*(TypedReference*)(&tr));
 		}
 		
+		/// <summary>
+		/// Obtains a <see cref="TypedReference"/> from this object.
+		/// </summary>
+		/// <param name="func">The function to receive the typed reference.</param>
+		/// <returns>The value returned by <paramref name="func"/></returns>
 		[CLSCompliant(false)]
 		public unsafe TRet GetReference<TRet>(TypedReferenceTools.TypedRefFunc<TRet> func)
 		{
@@ -189,6 +258,9 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// Disposes the reference and clears all pointers stored in it.
+		/// </summary>
 		public void Dispose()
 		{
 			m_ref = null;
@@ -200,12 +272,18 @@ namespace IllidanS4.SharpUtils
 			Dispose();
 		}
 		
+		/// <summary>
+		/// True if this is a null reference.
+		/// </summary>
 		public bool IsNull{
 			get{
 				return m_ref.Value.Value == IntPtr.Zero;
 			}
 		}
 		
+		/// <summary>
+		/// True if this is an empty reference (null and no type).
+		/// </summary>
 		public bool IsEmpty{
 			get{
 				return m_ref.Value == default(TypedRef);
@@ -231,7 +309,6 @@ namespace IllidanS4.SharpUtils
 			unchecked {
 				if (m_ref != null)
 					hashCode += 1000000007 * m_ref.GetHashCode();
-				hashCode += 1000000009 * IsOut.GetHashCode();
 			}
 			return hashCode;
 		}
@@ -295,7 +372,7 @@ namespace IllidanS4.SharpUtils
 		
 		private static class PinHelper<TRet>
 		{
-			public delegate TRet Del(TypedReference first, ArgIterator refs, SafeReference[] sr, VarRefReceiver<TRet> func);
+			public delegate TRet Del(TypedReference first, ArgIterator refs, SafeReference[] sr, Func<SafeReference[],TRet> func);
 			
 			public static readonly Del PinRecursive = MakePinRecursive();
 			
@@ -303,7 +380,7 @@ namespace IllidanS4.SharpUtils
 			{
 				var tai = typeof(ArgIterator);
 				var tsr = typeof(SafeReference);
-				var tvr = typeof(VarRefReceiver<TRet>);
+				var tvr = typeof(Func<SafeReference[],TRet>);
 				var trt = typeof(TRet);
 				var dyn = new DynamicMethod("PinRecursive", trt, new[]{typeof(TypedReference), tai, typeof(SafeReference[]), tvr}, typeof(PinHelper<TRet>));
 				
@@ -314,26 +391,22 @@ namespace IllidanS4.SharpUtils
 				var next = il.DefineLabel();
 				var end = il.DefineLabel();
 				
-				il.DeclareLocal(typeof(void).MakeByRefType(), true);
+				il.DeclareLocal(typeof(void).MakeByRefType(), true); //void&
 				il.DeclareLocal(tsr); //SafeReference
 				il.DeclareLocal(trt); //TRet
 				
-				il.Emit(OpCodes.Ldarga_S, 0);
+				il.Emit(OpCodes.Ldarga_S, 0); //loc_0 = ref *(void**)(&arg_0);
 				il.Emit(OpCodes.Ldind_I);
 				il.Emit(OpCodes.Stloc_0);
 				
-				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldarg_0); //loc_1 = new SafeReference(arg_0, false);
 				il.Emit(OpCodes.Ldc_I4_0);
 				il.Emit(OpCodes.Newobj, ctor);
 				il.Emit(OpCodes.Stloc_1);
 				
-				il.BeginExceptionBlock();
+				il.BeginExceptionBlock(); //try{
 				
-				/*il.Emit(OpCodes.Ldarg_2);
-				il.Emit(OpCodes.Ldloc_1);
-				il.Emit(OpCodes.Callvirt, typeof(ICollection<SafeReference>).GetMethod("Add"));*/
-				
-				il.Emit(OpCodes.Ldarg_2);
+				il.Emit(OpCodes.Ldarg_2); //arg_2[arg_2.Length-arg_1.GetRemainingCount()-1] = loc_1;
 				il.Emit(OpCodes.Ldarg_2);
 				il.Emit(OpCodes.Ldlen);
 				il.Emit(OpCodes.Ldarga_S, 1);
@@ -344,21 +417,21 @@ namespace IllidanS4.SharpUtils
 				il.Emit(OpCodes.Ldloc_1);
 				il.Emit(OpCodes.Stelem_Ref);
 				
-				il.Emit(OpCodes.Ldarga_S, 1);
+				il.Emit(OpCodes.Ldarga_S, 1); //if(arg_1.GetRemainincCount() > 0) goto next;
 				il.Emit(OpCodes.Call, tai.GetMethod("GetRemainingCount"));
 				il.Emit(OpCodes.Ldc_I4_0);
 				il.Emit(OpCodes.Bgt_S, next);
 				
-				il.Emit(OpCodes.Ldarg_3);
+				il.Emit(OpCodes.Ldarg_3); //loc_2 = arg_3(arg_2);
 				il.Emit(OpCodes.Ldarg_2);
 				il.Emit(OpCodes.Callvirt, tvr.GetMethod("Invoke"));
 				il.Emit(OpCodes.Stloc_2);
 				
-				il.Emit(OpCodes.Br_S, end);
+				il.Emit(OpCodes.Br_S, end); //goto end;
 				
-				il.MarkLabel(next);
+				il.MarkLabel(next); //next:
 				
-				il.Emit(OpCodes.Ldarga_S, 1);
+				il.Emit(OpCodes.Ldarga_S, 1); //loc_2 = PinRecursive(arg_1.GetNextArg(), arg_1, arg_2, arg_3);
 				il.Emit(OpCodes.Call, tai.GetMethod("GetNextArg", Type.EmptyTypes));
 				il.Emit(OpCodes.Ldarg_1);
 				il.Emit(OpCodes.Ldarg_2);
@@ -366,16 +439,16 @@ namespace IllidanS4.SharpUtils
 				il.Emit(OpCodes.Call, dyn);
 				il.Emit(OpCodes.Stloc_2);
 				
-				il.MarkLabel(end);
+				il.MarkLabel(end); //end:
 				
-				il.BeginFinallyBlock();
+				il.BeginFinallyBlock(); //}finally{
 				
-				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Ldloc_1); //loc_1.Dispose();
 				il.Emit(OpCodes.Callvirt, tsr.GetMethod("Dispose"));
 				
-				il.EndExceptionBlock();
+				il.EndExceptionBlock(); //}
 				
-				il.Emit(OpCodes.Ldloc_2);
+				il.Emit(OpCodes.Ldloc_2); //return loc_2;
 				il.Emit(OpCodes.Ret);
 				
 				return (Del)dyn.CreateDelegate(typeof(Del));
