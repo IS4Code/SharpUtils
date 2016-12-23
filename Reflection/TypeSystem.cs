@@ -7,6 +7,9 @@ using IllidanS4.SharpUtils.Sequences;
 
 namespace IllidanS4.SharpUtils.Reflection
 {
+	/// <summary>
+	/// Represents a portion of the types in the .NET type system.
+	/// </summary>
 	public class TypeSystem
 	{
 		public BindingFlags VisibilityFlags{get; private set;}
@@ -44,12 +47,18 @@ namespace IllidanS4.SharpUtils.Reflection
 			DerivedFromOpenGeneric = opengenderived;
 		}
 		
+		/// <summary>
+		/// Enumerates all types defined in CommonLanguageRuntimeLibrary, that is mscorlib.dll.
+		/// </summary>
 		public IEnumerable<Type> CoreTypes{
 			get{
 				return ModuleTypes(Types.CommonLanguageRuntimeLibrary);
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all types which have a type code assigned to them.
+		/// </summary>
 		public IEnumerable<Type> BasicTypes{
 			get{
 				var core = Types.Core;
@@ -60,18 +69,27 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all primitive types.
+		/// </summary>
 		public IEnumerable<Type> PrimitiveTypes{
 			get{
 				return CoreTypes.Where(t => t.IsPrimitive);
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all defined types in the current application domain.
+		/// </summary>
 		public IEnumerable<Type> DefinedTypes{
 			get{
 				return AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => AssemblyTypes(a));
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all defined types and the fnptr type with its arrays.
+		/// </summary>
 		public IEnumerable<Type> ExtendedTypes{
 			get{
 				foreach(Type t in DefinedTypes)
@@ -89,22 +107,37 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all extended types and types constructed from them.
+		/// </summary>
 		public IEnumerable<Type> PossibleTypes{
 			get{
 				return AllTypes(ExtendedTypes);
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all types in an assembly.
+		/// </summary>
+		/// <param name="asm">The assembly containing the enumerated types.</param>
 		public IEnumerable<Type> AssemblyTypes(Assembly asm)
 		{
 			return WithNested(asm.GetTypes());
 		}
 		
+		/// <summary>
+		/// Enumerates all types in a module.
+		/// </summary>
+		/// <param name="mod">The module containing the enumerated types.</param>
 		public IEnumerable<Type> ModuleTypes(Module mod)
 		{
 			return WithNested(mod.GetTypes());
 		}
 		
+		/// <summary>
+		/// Enumerates all types constructed from the input.
+		/// </summary>
+		/// <param name="source">The input types.</param>
 		public IEnumerable<Type> AllTypes(IEnumerable<Type> source)
 		{
 			return SequenceTools.SelectManyInfinite(AllGenericTypes(source).Select(t => AllDerivedRecursive(t)));
@@ -116,6 +149,10 @@ namespace IllidanS4.SharpUtils.Reflection
 			else return source;
 		}
 		
+		/// <summary>
+		/// Enumerates source types and all types nested in them.
+		/// </summary>
+		/// <param name="types">The source types.</param>
 		public IEnumerable<Type> WithNested(IEnumerable<Type> types)
 		{
 			foreach(Type t in types)
@@ -128,6 +165,10 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all types nested in a type.
+		/// </summary>
+		/// <param name="type">The type containing nested types.</param>
 		public IEnumerable<Type> AllNested(Type type)
 		{
 			foreach(Type t in type.GetNestedTypes(VisibilityFlags))
@@ -140,6 +181,10 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Enumerates all constructed types from a type.
+		/// </summary>
+		/// <param name="type">The source type.</param>
 		public IEnumerable<Type> AllDerivedRecursive(Type type)
 		{
 			yield return type;
@@ -227,6 +272,11 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Returns all constructed generic types from a type. Also yields the definition.
+		/// </summary>
+		/// <param name="def">The type definition.</param>
+		/// <param name="args">The possible type arguments.</param>
 		public IEnumerable<Type> AllGenericItself(Type def, IEnumerable<Type> args)
 		{
 			yield return def;
@@ -246,6 +296,11 @@ namespace IllidanS4.SharpUtils.Reflection
 			}
 		}
 		
+		/// <summary>
+		/// Returns all constructed generic types from a type.
+		/// </summary>
+		/// <param name="def">The type definition.</param>
+		/// <param name="args">The possible type arguments.</param>
 		public IEnumerable<Type> AllGeneric(Type def, IEnumerable<Type> args)
 		{
 			if(!def.IsGenericTypeDefinition) return Type.EmptyTypes;
