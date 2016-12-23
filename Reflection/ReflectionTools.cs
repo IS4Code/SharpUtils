@@ -355,6 +355,17 @@ namespace IllidanS4.SharpUtils.Reflection
 			return data;
 		}
 		
+		public static byte[] GetSignature(this MethodInfo mtd)
+		{
+			object metadata = GetSignatureHacks.GetMetadataImport(mtd.Module);
+			object sig = GetSignatureHacks.GetSigOfMethodDef(metadata, mtd.MetadataToken);
+			IntPtr ptr = GetSignatureHacks.GetSignaturePtr(sig);
+			int len = GetSignatureHacks.GetSignatureLength(sig);
+			byte[] data = new byte[len];
+			Marshal.Copy(ptr, data, 0, len);
+			return data;
+		}
+		
 		public static MethodSignature GetDelegateSignature(this Type tDelegate)
 		{
 			return MethodSignature.FromDelegateType(tDelegate);

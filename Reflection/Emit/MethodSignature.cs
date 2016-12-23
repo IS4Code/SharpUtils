@@ -70,7 +70,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		/// <summary>
 		/// Creates an empty method signature.
 		/// </summary>
-		public MethodSignature() : this(CallingConventions.Standard, typeof(void), Type.EmptyTypes, Type.EmptyTypes)
+		public MethodSignature() : this(CallingConventions.Standard, typeof(void), Type.EmptyTypes, null)
 		{
 			
 		}

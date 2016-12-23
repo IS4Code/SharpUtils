@@ -33,6 +33,7 @@ namespace IllidanS4.SharpUtils.Reflection
 		{
 			public static readonly Func<Module,object> GetMetadataImport = Hacks.GetPropertyGetter<Func<Module,object>>(Types.RuntimeModule, "MetadataImport");
 			public static readonly Func<object,int,object> GetSigOfFieldDef = Hacks.GetInvoker<Func<object,int,object>>(Types.MetadataImport, "GetSigOfFieldDef", true);
+			public static readonly Func<object,int,object> GetSigOfMethodDef = Hacks.GetInvoker<Func<object,int,object>>(Types.MetadataImport, "GetSigOfMethodDef", true);
 			public static readonly Func<object,IntPtr> GetSignaturePtr = Hacks.GetPropertyGetter<Func<object,IntPtr>>(Types.ConstArray, "Signature");
 			public static readonly Func<object,int> GetSignatureLength = Hacks.GetPropertyGetter<Func<object,int>>(Types.ConstArray, "Length");
 		}
