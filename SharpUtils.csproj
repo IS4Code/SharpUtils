@@ -125,6 +125,10 @@
     <Compile Include="Sequences\StreamExtensions.cs" />
     <Compile Include="Sequences\TerminalWriter.cs" />
     <Compile Include="Sequences\TextToStreamWrapper.cs" />
+    <Compile Include="Serialization\Copier.cs" />
+    <Compile Include="Serialization\ICloner.cs" />
+    <Compile Include="Serialization\MemoryCloner.cs" />
+    <Compile Include="Serialization\ValueTypeCloner.cs" />
     <Compile Include="SomeException.cs" />
     <Compile Include="Text\StringChunk.cs" />
     <Compile Include="Text\StringReference.cs" />
