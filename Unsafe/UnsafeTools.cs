@@ -298,6 +298,17 @@ namespace IllidanS4.SharpUtils.Unsafe
 			target.ChangeAddress(addr);
 		}
 		
+		public static object GetUninitializedObject(Type type)
+		{
+			return GetUninitializedObject(type, 0);
+		}
+		
+		public static object GetUninitializedObject(Type type, int length)
+		{
+			if(type.IsArray) return Activator.CreateInstance(type, new object[]{length});
+			else if(type == typeof(string)) return new String('\0', length);
+			else return FormatterServices.GetUninitializedObject(type);
+		}
 		
 		// Boxing these non-nullable types is actually safer now thanks to GetUninitializedObject.
 		
