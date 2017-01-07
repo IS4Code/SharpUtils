@@ -90,10 +90,15 @@ namespace IllidanS4.SharpUtils.Reflection
 		
 		public static void Emit(this ILGenerator il, OpCode opcode, TypeToken token)
 		{
+			EmitToken(il, opcode, token.Token);
+		}
+		
+		public static void EmitToken(this ILGenerator il, OpCode opcode, int token)
+		{
 			EnsureCapacity(il, 7);
 			InternalEmit(il, opcode);
 			RecordTokenFixup(il);
-			PutInteger4(il, token.Token);
+			PutInteger4(il, token);
 		}
 		
 		public static void EmitExtended(this ILGenerator il, OpCode opcode, Type type)
