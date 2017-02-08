@@ -107,6 +107,11 @@
     <Compile Include="Coroutines\Coroutine.cs" />
     <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
+    <Compile Include="Interop\Unmanaged\FarMarshal.cs" />
+    <Compile Include="Interop\Unmanaged\FarPtr.cs" />
+    <Compile Include="Interop\Unmanaged\LocalMemory.cs" />
+    <Compile Include="Interop\Unmanaged\MemoryContext.cs" />
+    <Compile Include="Interop\Unmanaged\ProcessMemory.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
@@ -346,6 +351,7 @@
     <Folder Include="Coroutines" />
     <Folder Include="Globalization" />
     <Folder Include="Accessing" />
+    <Folder Include="Interop\Unmanaged" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />
