@@ -7,13 +7,26 @@ using System.Runtime.Remoting.Proxies;
 
 namespace IllidanS4.SharpUtils.Proxies
 {
+	/// <summary>
+	/// Obtains proxies to <see cref="System.MarshalByRefObject"/> classes with custom implementations.
+	/// </summary>
 	public static class ProxyImplementationBinder
 	{
+		/// <summary>
+		/// Creates a <see cref="System.MarshalByRefObject"/> class proxy from its custom implementation.
+		/// </summary>
+		/// <param name="implementation">The custom implementation of the class.</param>
+		/// <returns>The proxy for the class.</returns>
 		public static TBound GetProxy<TBound, TImplementation>(this IProxyReplacer<TBound, TImplementation> implementation) where TBound : MarshalByRefObject where TImplementation : class, IProxyReplacer<TBound, TImplementation>
 		{
 			return (TBound)new InterfaceProxy<TBound, TImplementation>(implementation).GetTransparentProxy();
 		}
 		
+		/// <summary>
+		/// Obtains the custom implementation from a <see cref="System.MarshalByRefObject"/> class proxy.
+		/// </summary>
+		/// <param name="proxy">The proxy for the class.</param>
+		/// <returns></returns>
 		public static TImplementation GetImplementation<TBound, TImplementation>(TBound proxy) where TBound : MarshalByRefObject where TImplementation : class, IProxyReplacer<TBound, TImplementation>
 		{
 			var rp = RemotingServices.GetRealProxy(proxy) as InterfaceProxy<TBound, TImplementation>;
@@ -24,6 +37,11 @@ namespace IllidanS4.SharpUtils.Proxies
 			return null;
 		}
 		
+		/// <summary>
+		/// Obtains the custom implementation from a <see cref="System.MarshalByRefObject"/> class proxy.
+		/// </summary>
+		/// <param name="proxy">The proxy for the class.</param>
+		/// <returns></returns>
 		public static object GetImplementation(MarshalByRefObject proxy)
 		{
 			var rp = RemotingServices.GetRealProxy(proxy) as InterfaceProxyBase;

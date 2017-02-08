@@ -10,7 +10,7 @@ using Microsoft.CSharp.RuntimeBinder;
 namespace IllidanS4.SharpUtils.Proxies.Dynamic
 {
 	/// <summary>
-	/// A dynamic proxy that connets to a <see cref="StaticAdapter"/> and passes dynamic calls to it.
+	/// A dynamic proxy that connects to a <see cref="StaticAdapter"/> and passes dynamic calls to it in form of method invokes.
 	/// </summary>
 	public class StaticProxy : DynamicObject, IAdapterProxy
 	{

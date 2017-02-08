@@ -9,7 +9,7 @@ using IllidanS4.SharpUtils.Reflection;
 namespace IllidanS4.SharpUtils.Proxies.Dynamic
 {
 	/// <summary>
-	/// This class allows construction of implementations of abstract types that pass calls to their methods to a <see cref="StaticAdapter"/>.
+	/// This class allows the construction of implementations of abstract types that pass calls to their methods to a <see cref="StaticAdapter"/>.
 	/// </summary>
 	public static class ImplementationProxy<T>
 	{

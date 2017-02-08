@@ -6,6 +6,9 @@ using Microsoft.Win32.SafeHandles;
 
 namespace IllidanS4.SharpUtils.Proxies.Replacers
 {
+	/// <summary>
+	/// Contains the necessary methods for implementing the <see cref="Microsoft.Win32.RegistryKey"/> class.
+	/// </summary>
 	public interface IRegistryKey : IProxyReplacer<RegistryKey, IRegistryKey>, IDisposable
 	{
 		int SubKeyCount{get;}

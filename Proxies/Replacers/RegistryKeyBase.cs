@@ -6,6 +6,9 @@ using Microsoft.Win32.SafeHandles;
 
 namespace IllidanS4.SharpUtils.Proxies.Replacers
 {
+	/// <summary>
+	/// A base for custom <see cref="Microsoft.Win32.RegistryKey"/> implementations.
+	/// </summary>
 	public abstract class RegistryKeyBase : ProxyImplementation<RegistryKey, IRegistryKey>, IRegistryKey
 	{
 		protected RegistryKeyPermissionCheck CheckMode{get; private set;}

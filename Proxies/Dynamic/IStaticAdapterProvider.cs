@@ -4,7 +4,7 @@ using System;
 namespace IllidanS4.SharpUtils.Proxies.Dynamic
 {
 	/// <summary>
-	/// An object that can provide a <see cref="StaticAdapter"/> to itself, allowing member invokes via reflection.
+	/// An object that can provide a <see cref="StaticAdapter"/> representing itself, allowing member invokes via reflection.
 	/// </summary>
 	public interface IStaticAdapterProvider
 	{
