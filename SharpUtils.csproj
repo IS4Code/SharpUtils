@@ -107,14 +107,17 @@
     <Compile Include="Coroutines\Coroutine.cs" />
     <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
+    <Compile Include="Interop\MarshalInfo.cs" />
     <Compile Include="Interop\Unmanaged\FarMarshal.cs" />
     <Compile Include="Interop\Unmanaged\FarPtr.cs" />
     <Compile Include="Interop\Unmanaged\LocalMemory.cs" />
     <Compile Include="Interop\Unmanaged\MemoryContext.cs" />
     <Compile Include="Interop\Unmanaged\ProcessMemory.cs" />
+    <Compile Include="Interop\Unmanaged\StreamMemory.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
+    <Compile Include="Reflection\Emit\ParameterDefinition.cs" />
     <Compile Include="Reflection\Emit\StackValueType.cs" />
     <Compile Include="Reflection\Event.cs" />
     <Compile Include="Reflection\TypedContainer.cs" />
