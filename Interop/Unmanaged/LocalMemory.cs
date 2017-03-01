@@ -8,6 +8,8 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 	{
 		public static readonly LocalMemory Instance = new LocalMemory();
 		
+		public override bool CanLock{get{return false;}}
+		
 		private LocalMemory()
 		{
 			

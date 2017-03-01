@@ -10,6 +10,8 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 	{
 		readonly IntPtr processHandle;
 		
+		public override bool CanLock{get{return true;}}
+		
 		public ProcessMemory(Process process)
 		{
 			processHandle = process.Handle;
