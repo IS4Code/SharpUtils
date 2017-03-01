@@ -433,8 +433,15 @@ namespace IllidanS4.SharpUtils.Interop
 				OpCodes.Ldind_I,
 				OpCodes.Conv_U,
 				OpCodes.Stloc_0,
-				OpCodes.Ldarg_1,
+				
+				new Instruction(OpCodes.Ldarga_S, 0),
 				OpCodes.Ldloc_0,
+				OpCodes.Conv_I,
+				OpCodes.Stind_I,
+				
+				OpCodes.Ldarg_1,
+				OpCodes.Ldarg_0,
+				
 				new Instruction(OpCodes.Callvirt, Invoke),
 				OpCodes.Ret
 			);
@@ -450,8 +457,14 @@ namespace IllidanS4.SharpUtils.Interop
 					OpCodes.Ldind_I,
 					OpCodes.Conv_U,
 					OpCodes.Stloc_0,
-					OpCodes.Ldarg_1,
+				
+					new Instruction(OpCodes.Ldarga_S, 0),
 					OpCodes.Ldloc_0,
+					OpCodes.Conv_I,
+					OpCodes.Stind_I,
+					
+					OpCodes.Ldarg_1,
+					OpCodes.Ldarg_0,
 					new Instruction(OpCodes.Callvirt, Invoke),
 					OpCodes.Ret
 				);
