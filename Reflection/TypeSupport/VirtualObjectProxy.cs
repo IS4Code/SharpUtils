@@ -8,10 +8,12 @@ using System.Runtime.Remoting.Proxies;
 namespace IllidanS4.SharpUtils.Reflection.TypeSupport
 {
 	/// <summary>
-	/// Description of VirtualObjectProxy.
+	/// Represents an instance of a <see cref="TypeConstruct"/>.
 	/// </summary>
 	public class VirtualObjectProxy : RealProxy, ICloneable
 	{
+		//I have no idea what should this be used for.
+		
 		public TypeConstruct VirtualType{get; private set;}
 		public FieldsData Fields{get; private set;}
 		
