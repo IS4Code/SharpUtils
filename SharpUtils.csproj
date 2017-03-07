@@ -49,6 +49,7 @@
     <DocumentationFile>bin\Release\SharpUtils.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accessibility" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable">
@@ -114,9 +115,15 @@
     <Compile Include="Interop\Unmanaged\MemoryContext.cs" />
     <Compile Include="Interop\Unmanaged\ProcessMemory.cs" />
     <Compile Include="Interop\Unmanaged\StreamMemory.cs" />
+    <Compile Include="Interop\WinApi\Interop.cs">
+      <DependentUpon>Win32Control.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interop\WinApi\Win32Control.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
+    <Compile Include="Proxies\Replacers\Forms\ControlBase.cs" />
+    <Compile Include="Proxies\Replacers\Forms\IControl.cs" />
     <Compile Include="Reflection\Emit\ParameterDefinition.cs" />
     <Compile Include="Reflection\Emit\StackValueType.cs" />
     <Compile Include="Reflection\Event.cs" />
@@ -354,11 +361,13 @@
     <Folder Include="Coroutines" />
     <Folder Include="Globalization" />
     <Folder Include="Accessing" />
+    <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Collections" />
+    <Folder Include="Proxies\Replacers\Forms" />
     <Folder Include="Sequences" />
     <Folder Include="Text" />
     <Folder Include="ObjectModel" />
