@@ -188,5 +188,10 @@ namespace IllidanS4.SharpUtils.Proxies.Replacers
 		{
 			throw new NotImplementedException();
 		}
+		
+		Type IProxyReplacer<RegistryKey, IRegistryKey>.GetBoundType()
+		{
+			return typeof(RegistryKey);
+		}
 	}
 }

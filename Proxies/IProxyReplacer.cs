@@ -8,6 +8,6 @@ namespace IllidanS4.SharpUtils.Proxies
 	/// </summary>
 	public interface IProxyReplacer<TBound, TImplementation> where TBound : MarshalByRefObject where TImplementation : class, IProxyReplacer<TBound, TImplementation>
 	{
-		
+		Type GetBoundType();
 	}
 }

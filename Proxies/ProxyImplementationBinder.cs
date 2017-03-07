@@ -26,7 +26,7 @@ namespace IllidanS4.SharpUtils.Proxies
 		/// Obtains the custom implementation from a <see cref="System.MarshalByRefObject"/> class proxy.
 		/// </summary>
 		/// <param name="proxy">The proxy for the class.</param>
-		/// <returns></returns>
+		/// <returns>The implmentation of the proxy.</returns>
 		public static TImplementation GetImplementation<TBound, TImplementation>(TBound proxy) where TBound : MarshalByRefObject where TImplementation : class, IProxyReplacer<TBound, TImplementation>
 		{
 			var rp = RemotingServices.GetRealProxy(proxy) as InterfaceProxy<TBound, TImplementation>;
@@ -41,7 +41,7 @@ namespace IllidanS4.SharpUtils.Proxies
 		/// Obtains the custom implementation from a <see cref="System.MarshalByRefObject"/> class proxy.
 		/// </summary>
 		/// <param name="proxy">The proxy for the class.</param>
-		/// <returns></returns>
+		/// <returns>The implmentation of the proxy.</returns>
 		public static object GetImplementation(MarshalByRefObject proxy)
 		{
 			var rp = RemotingServices.GetRealProxy(proxy) as InterfaceProxyBase;
@@ -70,12 +70,8 @@ namespace IllidanS4.SharpUtils.Proxies
 				get; set;
 			}
 			
-			public bool CanCastTo(Type fromType, object o)
+			public virtual bool CanCastTo(Type fromType, object o)
 			{
-				if(fromType.IsAssignableFrom(Implementation.GetType()))
-				{
-					return true;
-				}
 				return false;
 			}
 		}
@@ -89,6 +85,11 @@ namespace IllidanS4.SharpUtils.Proxies
 				
 			}
 			
+			private Type GetBoundType()
+			{
+				return ((TImplementation)(object)Implementation).GetBoundType();
+			}
+			
 			public override IMessage Invoke(IMessage msg)
 			{
 				IMethodCallMessage msgCall = msg as IMethodCallMessage;
@@ -96,11 +97,27 @@ namespace IllidanS4.SharpUtils.Proxies
 				{
 					if(msgCall.MethodBase == GetTypeMethod)
 					{
-						return new ReturnMessage(BoundType, null, 0, msgCall.LogicalCallContext, msgCall);
+						Type bound = GetBoundType();
+						if(!BoundType.IsAssignableFrom(bound))
+						{
+							throw new InvalidOperationException("Bound type must inherit TBound.");
+						}
+						return new ReturnMessage(bound, null, 0, msgCall.LogicalCallContext, msgCall);
 					}
-					return RemotingServices.ExecuteMessage(Implementation, msgCall);
+					
+					var method = ImplementationType.GetMethod(msgCall.MethodName, msgCall.MethodSignature as Type[]);
+					if(method == null) method = msgCall.MethodBase as MethodInfo;
+					
+					var args = msgCall.Args;
+					object ret = method.Invoke(Implementation, args);
+					return new ReturnMessage(ret, args, args.Length, msgCall.LogicalCallContext, msgCall);
 				}
 				return null;
+			}
+			
+			public override bool CanCastTo(Type fromType, object o)
+			{
+				return base.CanCastTo(fromType, o) || (typeof(TBound).IsAssignableFrom(fromType) && fromType.IsAssignableFrom(GetBoundType()));
 			}
 		}
 	}

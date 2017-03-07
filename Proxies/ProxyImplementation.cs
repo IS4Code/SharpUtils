@@ -30,5 +30,15 @@ namespace IllidanS4.SharpUtils.Proxies
 		{
 			return ProxyImplementationBinder.GetProxy<TBound, TImplementation>((TImplementation)(object)this);
 		}
+		
+		/// <summary>
+		/// A shortcut to <see cref="ProxyImplementationBinder.GetImplementation"/>.
+		/// </summary>
+		/// <param name="proxy">The proxy for the class.</param>
+		/// <returns>The implmentation of the proxy.</returns>
+		public TImplementation GetImplementation(TBound proxy)
+		{
+			return ProxyImplementationBinder.GetImplementation<TBound, TImplementation>(proxy);
+		}
 	}
 }
