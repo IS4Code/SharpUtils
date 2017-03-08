@@ -8,14 +8,16 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 {
 	partial class Win32Control
 	{
-		private static class Interop
+		private static class User32
 		{
-			public const string User32 = "user32.dll";
+			public const string Lib = "user32.dll";
 			const CharSet DefaultCharSet = CharSet.Auto;
 			
 			public const uint WM_SETTEXT = 0x000C;
 			public const uint WM_GETTEXT = 0x000D;
 			public const uint WM_GETTEXTLENGTH = 0x000E;
+			public const uint WM_SETFONT = 0x0030;
+			public const uint WM_GETFONT = 0x0031;
 			
 			public const int GWL_EXSTYLE = -20;
 			public const int GWL_HINSTANCE = -6;
@@ -49,10 +51,16 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			public const uint BM_GETCHECK = 0x00F0;
 			public const uint BM_SETCHECK = 0x00F1;
 			
+			public const int SBS_VERT = 1;
+			
+			public const uint RDW_INVALIDATE = 0x0001;
+			public const uint RDW_ERASE = 0x0004;
+			public const uint RDW_ALLCHILDREN = 0x0080;
+			
 			#region Messages
 			public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 			
 			public static void PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -64,7 +72,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				}
 			}
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="PostMessage")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="PostMessage")]
 			static extern bool InternalPostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 			#endregion
 			
@@ -109,24 +117,27 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				return cls;
 			}
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern ushort GetClassWord(IntPtr hWnd, int nIndex);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassName")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassName")]
 			static extern uint InternalGetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			static extern uint RealGetWindowClass(IntPtr hwnd, StringBuilder pszType, uint cchType);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassInfoEx")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassInfoEx")]
 			static extern bool InternalGetClassInfoEx(IntPtr hInstance, string lpClassName, out WNDCLASSEX lpWndClass);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassInfoEx")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetClassInfoEx")]
 			static extern bool InternalGetClassInfoEx(IntPtr hInstance, int lpClassName, out WNDCLASSEX lpWndClass);
 			#endregion
 			
 			#region Data
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 			
 			public static IntPtr GetWindowInstance(IntPtr hWnd)
@@ -134,7 +145,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				return (IntPtr)GetWindowLong(hWnd, GWL_HINSTANCE);
 			}
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 			
 			public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
@@ -149,35 +160,35 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
 			}
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowLongPtr")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowLongPtr")]
 			static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="SetWindowLongPtr")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="SetWindowLongPtr")]
 			static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 			#endregion
 			
 			#region Inheritance
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr GetDesktopWindow();
 			
-			/*[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			/*[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr GetParent(IntPtr hWnd);*/
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr GetAncestor(IntPtr hwnd, uint gaFlags);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 			
 			public delegate bool WNDENUMPROC(IntPtr hwnd, IntPtr lParam);
 
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern bool EnumChildWindows(IntPtr hwndParent, WNDENUMPROC lpEnumFunc, IntPtr lParam);
 			
 			#endregion
 			
 			#region Layout
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowRect")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowRect")]
 			static extern bool InternalGetWindowRect(IntPtr hWnd, out RECT lpRect);
 			
 			public static RECT GetWindowRect(IntPtr hWnd)
@@ -203,7 +214,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				public int y;
 			}
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowPlacement")]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet, EntryPoint="GetWindowPlacement")]
 			static extern bool InternalGetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 			
 			public static WINDOWPLACEMENT GetWindowPlacement(IntPtr hWnd)
@@ -225,26 +236,53 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		        public RECT rcNormalPosition;
 		    }
 			
-		    [DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+		    [DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 			#endregion
 			
 			#region Graphics
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool DeleteObject(IntPtr hObject);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern IntPtr GetWindowDC(IntPtr hWnd);
 			
 			public static int GetWindowStyle(IntPtr hWnd)
 			{
 				return (int)GetWindowLong(hWnd, GWL_STYLE);
 			}
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool UpdateWindow(IntPtr hWnd);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool RedrawWindow(IntPtr hWnd, ref RECT lprcUpdate, IntPtr hrgnUpdate, uint flags);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, uint flags);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool InvalidateRect(IntPtr hWnd, ref RECT lpRect, bool bErase);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool InvalidateRect(IntPtr hWnd, IntPtr lpRect, bool bErase);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool InvalidateRgn(IntPtr hWnd, IntPtr hRgn, bool bErase);
 			#endregion
 			
 			#region Behaviour
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
 			
-			[DllImport(User32, SetLastError=true, CharSet=DefaultCharSet)]
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern IntPtr SetActiveWindow(IntPtr hWnd);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern IntPtr SetFocus(IntPtr hWnd);
 			#endregion
 		}
 	}

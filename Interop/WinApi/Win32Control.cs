@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -34,14 +35,14 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		protected override Type GetControlType()
 		{
-			string cls = Interop.GetClassName(Handle, true);
-			int style = Interop.GetWindowStyle(Handle);
+			string cls = User32.GetClassName(Handle, true);
+			int style = User32.GetWindowStyle(Handle);
 			switch(cls)
 			{
 				case "Button":
-					if((style & Interop.BS_CHECKBOX) != 0)
+					if((style & User32.BS_CHECKBOX) != 0)
 						return typeof(CheckBox);
-					if((style & Interop.BS_RADIOBUTTON) != 0)
+					if((style & User32.BS_RADIOBUTTON) != 0)
 						return typeof(RadioButton);
 					return typeof(Button);
 				case "ListBox":
@@ -49,13 +50,15 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				case "ComboBox":
 					return typeof(ComboBox); //or DataGridViewComboBoxEditingControl
 				case "Edit":
-					return typeof(TextBoxBase); //TextBoxBase, MaskedTextBox, DataGridTextBox, DataGridViewTextBoxEditingControl
+					return typeof(TextBoxBase); //TextBox, MaskedTextBox, DataGridTextBox, DataGridViewTextBoxEditingControl
 				case "Static":
 					return typeof(Label); //or LinkLabel
 				case "MDIClient":
 					return typeof(MdiClient);
 				case "ScrollBar":
-					return typeof(ScrollBar); //VScrollBar, HScrollBar
+					if((style & User32.SBS_VERT) != 0)
+						return typeof(VScrollBar);
+					return typeof(HScrollBar);
 					
 				/*case "ComboLBox":
 					return typeof(ListBox);
@@ -112,17 +115,17 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override string ToString()
 		{
-			return Interop.GetClassName(Handle, false);
+			return User32.GetClassName(Handle, false);
 		}
 		
 		public override string Text{
 			get{
-				IntPtr len = Interop.SendMessage(Handle, Interop.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
+				IntPtr len = User32.SendMessage(Handle, User32.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
 				len += (int)len+2;
 				
 				IntPtr buffer = Marshal.AllocHGlobal(len);
 				try{
-					Interop.SendMessage(Handle, Interop.WM_GETTEXT, len, buffer);
+					User32.SendMessage(Handle, User32.WM_GETTEXT, len, buffer);
 					return Marshal.PtrToStringAuto(buffer);
 				}finally{
 					Marshal.FreeHGlobal(buffer);
@@ -131,7 +134,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			set{
 				IntPtr str = Marshal.StringToHGlobalAuto(value);
 				try{
-					var ret = Interop.SendMessage(Handle, Interop.WM_SETTEXT, IntPtr.Zero, str);
+					var ret = User32.SendMessage(Handle, User32.WM_SETTEXT, IntPtr.Zero, str);
 					if(ret != (IntPtr)1) throw new Win32Exception();
 				}finally{
 					Marshal.FreeHGlobal(str);
@@ -141,18 +144,18 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override Control Parent{
 			get{
-				IntPtr parent = Interop.GetAncestor(Handle, Interop.GA_PARENT);
-				//if(parent == Interop.GetDesktopWindow()) return null;
+				IntPtr parent = User32.GetAncestor(Handle, User32.GA_PARENT);
+				//if(parent == User32.GetDesktopWindow()) return null;
 				return Win32Control.FromHandle(parent);
 			}
 			set{
-				Interop.SetParent(Handle, value.Handle);
+				User32.SetParent(Handle, value.Handle);
 			}
 		}
 		
 		private UserData GetUserData()
 		{
-			IntPtr userdata = Interop.GetWindowLongPtr(Handle, Interop.GWL_USERDATA);
+			IntPtr userdata = User32.GetWindowLongPtr(Handle, User32.GWL_USERDATA);
 			return UserData.Load(userdata);
 		}
 		
@@ -162,7 +165,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			if(data == null)
 			{
 				data = new UserData();
-				Interop.SetWindowLongPtr(Handle, Interop.GWL_USERDATA, data.ToIntPtr());
+				User32.SetWindowLongPtr(Handle, User32.GWL_USERDATA, data.ToIntPtr());
 			}
 			return data;
 		}
@@ -223,79 +226,93 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override int Width{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return rect.right-rect.left;
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, 0, 0, value, Height, Interop.SWP_NOACTIVATE | Interop.SWP_NOMOVE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, 0, 0, value, Height, User32.SWP_NOACTIVATE | User32.SWP_NOMOVE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
 			}
 		}
 		
 		public override int Height{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return rect.bottom-rect.top;
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, 0, 0, Width, value, Interop.SWP_NOACTIVATE | Interop.SWP_NOMOVE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, 0, 0, Width, value, User32.SWP_NOACTIVATE | User32.SWP_NOMOVE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
 			}
 		}
 		
 		public override Size Size{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return new Size(rect.right-rect.left, rect.bottom-rect.top);
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, 0, 0, value.Width, value.Height, Interop.SWP_NOACTIVATE | Interop.SWP_NOMOVE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, 0, 0, value.Width, value.Height, User32.SWP_NOACTIVATE | User32.SWP_NOMOVE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
 			}
 		}
 		
 		public override int Left{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return rect.left;
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, value, Top, 0, 0, Interop.SWP_NOACTIVATE | Interop.SWP_NOSIZE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, value, Top, 0, 0, User32.SWP_NOACTIVATE | User32.SWP_NOSIZE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
 			}
 		}
 		
 		public override int Top{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return rect.top;
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, Left, value, 0, 0, Interop.SWP_NOACTIVATE | Interop.SWP_NOSIZE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, Left, value, 0, 0, User32.SWP_NOACTIVATE | User32.SWP_NOSIZE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
+			}
+		}
+		
+		public override int Right{
+			get{
+				var rect = User32.GetWindowRect(Handle);
+				return rect.right;
+			}
+		}
+		
+		public override int Bottom{
+			get{
+				var rect = User32.GetWindowRect(Handle);
+				return rect.bottom;
 			}
 		}
 		
 		public override Point Location{
 			get{
-				var rect = Interop.GetWindowRect(Handle);
+				var rect = User32.GetWindowRect(Handle);
 				return new Point(rect.left, rect.top);
 			}
 			set{
-				var result = Interop.SetWindowPos(Handle, IntPtr.Zero, value.X, value.Y, 0, 0, Interop.SWP_NOACTIVATE | Interop.SWP_NOSIZE | Interop.SWP_NOZORDER);
+				var result = User32.SetWindowPos(Handle, IntPtr.Zero, value.X, value.Y, 0, 0, User32.SWP_NOACTIVATE | User32.SWP_NOSIZE | User32.SWP_NOZORDER);
 				if(!result) throw new Win32Exception();
 			}
 		}
 		
 		public override void BringToFront()
 		{
-			var result = Interop.SetWindowPos(Handle, (IntPtr)0, 0, 0, 0, 0, Interop.SWP_NOACTIVATE | Interop.SWP_NOSIZE | Interop.SWP_NOMOVE);
+			var result = User32.SetWindowPos(Handle, (IntPtr)0, 0, 0, 0, 0, User32.SWP_NOACTIVATE | User32.SWP_NOSIZE | User32.SWP_NOMOVE);
 			if(!result) throw new Win32Exception();
 		}
 		
 		public override void SendToBack()
 		{
-			var result = Interop.SetWindowPos(Handle, (IntPtr)1, 0, 0, 0, 0, Interop.SWP_NOACTIVATE | Interop.SWP_NOSIZE | Interop.SWP_NOMOVE);
+			var result = User32.SetWindowPos(Handle, (IntPtr)1, 0, 0, 0, 0, User32.SWP_NOACTIVATE | User32.SWP_NOSIZE | User32.SWP_NOMOVE);
 			if(!result) throw new Win32Exception();
 		}
 		
@@ -317,7 +334,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			private List<IntPtr> GetWindowCollection()
 			{
 				var list = new List<IntPtr>();
-				Interop.EnumChildWindows(
+				User32.EnumChildWindows(
 					control.Handle,
 					(hWnd, lParam) => {list.Add(hWnd); return true;},
 					IntPtr.Zero
@@ -328,14 +345,14 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			public override void Add(Control value)
 			{
 				value.Parent = null;
-				Interop.SetParent(value.Handle, control.Handle);
+				User32.SetParent(value.Handle, control.Handle);
 			}
 			
 			public override void Clear()
 			{
 				foreach(var hwnd in GetWindowCollection())
 				{
-					Interop.SetParent(hwnd, IntPtr.Zero);
+					User32.SetParent(hwnd, IntPtr.Zero);
 				}
 			}
 			
@@ -401,32 +418,32 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override Graphics CreateGraphics()
 		{
-			return Graphics.FromHdc(Interop.GetWindowDC(Handle));
+			return Graphics.FromHdc(User32.GetWindowDC(Handle));
 		}
 		
 		public override bool Enabled{
 			get{
-				int style = Interop.GetWindowStyle(Handle);
-				return (style & Interop.WS_DISABLED) == 0;
+				int style = User32.GetWindowStyle(Handle);
+				return (style & User32.WS_DISABLED) == 0;
 			}
 			set{
-				Interop.EnableWindow(Handle, value);
+				User32.EnableWindow(Handle, value);
 			}
 		}
 		
 		public override bool Visible{
 			get{
-				int style = Interop.GetWindowStyle(Handle);
-				return (style & Interop.WS_VISIBLE) != 0;
+				int style = User32.GetWindowStyle(Handle);
+				return (style & User32.WS_VISIBLE) != 0;
 			}
 			set{
-				Interop.ShowWindow(Handle, value ? Interop.SW_SHOW : Interop.SW_HIDE);
+				User32.ShowWindow(Handle, value ? User32.SW_SHOW : User32.SW_HIDE);
 			}
 		}
 		
 		public override bool Checked{
 			get{
-				return IntPtr.Zero != Interop.SendMessage(Handle, Interop.BM_GETCHECK, IntPtr.Zero, IntPtr.Zero);
+				return IntPtr.Zero != User32.SendMessage(Handle, User32.BM_GETCHECK, IntPtr.Zero, IntPtr.Zero);
 			}
 			set{
 				
@@ -435,12 +452,216 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override CheckState CheckState{
 			get{
-				return (CheckState)Interop.SendMessage(Handle, Interop.BM_GETCHECK, IntPtr.Zero, IntPtr.Zero);
+				return (CheckState)User32.SendMessage(Handle, User32.BM_GETCHECK, IntPtr.Zero, IntPtr.Zero);
 			}
 			set{
-				Interop.SendMessage(Handle, Interop.BM_SETCHECK, (IntPtr)value, IntPtr.Zero);
+				User32.SendMessage(Handle, User32.BM_SETCHECK, (IntPtr)value, IntPtr.Zero);
 			}
 		}
+		
+		public override Font Font{
+			get{
+				IntPtr hfont = User32.SendMessage(Handle, User32.WM_GETFONT, IntPtr.Zero, IntPtr.Zero);
+				if(hfont == IntPtr.Zero) return SystemFonts.DefaultFont;
+				return Font.FromHfont(hfont);
+			}
+			set{
+				IntPtr hfont = value != null ? value.ToHfont() : IntPtr.Zero;
+				User32.SendMessage(Handle, User32.WM_SETFONT, hfont, IntPtr.Zero);
+			}
+		}
+		
+		public override void Update()
+		{
+			bool result = User32.UpdateWindow(Handle);
+			if(!result) throw new Win32Exception();
+		}
+		
+		public override void Invalidate(Region region, bool invalidateChildren)
+		{
+			if(region == null) Invalidate(invalidateChildren);
+			using(var graphics = this.CreateGraphics())
+			{
+				IntPtr hrgn = region.GetHrgn(graphics);
+				try{
+					bool result;
+					if(invalidateChildren)
+					{
+						result = User32.RedrawWindow(Handle, IntPtr.Zero, hrgn, User32.RDW_INVALIDATE | User32.RDW_ERASE | User32.RDW_ALLCHILDREN);
+					}else{
+						result = User32.InvalidateRgn(Handle, hrgn, true);
+					}
+					if(!result) throw new Win32Exception();
+				}finally{
+					User32.DeleteObject(hrgn);
+				}
+			}
+		}
+		
+		public override void Invalidate(Rectangle rc, bool invalidateChildren)
+		{
+			if(rc.IsEmpty) Invalidate(invalidateChildren);
+			bool result;
+			var rect = new User32.RECT();
+			rect.left = rc.Left;
+			rect.top = rc.Top;
+			rect.right = rc.Right;
+			rect.bottom = rc.Bottom;
+			if(invalidateChildren)
+			{
+				result = User32.RedrawWindow(Handle, ref rect, IntPtr.Zero, User32.RDW_INVALIDATE | User32.RDW_ERASE | User32.RDW_ALLCHILDREN);
+			}else{
+				result = User32.InvalidateRect(Handle, ref rect, true);
+			}
+			if(!result) throw new Win32Exception();
+		}
+		
+		public override void Invalidate(Region region)
+		{
+			Invalidate(region, false);
+		}
+		
+		public override void Invalidate(Rectangle rc)
+		{
+			Invalidate(rc, false);
+		}
+		
+		public override void Invalidate(bool invalidateChildren)
+		{
+			bool result;
+			if(invalidateChildren)
+			{
+				result = User32.RedrawWindow(Handle, IntPtr.Zero, IntPtr.Zero, User32.RDW_INVALIDATE | User32.RDW_ERASE | User32.RDW_ALLCHILDREN);
+			}else{
+				result = User32.InvalidateRect(Handle, IntPtr.Zero, true);
+			}
+			if(!result) throw new Win32Exception();
+		}
+		
+		public override void Invalidate()
+		{
+			Invalidate(false);
+		}
+		
+		public override void Refresh()
+		{
+			Invalidate(true);
+			Update();
+		}
+		
+		public override void Show()
+		{
+			Visible = true;
+		}
+		
+		public override void Hide()
+		{
+			Visible = false;
+		}
+		
+		public override bool HasChildren{
+			get{
+				return Controls.Count > 0;
+			}
+		}
+		
+		public override void SetBounds(int x, int y, int width, int height, BoundsSpecified specified)
+		{
+			uint flags = User32.SWP_NOACTIVATE | User32.SWP_NOMOVE | User32.SWP_NOSIZE | User32.SWP_NOZORDER;
+			if((specified & BoundsSpecified.X) != 0)
+			{
+				if((specified & BoundsSpecified.Y) != 0)
+				{
+					flags &= ~User32.SWP_NOMOVE;
+				}else{
+					Location = new Point(x, Top);
+				}
+			}else if((specified & BoundsSpecified.Y) != 0)
+			{
+				Location = new Point(Left, y);
+			}
+			
+			if((specified & BoundsSpecified.Width) != 0)
+			{
+				if((specified & BoundsSpecified.Height) != 0)
+				{
+					flags &= ~User32.SWP_NOSIZE;
+				}else{
+					Width = width;
+				}
+			}else if((specified & BoundsSpecified.Height) != 0)
+			{
+				Height = height;
+			}
+			User32.SetWindowPos(Handle, IntPtr.Zero, x, y, width, height, flags);
+		}
+		
+		public override void SetBounds(int x, int y, int width, int height)
+		{
+			SetBounds(x, y, width, height, BoundsSpecified.All);
+		}
+		
+		public override void Select()
+		{
+			User32.SetActiveWindow(Handle);
+		}
+		
+		public override bool Focus()
+		{
+			return User32.SetFocus(Handle) != IntPtr.Zero;
+		}
+		
+		public override bool RecreatingHandle{
+			get{
+				return false;
+			}
+		}
+		
+		public FileVersionInfo FileVersion{
+			get{
+				/*IntPtr hInst = User32.GetWindowInstance(Handle);
+				IntPtr hResInfo = Kernel32.FindResource(hInst, Kernel32.RT_VERSION, Kernel32.RT_VERSION);
+				if(hResInfo != IntPtr.Zero)
+				{
+					IntPtr hResData = Kernel32.LoadResource(hInst, hResInfo);
+					if(hResData == IntPtr.Zero) throw new Win32Exception();
+					IntPtr res = Kernel32.LockResource(hResData);
+					int size = Kernel32.SizeofResource(hInst, hResInfo);
+					
+					byte[] buffer = new byte[size];
+					Marshal.Copy(res, buffer, 0, size);
+					
+					
+				}*/
+				
+				IntPtr hInst = User32.GetWindowInstance(Handle);
+				int proc;
+				User32.GetWindowThreadProcessId(Handle, out proc);
+				IntPtr hproc = Process.GetProcessById(proc).Handle;
+				string modname = PsApi.GetModuleFileNameEx(hproc, hInst);
+				return FileVersionInfo.GetVersionInfo(modname);
+			}
+		}
+		
+		public override string ProductVersion{
+			get{
+				return FileVersion.ProductVersion;
+			}
+		}
+		
+		public override string ProductName{
+			get{
+				return FileVersion.ProductName;
+			}
+		}
+		
+		public override string CompanyName{
+			get{
+				return FileVersion.CompanyName;
+			}
+		}
+		
+		
 		
 		public override System.Windows.Forms.IWindowTarget WindowTarget {
 			get {
@@ -458,11 +679,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			set {
 				throw new NotImplementedException();
 			}
-		}
-		
-		public override void Update()
-		{
-			throw new NotImplementedException();
 		}
 		
 		public override Control TopLevelControl {
@@ -494,7 +710,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			throw new NotImplementedException();
 		}
 		
-		public override System.ComponentModel.ISite Site {
+		public override ISite Site {
 			get {
 				throw new NotImplementedException();
 			}
@@ -503,27 +719,7 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			}
 		}
 		
-		public override void Show()
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void SetBounds(int x, int y, int width, int height, System.Windows.Forms.BoundsSpecified specified)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void SetBounds(int x, int y, int width, int height)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override bool SelectNextControl(System.Windows.Forms.Control ctl, bool forward, bool tabStopOnly, bool nested, bool wrap)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Select()
+		public override bool SelectNextControl(Control ctl, bool forward, bool tabStopOnly, bool nested, bool wrap)
 		{
 			throw new NotImplementedException();
 		}
@@ -548,12 +744,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				throw new NotImplementedException();
 			}
 			set {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override int Right {
-			get {
 				throw new NotImplementedException();
 			}
 		}
@@ -617,11 +807,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			}
 		}
 		
-		public override void Refresh()
-		{
-			throw new NotImplementedException();
-		}
-		
 		public override System.Drawing.Rectangle RectangleToScreen(System.Drawing.Rectangle r)
 		{
 			throw new NotImplementedException();
@@ -630,24 +815,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		public override System.Drawing.Rectangle RectangleToClient(System.Drawing.Rectangle r)
 		{
 			throw new NotImplementedException();
-		}
-		
-		public override bool RecreatingHandle {
-			get {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override string ProductVersion {
-			get {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override string ProductName {
-			get {
-				throw new NotImplementedException();
-			}
 		}
 		
 		public override bool PreProcessMessage(ref System.Windows.Forms.Message msg)
@@ -771,52 +938,11 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			throw new NotImplementedException();
 		}
 		
-		public override void Invalidate(System.Drawing.Region region, bool invalidateChildren)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Invalidate(System.Drawing.Rectangle rc, bool invalidateChildren)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Invalidate(System.Drawing.Region region)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Invalidate(System.Drawing.Rectangle rc)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Invalidate(bool invalidateChildren)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override void Invalidate()
-		{
-			throw new NotImplementedException();
-		}
-		
 		public override System.Windows.Forms.ImeMode ImeMode {
 			get {
 				throw new NotImplementedException();
 			}
 			set {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override void Hide()
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override bool HasChildren {
-			get {
 				throw new NotImplementedException();
 			}
 		}
@@ -855,24 +981,10 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			}
 		}
 		
-		public override System.Drawing.Font Font {
-			get {
-				throw new NotImplementedException();
-			}
-			set {
-				throw new NotImplementedException();
-			}
-		}
-		
 		public override bool Focused {
 			get {
 				throw new NotImplementedException();
 			}
-		}
-		
-		public override bool Focus()
-		{
-			throw new NotImplementedException();
 		}
 		
 		public override System.Windows.Forms.Form FindForm()
@@ -971,12 +1083,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			throw new NotImplementedException();
 		}
 		
-		public override string CompanyName {
-			get {
-				throw new NotImplementedException();
-			}
-		}
-		
 		public override System.Drawing.Size ClientSize {
 			get {
 				throw new NotImplementedException();
@@ -1027,12 +1133,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 				throw new NotImplementedException();
 			}
 			set {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override int Bottom {
-			get {
 				throw new NotImplementedException();
 			}
 		}
