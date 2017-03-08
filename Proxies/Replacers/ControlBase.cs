@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Layout;
 
-namespace IllidanS4.SharpUtils.Proxies.Replacers.Forms
+namespace IllidanS4.SharpUtils.Proxies.Replacers
 {
 	public abstract class ControlBase : ProxyImplementation<Control, IControl>, IControl, IEquatable<Control>, IWin32Window
 	{

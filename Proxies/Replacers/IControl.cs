@@ -5,10 +5,10 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Layout;
 
-namespace IllidanS4.SharpUtils.Proxies.Replacers.Forms
+namespace IllidanS4.SharpUtils.Proxies.Replacers
 {
 	/// <summary>
-	/// Contains the necessary methods for implementing the <see cref="Microsoft.Win32.RegistryKey"/> class.
+	/// Contains the necessary methods for implementing the <see cref="System.Windows.Forms.Control"/> class.
 	/// </summary>
 	public interface IControl : IProxyReplacer<Control, IControl>
 	{

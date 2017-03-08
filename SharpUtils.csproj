@@ -128,8 +128,8 @@
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
-    <Compile Include="Proxies\Replacers\Forms\ControlBase.cs" />
-    <Compile Include="Proxies\Replacers\Forms\IControl.cs" />
+    <Compile Include="Proxies\Replacers\ControlBase.cs" />
+    <Compile Include="Proxies\Replacers\IControl.cs" />
     <Compile Include="Reflection\Emit\ParameterDefinition.cs" />
     <Compile Include="Reflection\Emit\StackValueType.cs" />
     <Compile Include="Reflection\Event.cs" />
@@ -373,7 +373,6 @@
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Collections" />
-    <Folder Include="Proxies\Replacers\Forms" />
     <Folder Include="Sequences" />
     <Folder Include="Text" />
     <Folder Include="ObjectModel" />

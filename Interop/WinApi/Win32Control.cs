@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using IllidanS4.SharpUtils.Proxies.Replacers.Forms;
+using IllidanS4.SharpUtils.Proxies.Replacers;
 
 namespace IllidanS4.SharpUtils.Interop.WinApi
 {
