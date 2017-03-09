@@ -72,7 +72,7 @@ namespace IllidanS4.SharpUtils.Proxies
 			
 			public virtual bool CanCastTo(Type fromType, object o)
 			{
-				return false;
+				return fromType.IsAssignableFrom(Implementation.GetType());
 			}
 		}
 		
