@@ -238,6 +238,21 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			
 		    [DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
 			public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern int GetWindowRgn(IntPtr hWnd, IntPtr hRgn);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
+			
+			[DllImport(Lib, SetLastError=true, CharSet=DefaultCharSet)]
+			public static extern int MapWindowPoints(IntPtr hWndFrom, IntPtr hWndTo, [In, Out] POINT[] lpPoints, int cPoints);
 			#endregion
 			
 			#region Graphics

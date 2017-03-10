@@ -115,6 +115,9 @@
     <Compile Include="Interop\Unmanaged\MemoryContext.cs" />
     <Compile Include="Interop\Unmanaged\ProcessMemory.cs" />
     <Compile Include="Interop\Unmanaged\StreamMemory.cs" />
+    <Compile Include="Interop\WinApi\Gdi32.cs">
+      <DependentUpon>Win32Control.cs</DependentUpon>
+    </Compile>
     <Compile Include="Interop\WinApi\Kernel32.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
@@ -122,6 +125,9 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\User32.cs">
+      <DependentUpon>Win32Control.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Interop\WinApi\Version.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />

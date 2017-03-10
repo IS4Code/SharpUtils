@@ -12,9 +12,9 @@ using IllidanS4.SharpUtils.Proxies.Replacers;
 
 namespace IllidanS4.SharpUtils.Interop.WinApi
 {
-	public partial class Win32Control : ControlBase, IEquatable<Win32Control>
+	public partial class Win32Control : ControlBase, IEquatable<Win32Control>, IWindowTarget
 	{
-		private readonly IntPtr _hwnd;
+		private IntPtr _hwnd;
 		
 		public override IntPtr Handle{
 			get{
@@ -619,21 +619,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public FileVersionInfo FileVersion{
 			get{
-				/*IntPtr hInst = User32.GetWindowInstance(Handle);
-				IntPtr hResInfo = Kernel32.FindResource(hInst, Kernel32.RT_VERSION, Kernel32.RT_VERSION);
-				if(hResInfo != IntPtr.Zero)
-				{
-					IntPtr hResData = Kernel32.LoadResource(hInst, hResInfo);
-					if(hResData == IntPtr.Zero) throw new Win32Exception();
-					IntPtr res = Kernel32.LockResource(hResData);
-					int size = Kernel32.SizeofResource(hInst, hResInfo);
-					
-					byte[] buffer = new byte[size];
-					Marshal.Copy(res, buffer, 0, size);
-					
-					
-				}*/
-				
 				IntPtr hInst = User32.GetWindowInstance(Handle);
 				int proc;
 				User32.GetWindowThreadProcessId(Handle, out proc);
@@ -643,34 +628,163 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			}
 		}
 		
+		public string GetVersionString(string name)
+		{
+			IntPtr hInst = User32.GetWindowInstance(Handle);
+			IntPtr hResInfo = Kernel32.FindResource(hInst, (IntPtr)1, Kernel32.RT_VERSION);
+			if(hResInfo != IntPtr.Zero)
+			{
+				IntPtr hResData = Kernel32.LoadResource(hInst, hResInfo);
+				if(hResData == IntPtr.Zero) return null;
+				IntPtr res = Kernel32.LockResource(hResData);
+				int size = Kernel32.SizeofResource(hInst, hResInfo);
+				
+				byte[] buffer = new byte[size];
+				Marshal.Copy(res, buffer, 0, size);
+				
+				IntPtr ptr;
+				int len;
+				if(!Version.VerQueryValue(buffer, @"\VarFileInfo\Translation", out ptr, out len))
+					return null;
+				int lang = Marshal.ReadInt16(ptr);
+				int cp = Marshal.ReadInt16(ptr, 2);
+				
+				if(!Version.VerQueryValue(buffer, String.Format(@"\StringFileInfo\{0:X4}{1:X4}\{2}", lang, cp, name), out ptr, out len))
+					return null;
+				
+				string str = Marshal.PtrToStringAuto(ptr, len);
+				if(str == null) return null;
+				return str.TrimEnd('\0');
+			}
+			return null;
+		}
+		
 		public override string ProductVersion{
 			get{
-				return FileVersion.ProductVersion;
+				return GetVersionString("ProductVersion") ?? FileVersion.ProductVersion;
 			}
 		}
 		
 		public override string ProductName{
 			get{
-				return FileVersion.ProductName;
+				return GetVersionString("ProductName") ?? FileVersion.ProductName;
 			}
 		}
 		
 		public override string CompanyName{
 			get{
-				return FileVersion.CompanyName;
+				return GetVersionString("CompanyName") ?? FileVersion.CompanyName;
+			}
+		}
+		
+		public override IWindowTarget WindowTarget{
+			get{
+				return this;
+			}
+			set{
+				throw new NotImplementedException();
+			}
+		}
+		
+		void IWindowTarget.OnHandleChange(IntPtr newHandle)
+		{
+			_hwnd = newHandle;
+		}
+		
+		void IWindowTarget.OnMessage(ref Message m)
+		{
+			m.Result = User32.SendMessage(Handle, unchecked((uint)m.Msg), m.WParam, m.LParam);
+		}
+		
+		public override Region Region{
+			get{
+				IntPtr hRgn = Gdi32.CreateRectRgn(0, 0, 0, 0);
+				try{
+					int result = User32.GetWindowRgn(Handle, hRgn);
+					if(result == 0) return null;
+					return Region.FromHrgn(hRgn);
+				}finally{
+					User32.DeleteObject(hRgn);
+				}
+			}
+			set{
+				using(var graphics = this.CreateGraphics())
+				{
+					IntPtr hRgn = value.GetHrgn(graphics);
+					try{
+						int result = User32.SetWindowRgn(Handle, hRgn, this.Visible);
+						if(result == 0) throw new Win32Exception();
+					}finally{
+						User32.DeleteObject(hRgn);
+					}
+				}
+			}
+		}
+		
+		public override Point PointToScreen(Point p)
+		{
+			var pt = new User32.POINT();
+			pt.x = p.X;
+			pt.y = p.Y;
+			
+			bool result = User32.ClientToScreen(Handle, ref pt);
+			if(!result) throw new Win32Exception();
+			
+			return new Point(pt.x, pt.y);
+		}
+		
+		public override Point PointToClient(Point p)
+		{
+			var pt = new User32.POINT();
+			pt.x = p.X;
+			pt.y = p.Y;
+			
+			bool result = User32.ScreenToClient(Handle, ref pt);
+			if(!result) throw new Win32Exception();
+			
+			return new Point(pt.x, pt.y);
+		}
+		
+		public override Rectangle RectangleToScreen(Rectangle r)
+		{
+			var pts = new User32.POINT[2];
+			pts[0].x = r.Left;
+			pts[0].y = r.Top;
+			pts[1].x = r.Right;
+			pts[1].y = r.Bottom;
+			User32.MapWindowPoints(Handle, IntPtr.Zero, pts, pts.Length);
+			return Rectangle.FromLTRB(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+		}
+		
+		public override Rectangle RectangleToClient(Rectangle r)
+		{
+			var pts = new User32.POINT[2];
+			pts[0].x = r.Left;
+			pts[0].y = r.Top;
+			pts[1].x = r.Right;
+			pts[1].y = r.Bottom;
+			User32.MapWindowPoints(IntPtr.Zero, Handle, pts, pts.Length);
+			return Rectangle.FromLTRB(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+		}
+		
+		public override bool PreProcessMessage(ref Message msg)
+		{
+			return false;
+		}
+		
+		public override Form FindForm()
+		{
+			if(this is Form)
+			{
+				return this;
+			}else{
+				var parent = this.Parent;
+				if(parent == null) return null;
+				return parent.FindForm();
 			}
 		}
 		
 		
-		
-		public override System.Windows.Forms.IWindowTarget WindowTarget {
-			get {
-				throw new NotImplementedException();
-			}
-			set {
-				throw new NotImplementedException();
-			}
-		}
 		
 		public override bool UseWaitCursor {
 			get {
@@ -798,30 +912,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			throw new NotImplementedException();
 		}
 		
-		public override System.Drawing.Region Region {
-			get {
-				throw new NotImplementedException();
-			}
-			set {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override System.Drawing.Rectangle RectangleToScreen(System.Drawing.Rectangle r)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override System.Drawing.Rectangle RectangleToClient(System.Drawing.Rectangle r)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override bool PreProcessMessage(ref System.Windows.Forms.Message msg)
-		{
-			throw new NotImplementedException();
-		}
-		
 		public override System.Windows.Forms.PreProcessControlState PreProcessControlMessage(ref System.Windows.Forms.Message msg)
 		{
 			throw new NotImplementedException();
@@ -831,16 +921,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			get {
 				throw new NotImplementedException();
 			}
-		}
-		
-		public override System.Drawing.Point PointToScreen(System.Drawing.Point p)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public override System.Drawing.Point PointToClient(System.Drawing.Point p)
-		{
-			throw new NotImplementedException();
 		}
 		
 		public override void PerformLayout(System.Windows.Forms.Control affectedControl, string affectedProperty)
@@ -985,11 +1065,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			get {
 				throw new NotImplementedException();
 			}
-		}
-		
-		public override System.Windows.Forms.Form FindForm()
-		{
-			throw new NotImplementedException();
 		}
 		
 		public override object EndInvoke(IAsyncResult asyncResult)
