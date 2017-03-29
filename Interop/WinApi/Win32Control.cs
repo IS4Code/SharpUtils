@@ -22,6 +22,12 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			}
 		}
 		
+		public static Control Desktop{
+			get{
+				return FromHandle(User32.GetDesktopWindow());
+			}
+		}
+		
 		protected Win32Control(IntPtr hwnd)
 		{
 			_hwnd = hwnd;
@@ -120,12 +126,12 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override string Text{
 			get{
-				IntPtr len = User32.SendMessage(Handle, User32.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
-				len += (int)len+2;
+				int len = (int)User32.SendMessage(Handle, User32.WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
+				len += 2; //the null character at the end
 				
-				IntPtr buffer = Marshal.AllocHGlobal(len);
+				IntPtr buffer = Marshal.AllocHGlobal(len*len); //extra space
 				try{
-					User32.SendMessage(Handle, User32.WM_GETTEXT, len, buffer);
+					User32.SendMessage(Handle, User32.WM_GETTEXT, (IntPtr)len, buffer);
 					return Marshal.PtrToStringAuto(buffer);
 				}finally{
 					Marshal.FreeHGlobal(buffer);
@@ -774,13 +780,23 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override Form FindForm()
 		{
-			if(this is Form)
+			if(typeof(Form).IsAssignableFrom(GetControlType()))
 			{
-				return this;
+				return (Form)this.GetProxy();
 			}else{
 				var parent = this.Parent;
 				if(parent == null) return null;
 				return parent.FindForm();
+			}
+		}
+		
+		public override Rectangle Bounds{
+			get{
+				var rect = User32.GetWindowRect(Handle);
+				return Rectangle.FromLTRB(rect.left, rect.top, rect.right, rect.bottom);
+			}
+			set{
+				SetBounds(value.X, value.Y, value.Width, value.Height);
 			}
 		}
 		
@@ -1199,15 +1215,6 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override bool CanFocus {
 			get {
-				throw new NotImplementedException();
-			}
-		}
-		
-		public override System.Drawing.Rectangle Bounds {
-			get {
-				throw new NotImplementedException();
-			}
-			set {
 				throw new NotImplementedException();
 			}
 		}
