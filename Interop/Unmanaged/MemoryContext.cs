@@ -6,6 +6,8 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 	public abstract class MemoryContext : MarshalByRefObject
 	{
 		public abstract bool CanLock{get;}
+		public abstract long Alloc(int size);
+		public abstract void Free(long address);
 		public abstract byte[] ReadMemory(long address, int size);
 		public abstract int WriteMemory(long address, byte[] data);
 		public abstract void Unlock(long address, int size);

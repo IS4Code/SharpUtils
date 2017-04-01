@@ -40,6 +40,16 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 			}
 		}
 		
+		public override void Free(long address)
+		{
+			Marshal.FreeHGlobal((IntPtr)address);
+		}
+		
+		public override long Alloc(int size)
+		{
+			return (long)Marshal.AllocHGlobal(size);
+		}
+		
 		public override void Unlock(long address, int size)
 		{
 			throw new NotImplementedException();

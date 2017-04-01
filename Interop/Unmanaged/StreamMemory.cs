@@ -47,5 +47,15 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 		{
 			throw new NotImplementedException();
 		}
+		
+		public override void Free(long address)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public override long Alloc(int size)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

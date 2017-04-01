@@ -19,29 +19,39 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 		
 		private static class NtDll
 		{
-			[DllImport("ntdll.dll")]
+			public const string Lib = "ntdll.dll";
+			
+			[DllImport(Lib, SetLastError=true)]
 			public static extern int RtlNtStatusToDosError(int Status);
 			
-			[DllImport("ntdll.dll", SetLastError=true)]
+			[DllImport(Lib, SetLastError=true)]
 			public static extern int NtWow64ReadVirtualMemory64(IntPtr hProcess, long lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out UIntPtr lpNumberOfBytesRead);
 			
-			[DllImport("ntdll.dll", SetLastError=true)]
+			[DllImport(Lib, SetLastError=true)]
 			public static extern int NtWow64WriteVirtualMemory64(IntPtr hProcess, long lpBaseAddress, byte[] lpBuffer, int nSize, out UIntPtr lpNumberOfBytesWritten);
 		}
 		
 		private static class Kernel32
 		{
-			[DllImport("kernel32.dll", SetLastError=true)]
+			public const string Lib = "kernel32.dll";
+			
+			[DllImport(Lib, SetLastError=true)]
 			public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out UIntPtr lpNumberOfBytesRead);
 			
-			[DllImport("kernel32.dll", SetLastError=true)]
+			[DllImport(Lib, SetLastError=true)]
 			public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out UIntPtr lpNumberOfBytesWritten);
 			
-			[DllImport("kernel32.dll", SetLastError=true)]
+			[DllImport(Lib, SetLastError=true)]
 			public static extern bool IsWow64Process(IntPtr processHandle, out bool wow64Process);
 			
-			[DllImport("kernel32.dll")]
+			[DllImport(Lib, SetLastError=true)]
 			public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
+			
+			[DllImport(Lib, SetLastError=true)]
+			public static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, IntPtr dwSize, uint flAllocationType, uint flProtect);
+			
+			[DllImport(Lib, SetLastError=true)]
+			public static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, uint dwFreeType);
 		}
 		
 		private static bool IsWow64()
@@ -121,6 +131,19 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 		{
 			uint tmp;
 			bool res = Kernel32.VirtualProtectEx(processHandle, (IntPtr)address, (UIntPtr)size, 0x20, out tmp);
+			if(!res) throw new Win32Exception();
+		}
+		
+		public override long Alloc(int size)
+		{
+			IntPtr addr = Kernel32.VirtualAllocEx(processHandle, IntPtr.Zero, (IntPtr)size, 0x00001000 | 0x00002000, 0x04);
+			if(addr == IntPtr.Zero) throw new Win32Exception();
+			return (long)addr;
+		}
+		
+		public override void Free(long address)
+		{
+			bool res = Kernel32.VirtualFreeEx(processHandle, (IntPtr)address, 0, 0x8000);
 			if(!res) throw new Win32Exception();
 		}
 	}
