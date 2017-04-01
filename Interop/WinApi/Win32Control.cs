@@ -121,7 +121,10 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 		
 		public override string ToString()
 		{
-			return User32.GetClassName(Handle, false);
+			string typename = User32.GetClassName(Handle, true);
+			string classname = User32.GetClassName(Handle, false);
+			if(typename == classname) return typename;
+			else return typename+":"+classname;
 		}
 		
 		public override string Text{
