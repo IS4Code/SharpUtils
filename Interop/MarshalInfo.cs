@@ -25,19 +25,23 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		public MarshalInfo(MarshalAsAttribute marshal, Guid iid)
 		{
-			SafeArraySubType = marshal.SafeArraySubType;
-			SafeArrayUserDefinedSubType = marshal.SafeArrayUserDefinedSubType;
-			IidParameterIndex = marshal.IidParameterIndex;
-			ArraySubType = marshal.ArraySubType;
-			SizeParamIndex = marshal.SizeParamIndex;
-			SizeConst = marshal.SizeConst;
-			MarshalTypeRef = marshal.MarshalTypeRef;
-			if(MarshalTypeRef == null && marshal.MarshalType != null)
+			if(marshal != null)
 			{
-				MarshalTypeRef = Type.GetType(marshal.MarshalType);
+				SafeArraySubType = marshal.SafeArraySubType;
+				SafeArrayUserDefinedSubType = marshal.SafeArrayUserDefinedSubType;
+				IidParameterIndex = marshal.IidParameterIndex;
+				ArraySubType = marshal.ArraySubType;
+				SizeParamIndex = marshal.SizeParamIndex;
+				SizeConst = marshal.SizeConst;
+				MarshalTypeRef = marshal.MarshalTypeRef;
+				
+				if(MarshalTypeRef == null && marshal.MarshalType != null)
+				{
+					MarshalTypeRef = Type.GetType(marshal.MarshalType);
+				}
+				MarshalCookie = marshal.MarshalCookie;
+				UnmanagedType = marshal.Value;
 			}
-			MarshalCookie = marshal.MarshalCookie;
-			UnmanagedType = marshal.Value;
 			IidGuid = iid;
 		}
 		
@@ -52,53 +56,55 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		public IEnumerable<CustomAttributeBuilder> CreateBuilders()
 		{
-			var namedProperties = new List<PropertyInfo>();
-			var propertyValues = new List<object>();
-			
-			if(SafeArraySubType != 0)
+			if(UnmanagedType != 0)
 			{
-				namedProperties.Add(MarshalAsType.GetProperty("SafeArraySubType"));
-				propertyValues.Add(SafeArraySubType);
+				var namedProperties = new List<PropertyInfo>();
+				var propertyValues = new List<object>();
+				
+				if(SafeArraySubType != 0)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("SafeArraySubType"));
+					propertyValues.Add(SafeArraySubType);
+				}
+				if(SafeArrayUserDefinedSubType != null)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("SafeArrayUserDefinedSubType"));
+					propertyValues.Add(SafeArrayUserDefinedSubType);
+				}
+				if(IidParameterIndex != 0)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("IidParameterIndex"));
+					propertyValues.Add(IidParameterIndex);
+				}
+				if(ArraySubType != 0)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("ArraySubType"));
+					propertyValues.Add(ArraySubType);
+				}
+				if(SizeParamIndex != 0)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("SizeParamIndex"));
+					propertyValues.Add(SizeParamIndex);
+				}
+				if(SizeConst != 0)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("SizeConst"));
+					propertyValues.Add(SizeConst);
+				}
+				if(MarshalTypeRef != null)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("MarshalTypeRef"));
+					propertyValues.Add(MarshalTypeRef);
+				}
+				if(MarshalCookie != null)
+				{
+					namedProperties.Add(MarshalAsType.GetProperty("MarshalCookie"));
+					propertyValues.Add(MarshalCookie);
+				}
+				
+				var mbuilder = new CustomAttributeBuilder(MarshalAsCtor, new object[]{UnmanagedType}, namedProperties.ToArray(), propertyValues.ToArray());
+				yield return mbuilder;
 			}
-			if(SafeArrayUserDefinedSubType != null)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("SafeArrayUserDefinedSubType"));
-				propertyValues.Add(SafeArrayUserDefinedSubType);
-			}
-			if(IidParameterIndex != 0)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("IidParameterIndex"));
-				propertyValues.Add(IidParameterIndex);
-			}
-			if(ArraySubType != 0)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("ArraySubType"));
-				propertyValues.Add(ArraySubType);
-			}
-			if(SizeParamIndex != 0)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("SizeParamIndex"));
-				propertyValues.Add(SizeParamIndex);
-			}
-			if(SizeConst != 0)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("SizeConst"));
-				propertyValues.Add(SizeConst);
-			}
-			if(MarshalTypeRef != null)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("MarshalTypeRef"));
-				propertyValues.Add(MarshalTypeRef);
-			}
-			if(MarshalCookie != null)
-			{
-				namedProperties.Add(MarshalAsType.GetProperty("MarshalCookie"));
-				propertyValues.Add(MarshalCookie);
-			}
-			
-			var mbuilder = new CustomAttributeBuilder(MarshalAsCtor, new object[]{UnmanagedType}, namedProperties.ToArray(), propertyValues.ToArray());
-			yield return mbuilder;
-			
 			if(IidGuid != Guid.Empty)
 			{
 				yield return new CustomAttributeBuilder(typeof(GuidAttribute).GetConstructors()[0], new[]{IidGuid.ToString("D")});

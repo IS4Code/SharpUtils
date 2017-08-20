@@ -104,6 +104,7 @@ namespace IllidanS4.SharpUtils.Interop
 			PtrToStructure(ptr, out obj);
 			return obj;
 		}
+		#endregion
 		
 		/// <summary>
 		/// Returns the size of a structure.
@@ -133,7 +134,58 @@ namespace IllidanS4.SharpUtils.Interop
 		{
 			return SizeOfHacks.SizeOfHelper(t, true);
 		}
-		#endregion
+		
+		public static int SizeOf(UnmanagedType t)
+		{
+			switch(t)
+			{
+				case UnmanagedType.Bool:
+				case UnmanagedType.I4:
+				case UnmanagedType.R4:
+				case UnmanagedType.U4:
+				case UnmanagedType.Error:
+					return 4;
+				case UnmanagedType.SysInt:
+				case UnmanagedType.SysUInt:
+				case UnmanagedType.FunctionPtr:
+				case UnmanagedType.IDispatch:
+				case UnmanagedType.IInspectable:
+				case UnmanagedType.IUnknown:
+				case UnmanagedType.LPArray:
+				case UnmanagedType.LPStr:
+				case UnmanagedType.LPStruct:
+				case UnmanagedType.LPTStr:
+				case UnmanagedType.LPWStr:
+				case UnmanagedType.Interface:
+				case UnmanagedType.AnsiBStr:
+				case UnmanagedType.BStr:
+				case UnmanagedType.SafeArray:
+				case UnmanagedType.TBStr:
+				case UnmanagedType.VBByRefStr:
+					return IntPtr.Size;
+				case UnmanagedType.I8:
+				case UnmanagedType.R8:
+				case UnmanagedType.U8:
+				case UnmanagedType.Currency:
+					return 8;
+				case UnmanagedType.I1:
+				case UnmanagedType.U1:
+					return 1;
+				case UnmanagedType.I2:
+				case UnmanagedType.U2:
+				case UnmanagedType.VariantBool:
+					return 2;
+				case UnmanagedType.Struct:
+					return 16;
+				case UnmanagedType.AsAny:
+				case UnmanagedType.ByValArray:
+				case UnmanagedType.ByValTStr:
+				case UnmanagedType.CustomMarshaler:
+				case UnmanagedType.HString:
+				default:
+					return 0;
+			}
+		}
 				
 		[Obsolete("Use System.RuntimeMethodHandle.GetFunctionPointer.")]
 		public static IntPtr GetFunctionPointer(MethodInfo method)
