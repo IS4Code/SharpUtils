@@ -39,6 +39,21 @@ namespace IllidanS4.SharpUtils.Interop.WinApi
 			return Control.FromHandle(handle) ?? new Win32Control(handle).GetProxy();
 		}
 		
+		public int OwnerProcessId{
+			get{
+				IntPtr hInst = User32.GetWindowInstance(Handle);
+				int proc;
+				User32.GetWindowThreadProcessId(Handle, out proc);
+				return proc;
+			}
+		}
+		
+		public Process OwnerProcess{
+			get{
+				return Process.GetProcessById(OwnerProcessId);
+			}
+		}
+		
 		protected override Type GetControlType()
 		{
 			string cls = User32.GetClassName(Handle, true);
