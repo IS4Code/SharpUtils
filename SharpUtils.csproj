@@ -108,7 +108,11 @@
     <Compile Include="Coroutines\Coroutine.cs" />
     <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
+    <Compile Include="Interop\LibImportAttribute.cs">
+      <DependentUpon>NativeLibrary.cs</DependentUpon>
+    </Compile>
     <Compile Include="Interop\MarshalInfo.cs" />
+    <Compile Include="Interop\NativeLibrary.cs" />
     <Compile Include="Interop\Unmanaged\FarMarshal.cs" />
     <Compile Include="Interop\Unmanaged\FarPtr.cs" />
     <Compile Include="Interop\Unmanaged\LocalMemory.cs" />
@@ -215,9 +219,11 @@
     <Compile Include="Reflection\TypeSupport\TypeContainer.cs" />
     <Compile Include="Reflection\TypeSupport\VirtualObjectProxy.cs" />
     <Compile Include="Serialization\ObjectConstructInfo.cs" />
+    <Compile Include="Unsafe\ByValArray.cs" />
     <Compile Include="Unsafe\Experimental\PinHandle.cs" />
     <Compile Include="Unsafe\Experimental\StackAllocated.cs" />
     <Compile Include="Unsafe\IMemoryUnion.cs" />
+    <Compile Include="Unsafe\ReferenceStorage.cs" />
     <Compile Include="Unsafe\VariadicUnion.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
