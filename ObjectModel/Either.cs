@@ -42,7 +42,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		
 		public bool IsSecond{
 			get{
-				return !isSecond;
+				return isSecond;
 			}
 		}
 		
