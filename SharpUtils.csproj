@@ -135,6 +135,7 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
+    <Compile Include="IO\DeviceStream.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
@@ -385,6 +386,7 @@
     <Folder Include="COM" />
     <Folder Include="Interop" />
     <Folder Include="Collections" />
+    <Folder Include="IO" />
     <Folder Include="Sequences" />
     <Folder Include="Text" />
     <Folder Include="ObjectModel" />
