@@ -50,7 +50,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new Uri(baseUrl, relUrl);
 		}
 		
-		static readonly Regex pathNameRegex = new Regex(@"^(.*\\)([^\\]+)$", RegexOptions.Compiled);
+		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
 		private IShellItem GetItem(Uri url)
 		{
 			string path = GetShellPath(url);
@@ -70,8 +70,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}catch(IOException)
 			{
 				var match = pathNameRegex.Match(path);
+				if(!match.Success) throw new ArgumentException("Argument is not a valid path.", "path");
 				
 				string dir = match.Groups[1].Value;
+				if(dir.Equals("shell:", StringComparison.OrdinalIgnoreCase)) dir = "";
 				
 				IntPtr pidl;
 				SFGAOF sfgao;
@@ -89,29 +91,39 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 						}finally{
 							Marshal.FreeCoTaskMem(pidl2);
 						}
+					}catch(ArgumentException)
+					{
+						if(!String.IsNullOrWhiteSpace(path)) throw;
+						return SHCreateItemFromIDList<IShellItem>(pidl);
 					}catch(FileNotFoundException)
 					{
 						//Probably not needed
 						IEnumIDList peidl = psf.EnumObjects(IntPtr.Zero, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
 						
-						while(true)
-						{
-							IntPtr pidl2;
-							uint num;
-							peidl.Next(1, out pidl2, out num);
-							if(num == 0) break;
-							try{
-								STRRET sr = psf.GetDisplayNameOf(pidl2, SHGDNF.SHGDN_FORPARSING);
-								
-								string name = StrRetToStr(ref sr, pidl2);
-								if(pathNameRegex.Replace(name, "$2") == path)
-								{
-									return SHCreateItemWithParent<IShellItem>(pidl, psf, pidl2);
+						try{
+							while(true)
+							{
+								IntPtr pidl2;
+								uint num;
+								peidl.Next(1, out pidl2, out num);
+								if(num == 0) break;
+								try{
+									STRRET sr = psf.GetDisplayNameOf(pidl2, SHGDNF.SHGDN_FORPARSING);
+									
+									string name = StrRetToStr(ref sr, pidl2);
+									if(pathNameRegex.Replace(name, "$2") == path)
+									{
+										return SHCreateItemWithParent<IShellItem>(pidl, psf, pidl2);
+									}
+								}finally{
+									Marshal.FreeCoTaskMem(pidl2);
 								}
-							}finally{
-								Marshal.FreeCoTaskMem(pidl2);
 							}
+						}finally{
+							Marshal.FinalReleaseComObject(peidl);
 						}
+					}finally{
+						Marshal.FinalReleaseComObject(psf);
 					}
 				}finally{
 					Marshal.FreeCoTaskMem(pidl);
@@ -306,6 +318,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 							Marshal.FreeCoTaskMem(lpidl);
 						}
 					}catch(NotImplementedException)
+					{
+						target = (IShellItem)item;
+					}catch(InvalidCastException)
 					{
 						target = (IShellItem)item;
 					}
