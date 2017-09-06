@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 namespace IllidanS4.SharpUtils.IO
 {
 	/// <summary>
-	/// This class inherits its functionality from <see cref="System.IO.FileStream"/>,but allows extended and UNC paths.
+	/// This class inherits its functionality from <see cref="System.IO.FileStream"/>,
+	/// but allows extended and UNC paths.
 	/// </summary>
 	public class DeviceStream : FileStream
 	{

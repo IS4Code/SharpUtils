@@ -65,6 +65,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
@@ -101,7 +102,13 @@
     <Compile Include="Collections\MutableCollection.cs" />
     <Compile Include="Collections\MutableList.cs" />
     <Compile Include="Collections\ValueTypeEnumerator.cs" />
+    <Compile Include="COM\ComExtensions.cs" />
     <Compile Include="COM\IDispatch.cs" />
+    <Compile Include="COM\IEnumIDList.cs" />
+    <Compile Include="COM\IShellFolder.cs" />
+    <Compile Include="COM\IShellItem.cs" />
+    <Compile Include="COM\IShellItem2.cs" />
+    <Compile Include="COM\IShellLink.cs" />
     <Compile Include="COM\IStreamWrapper.cs" />
     <Compile Include="COM\StreamToIStreamMarshaler.cs" />
     <Compile Include="COM\StreamWrapper.cs" />
@@ -135,7 +142,15 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
+    <Compile Include="IO\FileSystems\IMountHost.cs" />
+    <Compile Include="IO\FileSystems\MountFileSystem.cs" />
+    <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
+    <Compile Include="IO\ResourceInfo.cs" />
     <Compile Include="IO\DeviceStream.cs" />
+    <Compile Include="IO\FileSystems\DataFileSystem.cs" />
+    <Compile Include="IO\FileSystems\IFileSystem.cs" />
+    <Compile Include="IO\FileSystems\WebFileSystem.cs" />
+    <Compile Include="IO\FileSystems\Win32FileSystem.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
@@ -382,6 +397,7 @@
     <Folder Include="Accessing" />
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
+    <Folder Include="IO\FileSystems" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />
