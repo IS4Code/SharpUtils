@@ -5,6 +5,10 @@ using System.Net;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// This file systems contains web locations representing resources
+	/// obtained using the standard web protocols.
+	/// </summary>
 	public class WebFileSystem : IFileSystem
 	{
 		public static readonly WebFileSystem Instance = new WebFileSystem();

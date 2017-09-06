@@ -11,6 +11,10 @@ using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// This file system contains locations accessible using the Win32 shell model.
+	/// The resources in this system may be real files, but also virtual shell items.
+	/// </summary>
 	public class ShellFileSystem : IFileSystem
 	{
 		public static readonly ShellFileSystem Instance = new ShellFileSystem(new Uri("shell:"));

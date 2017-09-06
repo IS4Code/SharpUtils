@@ -7,6 +7,9 @@ using System.Web;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// This file system handles URI using the "data" scheme.
+	/// </summary>
 	public class DataFileSystem : IFileSystem
 	{
 		public static readonly DataFileSystem Instance = new DataFileSystem();

@@ -4,6 +4,9 @@ using System.IO;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// Represents a file system in the universal file system.
+	/// </summary>
 	public interface IFileSystem
 	{
 		FileAttributes GetAttributes(Uri url);

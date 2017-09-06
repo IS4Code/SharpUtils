@@ -5,6 +5,10 @@ using System.IO;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// This file system implementation allows the environment to mount custom
+	/// file systems to specific directories.
+	/// </summary>
 	public abstract class MountFileSystem : IMountHost
 	{
 		private readonly Dictionary<Uri, IFileSystem> mountPoints = new Dictionary<Uri, IFileSystem>();

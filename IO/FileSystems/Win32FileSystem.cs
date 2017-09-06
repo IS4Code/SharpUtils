@@ -9,6 +9,10 @@ using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
+	/// <summary>
+	/// This file system contains files in the Win32 path scheme, also
+	/// supporting NTFS file system extensions and UNC paths.
+	/// </summary>
 	public class Win32FileSystem : MountFileSystem, IFileSystem
 	{
 		public static readonly Win32FileSystem Instance = new Win32FileSystem();
