@@ -105,6 +105,8 @@
     <Compile Include="COM\ComExtensions.cs" />
     <Compile Include="COM\IDispatch.cs" />
     <Compile Include="COM\IEnumIDList.cs" />
+    <Compile Include="COM\IPersist.cs" />
+    <Compile Include="COM\IPersistStream.cs" />
     <Compile Include="COM\IShellFolder.cs" />
     <Compile Include="COM\IShellItem.cs" />
     <Compile Include="COM\IShellItem2.cs" />
@@ -142,6 +144,9 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
+    <Compile Include="IO\FileSystems\DataExtension\IDataExtension.cs" />
+    <Compile Include="IO\FileSystems\DataExtension\ShellLinkDataExtension.cs" />
+    <Compile Include="IO\FileSystems\IExtensionHost.cs" />
     <Compile Include="IO\FileSystems\IMountHost.cs" />
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
     <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
@@ -398,6 +403,7 @@
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
     <Folder Include="IO\FileSystems" />
+    <Folder Include="IO\FileSystems\DataExtension" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />

@@ -4,33 +4,88 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
+using IllidanS4.SharpUtils.IO.FileSystems.DataExtension;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
 	/// <summary>
 	/// This file system handles URI using the "data" scheme.
 	/// </summary>
-	public class DataFileSystem : IFileSystem
+	public class DataFileSystem : IExtensionHost
 	{
 		public static readonly DataFileSystem Instance = new DataFileSystem();
 		
+		public DataFileSystem()
+		{
+			Register(new ShellLinkDataExtension());
+		}
+		
+		private readonly List<IDataExtension> extensions = new List<IDataExtension>();
+		
+		public void Register(IDataExtension extension)
+		{
+			extensions.Add(extension);
+		}
+		
+		public void Unregister(IDataExtension extension)
+		{
+			extensions.Remove(extension);
+		}
+		
+		public IDataExtension GetExtension(string contentType)
+		{
+			foreach(var extension in extensions)
+			{
+				if(extension.SupportsType(contentType)) return extension;
+			}
+			return null;
+		}
+		
+		private IDataExtension ParseUrl(Uri url, out DataUri uri)
+		{
+			uri = new DataUri(url, false, false);
+			var ext = GetExtension(uri.ContentType);
+			if(ext != null)
+			{
+				uri = new DataUri(url, true, true);
+				return ext;
+			}
+			return null;
+		}
+		
 		public FileAttributes GetAttributes(Uri url)
 		{
+			DataUri uri;
+			var extension = ParseUrl(url, out uri);
+			if(extension != null) return extension.GetAttributes(uri);
+			
 			return FileAttributes.ReadOnly;
 		}
 		
 		public DateTime GetCreationTime(Uri url)
 		{
+			DataUri uri;
+			var extension = ParseUrl(url, out uri);
+			if(extension != null) return extension.GetCreationTime(uri);
+			
 			throw new NotImplementedException();
 		}
 		
 		public DateTime GetLastAccessTime(Uri url)
 		{
+			DataUri uri;
+			var extension = ParseUrl(url, out uri);
+			if(extension != null) return extension.GetLastAccessTime(uri);
+			
 			throw new NotImplementedException();
 		}
 		
 		public DateTime GetLastWriteTime(Uri url)
 		{
+			DataUri uri;
+			var extension = ParseUrl(url, out uri);
+			if(extension != null) return extension.GetLastWriteTime(uri);
+			
 			throw new NotImplementedException();
 		}
 		
@@ -46,6 +101,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public Uri GetTarget(Uri url)
 		{
+			DataUri uri;
+			var extension = ParseUrl(url, out uri);
+			if(extension != null) return extension.GetTarget(uri);
+			
 			return url;
 		}
 		

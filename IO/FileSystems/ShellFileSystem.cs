@@ -54,6 +54,36 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new Uri(baseUrl, relUrl);
 		}
 		
+		public Uri ResolveLink(byte[] linkData)
+		{
+			var data = (IPersistStream)new ShellLink();
+			using(var buffer = new MemoryStream(linkData))
+			{
+				var stream = new StreamWrapper(buffer);
+				data.Load(stream);
+			}
+			return ResolveLink((IShellLink)data);
+		}
+		
+		[CLSCompliant(false)]
+		public Uri ResolveLink(IShellLink link)
+		{
+			IntPtr pidl = link.GetIDList();
+			try{
+				var target = SHCreateItemFromIDList<IShellItem>(pidl);
+				try{
+					string path = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+					var attr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+					
+					return GetShellUrl(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+				}finally{
+					Marshal.FinalReleaseComObject(target);
+				}
+			}finally{
+				Marshal.FreeCoTaskMem(pidl);
+			}
+		}
+		
 		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
 		private IShellItem GetItem(Uri url)
 		{
