@@ -150,6 +150,8 @@
     <Compile Include="IO\FileSystems\IMountHost.cs" />
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
     <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
+    <Compile Include="IO\PipeListener.cs" />
+    <Compile Include="IO\PipeServer.cs" />
     <Compile Include="IO\ResourceInfo.cs" />
     <Compile Include="IO\DeviceStream.cs" />
     <Compile Include="IO\FileSystems\DataFileSystem.cs" />
