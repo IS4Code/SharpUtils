@@ -41,7 +41,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		private IDataExtension ParseUrl(Uri uri, out DataUri dataUri)
+		private IDataExtension ParseUri(Uri uri, out DataUri dataUri)
 		{
 			dataUri = new DataUri(uri, false, false);
 			var ext = GetExtension(dataUri.ContentType);
@@ -56,7 +56,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public FileAttributes GetAttributes(Uri uri)
 		{
 			DataUri dataUri;
-			var extension = ParseUrl(uri, out dataUri);
+			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetAttributes(dataUri);
 			
 			return FileAttributes.ReadOnly;
@@ -65,7 +65,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public DateTime GetCreationTime(Uri uri)
 		{
 			DataUri dataUri;
-			var extension = ParseUrl(uri, out dataUri);
+			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetCreationTime(dataUri);
 			
 			throw new NotImplementedException();
@@ -74,7 +74,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public DateTime GetLastAccessTime(Uri uri)
 		{
 			DataUri dataUri;
-			var extension = ParseUrl(uri, out dataUri);
+			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetLastAccessTime(dataUri);
 			
 			throw new NotImplementedException();
@@ -83,7 +83,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public DateTime GetLastWriteTime(Uri uri)
 		{
 			DataUri dataUri;
-			var extension = ParseUrl(uri, out dataUri);
+			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetLastWriteTime(dataUri);
 			
 			throw new NotImplementedException();
@@ -102,7 +102,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public Uri GetTarget(Uri uri)
 		{
 			DataUri dataUri;
-			var extension = ParseUrl(uri, out dataUri);
+			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetTarget(dataUri);
 			
 			return uri;

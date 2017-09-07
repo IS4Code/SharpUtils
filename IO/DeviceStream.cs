@@ -1,4 +1,5 @@
 ﻿/* Date: 3.9.2017, Time: 2:33 */
+using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
@@ -25,8 +26,15 @@ namespace IllidanS4.SharpUtils.IO
 		
 		private static SafeFileHandle OpenFile(string filename, FileMode mode, FileAccess access, FileShare share)
 		{
+			bool append = (mode == FileMode.Append);
+			if(append)
+			{
+				mode = FileMode.OpenOrCreate;
+			}
 			IntPtr handle = CreateFile(filename, access, share, IntPtr.Zero, mode, (FileAttributes)1048576, IntPtr.Zero);
-			return new SafeFileHandle(handle, true);
+			var sfh = new SafeFileHandle(handle, true);
+			if(sfh.IsInvalid) throw new Win32Exception();
+			return sfh;
 		}
 		
 		public DeviceStream(string path, FileMode mode) : this(path, mode, (mode == FileMode.Append) ? FileAccess.Write : FileAccess.ReadWrite, FileShare.Read, 4096)
@@ -46,7 +54,10 @@ namespace IllidanS4.SharpUtils.IO
 		
 		public DeviceStream(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize) : base(OpenFile(path, mode, access, share), access, bufferSize)
 		{
-			
+			if(mode == FileMode.Append)
+			{
+				this.Position = this.Length;
+			}
 		}
 	}
 }

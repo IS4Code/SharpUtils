@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -76,7 +77,31 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		protected override Stream GetStreamInternal(Uri uri, FileMode mode, FileAccess access)
 		{
-			return new DeviceStream(GetPath(uri), mode, access);
+			string path = GetPath(uri);
+			
+			long offset;
+			if(!String.IsNullOrEmpty(uri.Fragment) && Int64.TryParse(HttpUtility.UrlDecode(uri.Fragment.Substring(1)), out offset))
+			{
+				DeviceStream stream;
+				switch(mode)
+				{
+					case FileMode.Create:
+						stream = new DeviceStream(path, FileMode.OpenOrCreate, access);
+						stream.SetLength(offset);
+						break;
+					case FileMode.Truncate:
+						stream = new DeviceStream(path, FileMode.Open, access);
+						stream.SetLength(offset);
+						break;
+					default:
+						stream = new DeviceStream(path, mode, access);
+						break;
+				}
+				stream.Seek(offset, SeekOrigin.Begin);
+				return stream;
+			}else{
+				return new DeviceStream(path, mode, access);
+			}
 		}
 		
 		protected override Uri GetTargetInternal(Uri uri)
@@ -196,7 +221,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public static string PathFromFileUri(Uri uri)
 		{
-			string absUri = uri.AbsoluteUri;
+			var bareUri = new UriBuilder(uri){Fragment = null}.Uri;
+			
+			string absUri = bareUri.AbsoluteUri;
 			
 			int len = 1;
 			var buffer = new StringBuilder(len);
@@ -209,7 +236,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			Marshal.ThrowExceptionForHR(result);
 			
 			string path = buffer.ToString();
-			if(uri.Host == "localhost")
+			if(bareUri.Host == "localhost")
 			{
 				return @"\\localhost"+path;
 			}else{
