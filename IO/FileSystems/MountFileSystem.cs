@@ -27,8 +27,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			foreach(var pair in mountPoints)
 			{
-				var rel = pair.Key.MakeRelativeUri(uri);
-				if(pair.Key == uri || (!rel.IsAbsoluteUri && !rel.OriginalString.StartsWith("../")))
+				var rel1 = pair.Key.MakeRelativeUri(uri);
+				var rel2 = uri.MakeRelativeUri(pair.Key);
+				if(pair.Key == uri || (!rel1.IsAbsoluteUri && !rel2.IsAbsoluteUri && !rel1.OriginalString.StartsWith("../") && rel2.OriginalString.StartsWith("../")))
 				{
 					return pair.Value;
 				}
