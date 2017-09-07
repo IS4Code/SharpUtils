@@ -54,7 +54,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new Uri(baseUrl, relUrl);
 		}
 		
-		public Uri ResolveLink(byte[] linkData)
+		[CLSCompliant(false)]
+		public IShellLink LoadLink(byte[] linkData)
 		{
 			var data = (IPersistStream)new ShellLink();
 			using(var buffer = new MemoryStream(linkData))
@@ -62,23 +63,62 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				var stream = new StreamWrapper(buffer);
 				data.Load(stream);
 			}
-			return ResolveLink((IShellLink)data);
+			var link = (IShellLink)data;
+			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
+			return link;
 		}
 		
 		[CLSCompliant(false)]
-		public Uri ResolveLink(IShellLink link)
+		public IShellLink LoadLink(string linkFile)
 		{
+			var data = (IPersistFile)new ShellLink();
+			data.Load(linkFile, 0);
+			var link = (IShellLink)data;
+			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
+			return link;
+		}
+		
+		[CLSCompliant(false)]
+		public Uri GetLinkTargetUrl(IShellLink link)
+		{
+			var target = GetLinkTarget(link);
+			try{
+				string path = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+				var attr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+				
+				return GetShellUrl(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+			}finally{
+				Marshal.FinalReleaseComObject(target);
+			}
+		}
+		
+		public Uri LoadLinkTargetUrl(byte[] linkData)
+		{
+			var link = LoadLink(linkData);
+			try{
+				return GetLinkTargetUrl(link);
+			}finally{
+				Marshal.FinalReleaseComObject(link);
+			}
+		}
+		
+		public Uri LoadLinkTargetUrl(string linkFile)
+		{
+			var link = LoadLink(linkFile);
+			try{
+				return GetLinkTargetUrl(link);
+			}finally{
+				Marshal.FinalReleaseComObject(link);
+			}
+		}
+		
+		[CLSCompliant(false)]
+		public IShellItem GetLinkTarget(IShellLink link)
+		{
+			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
 			IntPtr pidl = link.GetIDList();
 			try{
-				var target = SHCreateItemFromIDList<IShellItem>(pidl);
-				try{
-					string path = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-					var attr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-					
-					return GetShellUrl(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
-				}finally{
-					Marshal.FinalReleaseComObject(target);
-				}
+				return SHCreateItemFromIDList<IShellItem>(pidl);
 			}finally{
 				Marshal.FreeCoTaskMem(pidl);
 			}
@@ -94,13 +134,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		private IShellItem GetItem(string path)
 		{
 			try{
-				//try{
-					return SHCreateItemFromParsingName<IShellItem>(path, null);
-				/*}catch(IOException)
-				{
-					if(!path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase)) throw;
-					return SHCreateItemFromParsingName<IShellItem>(path.Substring(6), null);
-				}*/
+				return SHCreateItemFromParsingName<IShellItem>(path, null);
 			}catch(IOException)
 			{
 				var match = pathNameRegex.Match(path);
@@ -129,7 +163,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					{
 						if(!String.IsNullOrWhiteSpace(path)) throw;
 						return SHCreateItemFromIDList<IShellItem>(pidl);
-					}catch(FileNotFoundException)
+					}catch(IOException)
 					{
 						//Probably not needed
 						IEnumIDList peidl = psf.EnumObjects(IntPtr.Zero, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
@@ -165,6 +199,130 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				throw;
 			}
 		}
+		
+		#region Implementation
+		public FileAttributes GetAttributes(Uri url)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public DateTime GetCreationTime(Uri url)
+		{
+			var item = (IShellItem2)GetItem(url);
+			try{
+				FILETIME ft = item.GetFileTime(PKEY_DateCreated);
+				return Win32FileSystem.GetDateTime(ft);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public DateTime GetLastAccessTime(Uri url)
+		{
+			var item = (IShellItem2)GetItem(url);
+			try{
+				FILETIME ft = item.GetFileTime(PKEY_DateAccessed);
+				return Win32FileSystem.GetDateTime(ft);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public DateTime GetLastWriteTime(Uri url)
+		{
+			var item = (IShellItem2)GetItem(url);
+			try{
+				FILETIME ft = item.GetFileTime(PKEY_DateModified);
+				return Win32FileSystem.GetDateTime(ft);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public long GetLength(Uri url)
+		{
+			var item = (IShellItem2)GetItem(url);
+			try{
+				return (long)item.GetUInt64(PKEY_Size);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
+		{
+			var item = GetItem(url);
+			try{
+				var stream = item.BindToHandler<IStream>(null, BHID_Stream);
+				return new IStreamWrapper(stream);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public Uri GetTarget(Uri url)
+		{
+			var item = (IShellItem2)GetItem(url);
+			try{
+				try{
+					string linkurl = item.GetString(PKEY_Link_TargetUrl);
+					return new Uri(linkurl);
+				}catch(COMException e)
+				{
+					if(unchecked((uint)e.HResult) != 0x80070490) throw;
+				}
+				
+				var attr = item.GetAttributes(SFGAOF.SFGAO_LINK | SFGAOF.SFGAO_FILESYSTEM);
+				
+				IShellItem target;
+				if((attr & SFGAOF.SFGAO_LINK) != 0)
+				{
+					target = item.BindToHandler<IShellItem>(null, BHID_LinkTargetItem);
+				}else{
+					try{
+						var link = item.BindToHandler<IShellLink>(null, BHID_SFUIObject);
+						target = GetLinkTarget(link);
+					}catch(NotImplementedException)
+					{
+						target = (IShellItem)item;
+					}catch(InvalidCastException)
+					{
+						target = (IShellItem)item;
+					}
+				}
+				try{
+					string tpath = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+					var tattr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+					
+					return GetShellUrl(tpath, (tattr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+				}finally{
+					Marshal.FinalReleaseComObject(target);
+				}
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public string GetContentType(Uri url)
+		{
+			throw new NotImplementedException();
+		}
+		#endregion
+		
+		#region COM interop
+		static readonly PROPERTYKEY PKEY_Size = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 12);
+		static readonly PROPERTYKEY PKEY_Title = new PROPERTYKEY("F29F85E0-4FF9-1068-AB91-08002B27B3D9", 2);
+		static readonly PROPERTYKEY PKEY_DateModified = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 14);
+		static readonly PROPERTYKEY PKEY_DateCreated = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 15);
+		static readonly PROPERTYKEY PKEY_DateAccessed = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 16);
+		static readonly PROPERTYKEY PKEY_Link_TargetParsingPath = new PROPERTYKEY("B9B4B3FC-2B51-4A42-B5D8-324146AFCF25", 2);
+		static readonly PROPERTYKEY PKEY_Link_TargetUrl = new PROPERTYKEY("5CBF2787-48CF-4208-B90E-EE5E5D420294", 2);
+		static readonly PROPERTYKEY PKEY_ParsingName = new PROPERTYKEY("28636AA6-953D-11D2-B5D6-00C04FD918D0", 24);
+		static readonly PROPERTYKEY PKEY_ParsingPath = new PROPERTYKEY("28636AA6-953D-11D2-B5D6-00C04FD918D0", 30);
+		
+		static Guid BHID_Stream = new Guid("1CEBB3AB-7C10-499a-A417-92CA16C4CB83");
+		static Guid BHID_LinkTargetItem = new Guid("3981E228-F559-11D3-8E3A-00C04F6837D5");
+		static Guid BHID_SFUIObject = new Guid("3981E225-F559-11D3-8E3A-00C04F6837D5");
 		
 		[DllImport("shlwapi.dll", CharSet=CharSet.Auto, PreserveSig=false)]
 		static extern string StrRetToStr(ref STRRET pstr, [Optional]IntPtr pidl);
@@ -216,172 +374,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		static extern IntPtr SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object punk);
 		
 		
-		public FileAttributes GetAttributes(Uri url)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public DateTime GetCreationTime(Uri url)
-		{
-			var item = (IShellItem2)GetItem(url);
-			try{
-				FILETIME ft = item.GetFileTime(PKEY_DateCreated);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public DateTime GetLastAccessTime(Uri url)
-		{
-			var item = (IShellItem2)GetItem(url);
-			try{
-				FILETIME ft = item.GetFileTime(PKEY_DateAccessed);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public DateTime GetLastWriteTime(Uri url)
-		{
-			var item = (IShellItem2)GetItem(url);
-			try{
-				FILETIME ft = item.GetFileTime(PKEY_DateModified);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		static readonly PROPERTYKEY PKEY_Size = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 12);
-		static readonly PROPERTYKEY PKEY_Title = new PROPERTYKEY("F29F85E0-4FF9-1068-AB91-08002B27B3D9", 2);
-		static readonly PROPERTYKEY PKEY_DateModified = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 14);
-		static readonly PROPERTYKEY PKEY_DateCreated = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 15);
-		static readonly PROPERTYKEY PKEY_DateAccessed = new PROPERTYKEY("B725F130-47EF-101A-A5F1-02608C9EEBAC", 16);
-		static readonly PROPERTYKEY PKEY_Link_TargetParsingPath = new PROPERTYKEY("B9B4B3FC-2B51-4A42-B5D8-324146AFCF25", 2);
-		static readonly PROPERTYKEY PKEY_Link_TargetUrl = new PROPERTYKEY("5CBF2787-48CF-4208-B90E-EE5E5D420294", 2);
-		static readonly PROPERTYKEY PKEY_ParsingName = new PROPERTYKEY("28636AA6-953D-11D2-B5D6-00C04FD918D0", 24);
-		static readonly PROPERTYKEY PKEY_ParsingPath = new PROPERTYKEY("28636AA6-953D-11D2-B5D6-00C04FD918D0", 30);
-		
-		public long GetLength(Uri url)
-		{
-			var item = (IShellItem2)GetItem(url);
-			try{
-				return (long)item.GetUInt64(PKEY_Size);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		static Guid BHID_Stream = new Guid("1CEBB3AB-7C10-499a-A417-92CA16C4CB83");
-		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
-		{
-			var item = GetItem(url);
-			try{
-				var stream = item.BindToHandler<IStream>(null, BHID_Stream);
-				return new IStreamWrapper(stream);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		static Guid BHID_LinkTargetItem = new Guid("3981E228-F559-11D3-8E3A-00C04F6837D5");
-		static Guid BHID_SFUIObject = new Guid("3981E225-F559-11D3-8E3A-00C04F6837D5");
-		public Uri GetTarget(Uri url)
-		{
-			var item = (IShellItem2)GetItem(url);
-			try{
-				try{
-					string linkurl = item.GetString(PKEY_Link_TargetUrl);
-					return new Uri(linkurl);
-				}catch(COMException e)
-				{
-					if(unchecked((uint)e.HResult) != 0x80070490) throw;
-				}
-				
-				var attr = item.GetAttributes(SFGAOF.SFGAO_LINK | SFGAOF.SFGAO_FILESYSTEM);
-				
-				IShellItem target;
-				if((attr & SFGAOF.SFGAO_LINK) != 0)
-				{
-					target = item.BindToHandler<IShellItem>(null, BHID_LinkTargetItem);
-				}/*else if((attr & SFGAOF.SFGAO_FILESYSTEM) != 0)
-				{
-					string path = item.GetString(PKEY_ParsingPath);
-					var data = (IPersistFile)new ShellLink();
-					try{
-						data.Load(path, 0);
-						var link = (IShellLinkW)data;
-						link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
-						IntPtr pidl = link.GetIDList();
-						try{
-							target = SHCreateItemFromIDList<IShellItem>(pidl);
-						}finally{
-							Marshal.FreeCoTaskMem(pidl);
-						}
-					}finally{
-						Marshal.FinalReleaseComObject(data);
-					}
-				}*/else{
-					/*var parent = item.GetParent();
-					var pidl = SHGetIDListFromObject(parent);
-					try{
-						var folder = SHBindToObject<IShellFolder>(null, pidl, null);
-						var rpidl = SHGetIDListFromObject(item);
-						try{
-							var link = folder.GetUIObjectOf<IShellLink>(IntPtr.Zero, new[]{rpidl});
-							IntPtr lpidl = link.GetIDList();
-							try{
-								target = SHCreateItemFromIDList<IShellItem>(lpidl);
-							}finally{
-								Marshal.FreeCoTaskMem(lpidl);
-							}
-						}finally{
-							Marshal.FreeCoTaskMem(rpidl);
-						}
-					}finally{
-						Marshal.FreeCoTaskMem(pidl);
-					}*/
-					try{
-						var link = item.BindToHandler<IShellLink>(null, BHID_SFUIObject);
-						IntPtr lpidl = link.GetIDList();
-						try{
-							target = SHCreateItemFromIDList<IShellItem>(lpidl);
-						}finally{
-							Marshal.FreeCoTaskMem(lpidl);
-						}
-					}catch(NotImplementedException)
-					{
-						target = (IShellItem)item;
-					}catch(InvalidCastException)
-					{
-						target = (IShellItem)item;
-					}
-				}
-				try{
-					string tpath = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-					var tattr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-					
-					return GetShellUrl(tpath, (tattr & SFGAOF.SFGAO_FILESYSTEM) != 0);
-				}finally{
-					Marshal.FinalReleaseComObject(target);
-				}
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public string GetContentType(Uri url)
-		{
-			throw new NotImplementedException();
-		}
-		
 	    [ComImport]
 		[Guid("00021401-0000-0000-C000-000000000046")]
 		private class ShellLink
 		{
 			
 		}
+		#endregion
 	}
 }
