@@ -57,7 +57,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtension
 		public Uri GetTarget(DataUri dataUri)
 		{
 			CheckSupported(dataUri);
-			return ShellFileSystem.Instance.LoadLinkTargetUrl(dataUri.Data);
+			return ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data);
 		}
 	}
 }

@@ -19,17 +19,17 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		public static readonly ShellFileSystem Instance = new ShellFileSystem(new Uri("shell:"));
 		
-		private readonly Uri baseUrl;
+		private readonly Uri baseUri;
 		
-		public ShellFileSystem(Uri baseUrl)
+		public ShellFileSystem(Uri baseUri)
 		{
-			this.baseUrl = baseUrl;
+			this.baseUri = baseUri;
 		}
 		
-		public string GetShellPath(Uri url)
+		public string GetShellPath(Uri uri)
 		{
-			var rel = baseUrl.MakeRelativeUri(url);
-			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "url");
+			var rel = baseUri.MakeRelativeUri(uri);
+			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "uri");
 			
 			string path = rel.OriginalString.Replace('/', Path.DirectorySeparatorChar);
 			
@@ -38,20 +38,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return "shell:"+HttpUtility.UrlDecode(path);
 		}
 		
-		public Uri GetShellUrl(string path, bool isFileSystem)
+		public Uri GetShellUri(string path, bool isFileSystem)
 		{
-			Uri relUrl;
+			Uri relUri;
 			if(isFileSystem || File.Exists(path))
 			{
-				relUrl = new Uri(@"MyComputerFolder\"+path, UriKind.Relative);
-				//relUrl = new Uri(path, UriKind.Relative);
+				relUri = new Uri(@"MyComputerFolder\"+path, UriKind.Relative);
 			}else if(path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase))
 			{
-				relUrl = new Uri(path.Substring(6), UriKind.Relative);
+				relUri = new Uri(path.Substring(6), UriKind.Relative);
 			}else{
-				relUrl = new Uri(path, UriKind.Relative);
+				relUri = new Uri(path, UriKind.Relative);
 			}
-			return new Uri(baseUrl, relUrl);
+			return new Uri(baseUri, relUri);
 		}
 		
 		[CLSCompliant(false)]
@@ -79,34 +78,34 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		[CLSCompliant(false)]
-		public Uri GetLinkTargetUrl(IShellLink link)
+		public Uri GetLinkTargetUri(IShellLink link)
 		{
 			var target = GetLinkTarget(link);
 			try{
 				string path = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
 				var attr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
 				
-				return GetShellUrl(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+				return GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
 			}finally{
 				Marshal.FinalReleaseComObject(target);
 			}
 		}
 		
-		public Uri LoadLinkTargetUrl(byte[] linkData)
+		public Uri LoadLinkTargetUri(byte[] linkData)
 		{
 			var link = LoadLink(linkData);
 			try{
-				return GetLinkTargetUrl(link);
+				return GetLinkTargetUri(link);
 			}finally{
 				Marshal.FinalReleaseComObject(link);
 			}
 		}
 		
-		public Uri LoadLinkTargetUrl(string linkFile)
+		public Uri LoadLinkTargetUri(string linkFile)
 		{
 			var link = LoadLink(linkFile);
 			try{
-				return GetLinkTargetUrl(link);
+				return GetLinkTargetUri(link);
 			}finally{
 				Marshal.FinalReleaseComObject(link);
 			}
@@ -125,9 +124,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
-		private IShellItem GetItem(Uri url)
+		private IShellItem GetItem(Uri uri)
 		{
-			string path = GetShellPath(url);
+			string path = GetShellPath(uri);
 			return GetItem(path);
 		}
 		
@@ -201,14 +200,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		#region Implementation
-		public FileAttributes GetAttributes(Uri url)
+		public FileAttributes GetAttributes(Uri uri)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetCreationTime(Uri url)
+		public DateTime GetCreationTime(Uri uri)
 		{
-			var item = (IShellItem2)GetItem(url);
+			var item = (IShellItem2)GetItem(uri);
 			try{
 				FILETIME ft = item.GetFileTime(PKEY_DateCreated);
 				return Win32FileSystem.GetDateTime(ft);
@@ -217,9 +216,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public DateTime GetLastAccessTime(Uri url)
+		public DateTime GetLastAccessTime(Uri uri)
 		{
-			var item = (IShellItem2)GetItem(url);
+			var item = (IShellItem2)GetItem(uri);
 			try{
 				FILETIME ft = item.GetFileTime(PKEY_DateAccessed);
 				return Win32FileSystem.GetDateTime(ft);
@@ -228,9 +227,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public DateTime GetLastWriteTime(Uri url)
+		public DateTime GetLastWriteTime(Uri uri)
 		{
-			var item = (IShellItem2)GetItem(url);
+			var item = (IShellItem2)GetItem(uri);
 			try{
 				FILETIME ft = item.GetFileTime(PKEY_DateModified);
 				return Win32FileSystem.GetDateTime(ft);
@@ -239,9 +238,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public long GetLength(Uri url)
+		public long GetLength(Uri uri)
 		{
-			var item = (IShellItem2)GetItem(url);
+			var item = (IShellItem2)GetItem(uri);
 			try{
 				return (long)item.GetUInt64(PKEY_Size);
 			}finally{
@@ -249,9 +248,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
+		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
-			var item = GetItem(url);
+			var item = GetItem(uri);
 			try{
 				var stream = item.BindToHandler<IStream>(null, BHID_Stream);
 				return new IStreamWrapper(stream);
@@ -260,13 +259,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public Uri GetTarget(Uri url)
+		public Uri GetTarget(Uri uri)
 		{
-			var item = (IShellItem2)GetItem(url);
+			var item = (IShellItem2)GetItem(uri);
 			try{
 				try{
-					string linkurl = item.GetString(PKEY_Link_TargetUrl);
-					return new Uri(linkurl);
+					string linkuri = item.GetString(PKEY_Link_TargetUrl);
+					return new Uri(linkuri);
 				}catch(COMException e)
 				{
 					if(unchecked((uint)e.HResult) != 0x80070490) throw;
@@ -294,7 +293,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					string tpath = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
 					var tattr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
 					
-					return GetShellUrl(tpath, (tattr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+					return GetShellUri(tpath, (tattr & SFGAOF.SFGAO_FILESYSTEM) != 0);
 				}finally{
 					Marshal.FinalReleaseComObject(target);
 				}
@@ -303,7 +302,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public string GetContentType(Uri url)
+		public string GetContentType(Uri uri)
 		{
 			throw new NotImplementedException();
 		}

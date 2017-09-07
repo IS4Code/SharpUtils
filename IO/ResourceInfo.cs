@@ -6,45 +6,45 @@ using IllidanS4.SharpUtils.IO.FileSystems;
 namespace IllidanS4.SharpUtils.IO
 {
 	/// <summary>
-	/// Holds information about a resource in the universal file system, represented by its URL.
+	/// Holds information about a resource in the universal file system, represented by its URI.
 	/// </summary>
 	/// <remarks>
-	/// A resource is represented by its URL in a specified file system, which is attached to
+	/// A resource is represented by its URI in a specified file system, which is attached to
 	/// each instance of this type.
 	/// </remarks>
 	[Serializable]
 	public partial class ResourceInfo
 	{
-		readonly Uri url;
+		readonly Uri uri;
 		readonly IFileSystem fileSystem;
 		
 		/// <summary>
-		/// The URL of this resource.
+		/// The URI of this resource.
 		/// </summary>
-		public Uri Url{get{return url;}}
+		public Uri Uri{get{return uri;}}
 		
 		/// <summary>
-		/// Constructs a resource info from a string represeting either a system path, or a valid URL.
+		/// Constructs a resource info from a string represeting either a system path, or a valid URI.
 		/// </summary>
-		/// <param name="path">A valid Windows file system path or a URL.</param>
-		public ResourceInfo(string pathOrUrl) : this(Win32FileSystem.UrlOrPath(pathOrUrl))
+		/// <param name="path">A valid Windows file system path or a URI.</param>
+		public ResourceInfo(string pathOrUrl) : this(Win32FileSystem.UriOrPath(pathOrUrl))
 		{
 			
 		}
 		
 		/// <summary>
-		/// Constructs a resource info from its URL.
+		/// Constructs a resource info from its URI.
 		/// </summary>
-		/// <param name="url">The valid URL representing the resource.</param>
+		/// <param name="uri">The valid URI representing the resource.</param>
 		/// <remarks>
 		/// Supported URI schemes include "file", "http", "https", "ftp", "data", and "shell".
 		/// </remarks>
-		public ResourceInfo(Uri url)
+		public ResourceInfo(Uri uri)
 		{
-			if(url == null) throw new ArgumentNullException("url");
+			if(uri == null) throw new ArgumentNullException("uri");
 			
-			this.url = url;
-			fileSystem = GetFileSystem(url.Scheme);
+			this.uri = uri;
+			fileSystem = GetFileSystem(uri.Scheme);
 		}
 		
 		/// <summary>
@@ -76,7 +76,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string Scheme{
 			get{
-				return url.Scheme;
+				return uri.Scheme;
 			}
 		}
 		
@@ -85,7 +85,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string Host{
 			get{
-				return url.Host;
+				return uri.Host;
 			}
 		}
 		
@@ -94,7 +94,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string AbsolutePath{
 			get{
-				return url.AbsolutePath;
+				return uri.AbsolutePath;
 			}
 		}
 		
@@ -103,7 +103,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string AbsoluteUri{
 			get{
-				return url.AbsoluteUri;
+				return uri.AbsoluteUri;
 			}
 		}
 		
@@ -112,7 +112,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public FileAttributes Attributes{
 			get{
-				return fileSystem.GetAttributes(url);
+				return fileSystem.GetAttributes(uri);
 			}
 		}
 		
@@ -130,7 +130,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public DateTime CreationTimeUtc{
 			get{
-				return fileSystem.GetCreationTime(url);
+				return fileSystem.GetCreationTime(uri);
 			}
 		}
 		
@@ -148,7 +148,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public DateTime LastAccessTimeUtc{
 			get{
-				return fileSystem.GetLastAccessTime(url);
+				return fileSystem.GetLastAccessTime(uri);
 			}
 		}
 		
@@ -166,7 +166,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public DateTime LastWriteTimeUtc{
 			get{
-				return fileSystem.GetLastWriteTime(url);
+				return fileSystem.GetLastWriteTime(uri);
 			}
 		}
 		
@@ -175,7 +175,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public long Length{
 			get{
-				return fileSystem.GetLength(url);
+				return fileSystem.GetLength(uri);
 			}
 		}
 		
@@ -187,7 +187,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <returns>The newly created stream to the resource.</returns>
 		public Stream GetStream(FileMode mode, FileAccess access)
 		{
-			return fileSystem.GetStream(url, mode, access);
+			return fileSystem.GetStream(uri, mode, access);
 		}
 		
 		/// <summary>
@@ -198,7 +198,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public ResourceInfo Target{
 			get{
-				return new ResourceInfo(fileSystem.GetTarget(url));
+				return new ResourceInfo(fileSystem.GetTarget(uri));
 			}
 		}
 		
@@ -207,23 +207,23 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string ContentType{
 			get{
-				return fileSystem.GetContentType(url);
+				return fileSystem.GetContentType(uri);
 			}
 		}
 		
 		/// <summary>
-		/// Constructs a resource info from the parent URL.
+		/// Constructs a resource info from the parent URI.
 		/// </summary>
 		/// <remarks>
 		/// This may not represent an actual parent of the resource.
 		/// </remarks>
 		public ResourceInfo Parent{
 			get{
-				if(url.AbsolutePath.EndsWith("/"))
+				if(uri.AbsolutePath.EndsWith("/"))
 				{
-					return new ResourceInfo(new Uri(url, ".."));
+					return new ResourceInfo(new Uri(uri, ".."));
 				}else{
-					return new ResourceInfo(new Uri(url, "."));
+					return new ResourceInfo(new Uri(uri, "."));
 				}
 			}
 		}
@@ -231,10 +231,10 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Returns the string representation of this resource.
 		/// </summary>
-		/// <returns>The string representation of this resource's URL.</returns>
+		/// <returns>The string representation of this resource's URI.</returns>
 		public override string ToString()
 		{
-			return url.ToString();
+			return uri.ToString();
 		}
 	}
 }

@@ -9,13 +9,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// </summary>
 	public interface IFileSystem
 	{
-		FileAttributes GetAttributes(Uri url);
-		DateTime GetCreationTime(Uri url);
-		DateTime GetLastAccessTime(Uri url);
-		DateTime GetLastWriteTime(Uri url);
-		long GetLength(Uri url);
-		Stream GetStream(Uri url, FileMode mode, FileAccess access);
-		Uri GetTarget(Uri url);
-		string GetContentType(Uri url);
+		FileAttributes GetAttributes(Uri uri);
+		DateTime GetCreationTime(Uri uri);
+		DateTime GetLastAccessTime(Uri uri);
+		DateTime GetLastWriteTime(Uri uri);
+		long GetLength(Uri uri);
+		Stream GetStream(Uri uri, FileMode mode, FileAccess access);
+		Uri GetTarget(Uri uri);
+		string GetContentType(Uri uri);
 	}
 }

@@ -41,76 +41,76 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		private IDataExtension ParseUrl(Uri url, out DataUri uri)
+		private IDataExtension ParseUrl(Uri uri, out DataUri dataUri)
 		{
-			uri = new DataUri(url, false, false);
-			var ext = GetExtension(uri.ContentType);
+			dataUri = new DataUri(uri, false, false);
+			var ext = GetExtension(dataUri.ContentType);
 			if(ext != null)
 			{
-				uri = new DataUri(url, true, true);
+				dataUri = new DataUri(uri, true, true);
 				return ext;
 			}
 			return null;
 		}
 		
-		public FileAttributes GetAttributes(Uri url)
+		public FileAttributes GetAttributes(Uri uri)
 		{
-			DataUri uri;
-			var extension = ParseUrl(url, out uri);
-			if(extension != null) return extension.GetAttributes(uri);
+			DataUri dataUri;
+			var extension = ParseUrl(uri, out dataUri);
+			if(extension != null) return extension.GetAttributes(dataUri);
 			
 			return FileAttributes.ReadOnly;
 		}
 		
-		public DateTime GetCreationTime(Uri url)
+		public DateTime GetCreationTime(Uri uri)
 		{
-			DataUri uri;
-			var extension = ParseUrl(url, out uri);
-			if(extension != null) return extension.GetCreationTime(uri);
+			DataUri dataUri;
+			var extension = ParseUrl(uri, out dataUri);
+			if(extension != null) return extension.GetCreationTime(dataUri);
 			
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetLastAccessTime(Uri url)
+		public DateTime GetLastAccessTime(Uri uri)
 		{
-			DataUri uri;
-			var extension = ParseUrl(url, out uri);
-			if(extension != null) return extension.GetLastAccessTime(uri);
+			DataUri dataUri;
+			var extension = ParseUrl(uri, out dataUri);
+			if(extension != null) return extension.GetLastAccessTime(dataUri);
 			
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetLastWriteTime(Uri url)
+		public DateTime GetLastWriteTime(Uri uri)
 		{
-			DataUri uri;
-			var extension = ParseUrl(url, out uri);
-			if(extension != null) return extension.GetLastWriteTime(uri);
+			DataUri dataUri;
+			var extension = ParseUrl(uri, out dataUri);
+			if(extension != null) return extension.GetLastWriteTime(dataUri);
 			
 			throw new NotImplementedException();
 		}
 		
-		public long GetLength(Uri url)
+		public long GetLength(Uri uri)
 		{
-			return new DataUri(url, false, true).Data.LongLength;
+			return new DataUri(uri, false, true).Data.LongLength;
 		}
 		
-		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
+		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
-			return new MemoryStream(new DataUri(url, false, true).Data, false);
+			return new MemoryStream(new DataUri(uri, false, true).Data, false);
 		}
 		
-		public Uri GetTarget(Uri url)
+		public Uri GetTarget(Uri uri)
 		{
-			DataUri uri;
-			var extension = ParseUrl(url, out uri);
-			if(extension != null) return extension.GetTarget(uri);
+			DataUri dataUri;
+			var extension = ParseUrl(uri, out dataUri);
+			if(extension != null) return extension.GetTarget(dataUri);
 			
-			return url;
+			return uri;
 		}
 		
-		public string GetContentType(Uri url)
+		public string GetContentType(Uri uri)
 		{
-			return new DataUri(url, false, false).ContentType;
+			return new DataUri(uri, false, false).ContentType;
 		}
 		
 		public struct DataUri
@@ -120,9 +120,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public Dictionary<string, string> Parameters{get; private set;}
 			
 			static readonly Regex dataUri = new Regex(@"^(?<type>[a-z\-]+\/[a-z\-]+)?(?:;(?<parameters>.+?=.+?))*(?<base64>;base64)?,", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-			public DataUri(Uri url, bool parseParameters, bool parseData) : this()
+			public DataUri(Uri uri, bool parseParameters, bool parseData) : this()
 			{
-				string path = url.AbsolutePath;
+				string path = uri.AbsolutePath;
 				var match = dataUri.Match(path);
 				
 				ContentType = match.Groups["type"].Value;

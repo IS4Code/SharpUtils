@@ -13,24 +13,24 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		public static readonly WebFileSystem Instance = new WebFileSystem();
 		
-		public FileAttributes GetAttributes(Uri url)
+		public FileAttributes GetAttributes(Uri uri)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetCreationTime(Uri url)
+		public DateTime GetCreationTime(Uri uri)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetLastAccessTime(Uri url)
+		public DateTime GetLastAccessTime(Uri uri)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public DateTime GetLastWriteTime(Uri url)
+		public DateTime GetLastWriteTime(Uri uri)
 		{
-			var resp = GetResponse(url, "HEAD");
+			var resp = GetResponse(uri, "HEAD");
 			var http = resp as HttpWebResponse;
 			if(http != null)
 			{
@@ -45,19 +45,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
-		public long GetLength(Uri url)
+		public long GetLength(Uri uri)
 		{
-			return GetResponse(url, "HEAD").ContentLength;
+			return GetResponse(uri, "HEAD").ContentLength;
 		}
 		
-		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
+		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
-			return GetResponse(url, "GET").GetResponseStream();
+			return GetResponse(uri, "GET").GetResponseStream();
 		}
 		
-		public Uri GetTarget(Uri url)
+		public Uri GetTarget(Uri uri)
 		{
-			var resp = GetResponse(url, "HEAD");
+			var resp = GetResponse(uri, "HEAD");
 			var http = resp as HttpWebResponse;
 			if(http != null)
 			{
@@ -67,22 +67,22 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					string loc = http.Headers["Location"];
 					if(loc != null)
 					{
-						return new Uri(url, loc);
+						return new Uri(uri, loc);
 					}
 				}
 			}
-			return url;
+			return uri;
 		}
 		
-		public string GetContentType(Uri url)
+		public string GetContentType(Uri uri)
 		{
-			var resp = GetResponse(url, "HEAD");
+			var resp = GetResponse(uri, "HEAD");
 			return resp.ContentType;
 		}
 		
-		private WebResponse GetResponse(Uri url, string method)
+		private WebResponse GetResponse(Uri uri, string method)
 		{
-			var request = WebRequest.Create(url);
+			var request = WebRequest.Create(uri);
 			request.Method = "HEAD";
 			
 			var http = request as HttpWebRequest;

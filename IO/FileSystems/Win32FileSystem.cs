@@ -23,65 +23,65 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			Mount(shellUri, new ShellFileSystem(shellUri));
 		}
 		
-		public static Uri UrlOrPath(string path)
+		public static Uri UriOrPath(string path)
 		{
 			Uri uri;
 			if(Uri.TryCreate(path, UriKind.Absolute, out uri) && (uri.Scheme != Uri.UriSchemeFile || path.StartsWith(Uri.UriSchemeFile+Uri.SchemeDelimiter, StringComparison.Ordinal)))
 			{
 				return uri;
 			}else{
-				return FileUrlFromPath(path);
+				return FileUriFromPath(path);
 			}
 		}
 		
-		public static Uri FileUrlFromPath(string path)
+		public static Uri FileUriFromPath(string path)
 		{
 			if(!extendedRegex.IsMatch(path))
 			{
 				path = GetFullPath(path);
 			}
 			RemoveBackslash(ref path);
-			return FileUrlFromPathInternal(path);
+			return FileUriFromPathInternal(path);
 		}
 		
-		protected override FileAttributes GetAttributesInternal(Uri url)
+		protected override FileAttributes GetAttributesInternal(Uri uri)
 		{
-			int attr = GetFileAttributes(GetPath(url));
+			int attr = GetFileAttributes(GetPath(uri));
 			if(attr == -1) throw new Win32Exception();
 			return (FileAttributes)attr;
 		}
 		
-		protected override DateTime GetCreationTimeInternal(Uri url)
+		protected override DateTime GetCreationTimeInternal(Uri uri)
 		{
-			return GetDateTime(GetAttributeData(GetPath(url)).ftCreationTime);
+			return GetDateTime(GetAttributeData(GetPath(uri)).ftCreationTime);
 		}
 		
-		protected override DateTime GetLastAccessTimeInternal(Uri url)
+		protected override DateTime GetLastAccessTimeInternal(Uri uri)
 		{
-			return GetDateTime(GetAttributeData(GetPath(url)).ftLastAccessTime);
+			return GetDateTime(GetAttributeData(GetPath(uri)).ftLastAccessTime);
 		}
 		
-		protected override DateTime GetLastWriteTimeInternal(Uri url)
+		protected override DateTime GetLastWriteTimeInternal(Uri uri)
 		{
-			return GetDateTime(GetAttributeData(GetPath(url)).ftLastWriteTime);
+			return GetDateTime(GetAttributeData(GetPath(uri)).ftLastWriteTime);
 		}
 		
-		protected override long GetLengthInternal(Uri url)
+		protected override long GetLengthInternal(Uri uri)
 		{
-			var data = GetAttributeData(GetPath(url));
+			var data = GetAttributeData(GetPath(uri));
 			unchecked{
 				return ((long)((ulong)(uint)data.nFileSizeHigh << 32) | (long)(uint)data.nFileSizeLow);
 			}
 		}
 		
-		protected override Stream GetStreamInternal(Uri url, FileMode mode, FileAccess access)
+		protected override Stream GetStreamInternal(Uri uri, FileMode mode, FileAccess access)
 		{
-			return new DeviceStream(GetPath(url), mode, access);
+			return new DeviceStream(GetPath(uri), mode, access);
 		}
 		
-		protected override Uri GetTargetInternal(Uri url)
+		protected override Uri GetTargetInternal(Uri uri)
 		{
-			IntPtr handle = CreateFile(GetPath(url), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
+			IntPtr handle = CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
 			if(handle == new IntPtr(-1)) throw new Win32Exception();
 			try{
 				var buffer = new StringBuilder(0);
@@ -90,24 +90,24 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				buffer.EnsureCapacity(len);
 				len = GetFinalPathNameByHandle(handle, buffer, len, 0);
 				if(len == 0) throw new Win32Exception();
-				return FileUrlFromPath(buffer.ToString());
+				return FileUriFromPath(buffer.ToString());
 			}finally{
 				CloseHandle(handle);
 			}
 		}
 		
-		protected override string GetContentTypeInternal(Uri url)
+		protected override string GetContentTypeInternal(Uri uri)
 		{
 			string mime;
-			FindMimeFromData(IntPtr.Zero, GetPath(url), IntPtr.Zero, 0, null, 0x23, out mime, 0);
+			FindMimeFromData(IntPtr.Zero, GetPath(uri), IntPtr.Zero, 0, null, 0x23, out mime, 0);
 			if(mime == "application/x-msdownload") return "application/octet-stream";
 			return mime;
 		}
 		
-		private static string GetPath(Uri url)
+		private static string GetPath(Uri uri)
 		{
-			string path = PathFromFileUrl(url);
-			if(String.IsNullOrEmpty(url.Host))
+			string path = PathFromFileUri(uri);
+			if(String.IsNullOrEmpty(uri.Host))
 			{
 				if(path.Length > 256)
 				{
@@ -156,7 +156,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		private static readonly Regex prefixRegex = new Regex(@"^\\\\(\.|localhost)(\\.*|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 		private static readonly Regex filePrefixRegex = new Regex(@"^file:///");
 		
-		private static Uri FileUrlFromPathInternal(string path)
+		private static Uri FileUriFromPathInternal(string path)
 		{
 			const string device = @"\\";
 			
@@ -186,26 +186,26 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			if(result == 1) throw new ArgumentException("Argument is not a valid path.", "path");
 			Marshal.ThrowExceptionForHR(result);
 			
-			string url = buffer.ToString();
+			string uri = buffer.ToString();
 			if(share != null && share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
 			{
-				url = filePrefixRegex.Replace(url, "file://"+share+"/");
+				uri = filePrefixRegex.Replace(uri, "file://"+share+"/");
 			}
-			return new Uri(url);
+			return new Uri(uri);
 		}
 		
-		public static string PathFromFileUrl(Uri uri)
+		public static string PathFromFileUri(Uri uri)
 		{
-			string url = uri.AbsoluteUri;
+			string absUri = uri.AbsoluteUri;
 			
 			int len = 1;
 			var buffer = new StringBuilder(len);
-			int result = PathCreateFromUrl(url, buffer, ref len, 0);
+			int result = PathCreateFromUrl(absUri, buffer, ref len, 0);
 			if(len == 1) Marshal.ThrowExceptionForHR(result);
 			else if(len == 0) return String.Empty;
 			
 			buffer.EnsureCapacity(len);
-			result = PathCreateFromUrl(url, buffer, ref len, 0);
+			result = PathCreateFromUrl(absUri, buffer, ref len, 0);
 			Marshal.ThrowExceptionForHR(result);
 			
 			string path = buffer.ToString();

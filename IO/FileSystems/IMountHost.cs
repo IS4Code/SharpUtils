@@ -9,8 +9,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// </summary>
 	public interface IMountHost : IFileSystem
 	{
-		void Mount(Uri baseUrl, IFileSystem subSystem);
-		void Unmount(Uri baseUrl);
-		IFileSystem GetSubSystem(Uri url);
+		void Mount(Uri baseUri, IFileSystem subSystem);
+		void Unmount(Uri baseUri);
+		IFileSystem GetSubSystem(Uri uri);
 	}
 }

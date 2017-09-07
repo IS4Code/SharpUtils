@@ -13,22 +13,22 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		private readonly Dictionary<Uri, IFileSystem> mountPoints = new Dictionary<Uri, IFileSystem>();
 		
-		public void Mount(Uri baseUrl, IFileSystem subSystem)
+		public void Mount(Uri baseUri, IFileSystem subSystem)
 		{
-			mountPoints.Add(baseUrl, subSystem);
+			mountPoints.Add(baseUri, subSystem);
 		}
 		
-		public void Unmount(Uri baseUrl)
+		public void Unmount(Uri baseUri)
 		{
-			mountPoints.Remove(baseUrl);
+			mountPoints.Remove(baseUri);
 		}
 		
-		public IFileSystem GetSubSystem(Uri url)
+		public IFileSystem GetSubSystem(Uri uri)
 		{
 			foreach(var pair in mountPoints)
 			{
-				var rel = pair.Key.MakeRelativeUri(url);
-				if(pair.Key == url || (!rel.IsAbsoluteUri && !rel.OriginalString.StartsWith("../")))
+				var rel = pair.Key.MakeRelativeUri(uri);
+				if(pair.Key == uri || (!rel.IsAbsoluteUri && !rel.OriginalString.StartsWith("../")))
 				{
 					return pair.Value;
 				}
@@ -36,76 +36,76 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		protected abstract FileAttributes GetAttributesInternal(Uri url);
-		public FileAttributes GetAttributes(Uri url)
+		protected abstract FileAttributes GetAttributesInternal(Uri uri);
+		public FileAttributes GetAttributes(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetAttributes(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetAttributes(uri);
 			
-			return GetAttributesInternal(url);
+			return GetAttributesInternal(uri);
 		}
 		
-		protected abstract DateTime GetCreationTimeInternal(Uri url);
-		public DateTime GetCreationTime(Uri url)
+		protected abstract DateTime GetCreationTimeInternal(Uri uri);
+		public DateTime GetCreationTime(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetCreationTime(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetCreationTime(uri);
 			
-			return GetCreationTimeInternal(url);
+			return GetCreationTimeInternal(uri);
 		}
 		
-		protected abstract DateTime GetLastAccessTimeInternal(Uri url);
-		public DateTime GetLastAccessTime(Uri url)
+		protected abstract DateTime GetLastAccessTimeInternal(Uri uri);
+		public DateTime GetLastAccessTime(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetLastAccessTime(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetLastAccessTime(uri);
 			
-			return GetLastAccessTimeInternal(url);
+			return GetLastAccessTimeInternal(uri);
 		}
 		
-		protected abstract DateTime GetLastWriteTimeInternal(Uri url);
-		public DateTime GetLastWriteTime(Uri url)
+		protected abstract DateTime GetLastWriteTimeInternal(Uri uri);
+		public DateTime GetLastWriteTime(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetLastWriteTime(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetLastWriteTime(uri);
 			
-			return GetLastWriteTimeInternal(url);
+			return GetLastWriteTimeInternal(uri);
 		}
 		
-		protected abstract long GetLengthInternal(Uri url);
-		public long GetLength(Uri url)
+		protected abstract long GetLengthInternal(Uri uri);
+		public long GetLength(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetLength(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetLength(uri);
 			
-			return GetLengthInternal(url);
+			return GetLengthInternal(uri);
 		}
 		
-		protected abstract Stream GetStreamInternal(Uri url, FileMode mode, FileAccess access);
-		public Stream GetStream(Uri url, FileMode mode, FileAccess access)
+		protected abstract Stream GetStreamInternal(Uri uri, FileMode mode, FileAccess access);
+		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetStream(url, mode, access);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetStream(uri, mode, access);
 			
-			return GetStreamInternal(url, mode, access);
+			return GetStreamInternal(uri, mode, access);
 		}
 		
-		protected abstract Uri GetTargetInternal(Uri url);
-		public Uri GetTarget(Uri url)
+		protected abstract Uri GetTargetInternal(Uri uri);
+		public Uri GetTarget(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetTarget(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetTarget(uri);
 			
-			return GetTargetInternal(url);
+			return GetTargetInternal(uri);
 		}
 		
-		protected abstract string GetContentTypeInternal(Uri url);
-		public string GetContentType(Uri url)
+		protected abstract string GetContentTypeInternal(Uri uri);
+		public string GetContentType(Uri uri)
 		{
-			IFileSystem sub = GetSubSystem(url);
-			if(sub != null) return sub.GetContentType(url);
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetContentType(uri);
 			
-			return GetContentTypeInternal(url);
+			return GetContentTypeInternal(uri);
 		}
 	}
 }
