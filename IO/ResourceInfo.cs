@@ -66,6 +66,8 @@ namespace IllidanS4.SharpUtils.IO
 					return DataFileSystem.Instance;
 				case "shell":
 					return ShellFileSystem.Instance;
+				case "pipe":
+					return PipeFileSystem.Instance;
 				default:
 					throw new NotImplementedException();
 			}
