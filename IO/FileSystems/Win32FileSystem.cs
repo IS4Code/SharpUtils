@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// This file system contains files in the Win32 path scheme, also
 	/// supporting NTFS file system extensions and UNC paths.
 	/// </summary>
-	public class Win32FileSystem : MountFileSystem, IFileSystem
+	public partial class Win32FileSystem : MountFileSystem, IFileSystem
 	{
 		public static readonly Win32FileSystem Instance = new Win32FileSystem();
 		
@@ -40,7 +40,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			if(!extendedRegex.IsMatch(path))
 			{
-				path = GetFullPath(path);
+				path = Kernel32.GetFullPathName(path);
 			}
 			RemoveBackslash(ref path);
 			return FileUriFromPathInternal(path);
@@ -54,34 +54,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public string GetFullPath(string path)
-		{
-			var buffer = new StringBuilder(0);
-			int len = GetFullPathName(path, 0, buffer, IntPtr.Zero);
-			if(len == 0) throw new Win32Exception();
-			buffer.EnsureCapacity(len);
-			len = GetFullPathName(path, len, buffer, IntPtr.Zero);
-			if(len == 0) throw new Win32Exception();
-			return buffer.ToString();
-		}
-		
 		public string PathFromFileUri(Uri uri)
 		{
 			var bareUri = new UriBuilder(uri){Fragment = null}.Uri;
 			
 			string absUri = bareUri.AbsoluteUri;
 			
-			int len = 1;
-			var buffer = new StringBuilder(len);
-			int result = PathCreateFromUrl(absUri, buffer, ref len, 0);
-			if(len == 1) Marshal.ThrowExceptionForHR(result);
-			else if(len == 0) return String.Empty;
-			
-			buffer.EnsureCapacity(len);
-			result = PathCreateFromUrl(absUri, buffer, ref len, 0);
-			Marshal.ThrowExceptionForHR(result);
-			
-			string path = buffer.ToString();
+			string path = Shlwapi.PathCreateFromUrl(absUri);
 			if(bareUri.Host == "localhost")
 			{
 				return @"\\localhost"+path;
@@ -118,13 +97,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		private static WIN32_FILE_ATTRIBUTE_DATA GetAttributeData(string path)
-		{
-			WIN32_FILE_ATTRIBUTE_DATA data;
-			if(!GetFileAttributesEx(path, 0, out data)) throw new Win32Exception();
-			return data;
-		}
-		
 		private static readonly Regex extendedRegex = new Regex(@"^\\[\?\\](\?\\UNC|\?)(?:\\|$)");
 		private static readonly Regex virtualRegex = new Regex(@"^::");
 		private static readonly Regex prefixRegex = new Regex(@"^\\\\(\.|localhost)(\\.*|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -150,17 +122,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				share = null;
 			}
 			
-			int len = 1;
-			var buffer = new StringBuilder(len);
-			int result = UrlCreateFromPath(path, buffer, ref len, 0);
-			if(len == 1) Marshal.ThrowExceptionForHR(result);
-			
-			buffer.EnsureCapacity(len);
-			result = UrlCreateFromPath(path, buffer, ref len, 0);
-			if(result == 1) throw new ArgumentException("Argument is not a valid path.", "path");
-			Marshal.ThrowExceptionForHR(result);
-			
-			string uri = buffer.ToString();
+			string uri = Shlwapi.UrlCreateFromPath(path);
+			if(uri == null) throw new ArgumentException("Argument is not a valid path.", "path");
 			if(share != null && share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
 			{
 				uri = filePrefixRegex.Replace(uri, "file://"+share+"/");
@@ -168,10 +131,15 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new Uri(uri);
 		}
 		
+		private Kernel32.WIN32_FILE_ATTRIBUTE_DATA GetAttributeData(string path)
+		{
+			return Kernel32.GetFileAttributesEx(path, 0);
+		}
+		
 		#region Implementation
 		protected override FileAttributes GetAttributesInternal(Uri uri)
 		{
-			int attr = GetFileAttributes(GetPath(uri));
+			int attr = Kernel32.GetFileAttributes(GetPath(uri));
 			if(attr == -1) throw new Win32Exception();
 			return (FileAttributes)attr;
 		}
@@ -230,80 +198,21 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		protected override Uri GetTargetInternal(Uri uri)
 		{
-			IntPtr handle = CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
-			if(handle == new IntPtr(-1)) throw new Win32Exception();
+			IntPtr handle = Kernel32.CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
 			try{
-				var buffer = new StringBuilder(0);
-				int len = GetFinalPathNameByHandle(handle, buffer, 0, 0);
-				if(len == 0) throw new Win32Exception();
-				buffer.EnsureCapacity(len);
-				len = GetFinalPathNameByHandle(handle, buffer, len, 0);
-				if(len == 0) throw new Win32Exception();
-				return FileUriFromPath(buffer.ToString());
+				string path = Kernel32.GetFinalPathNameByHandle(handle, 0);
+				return FileUriFromPath(path);
 			}finally{
-				CloseHandle(handle);
+				Kernel32.CloseHandle(handle);
 			}
 		}
 		
 		protected override string GetContentTypeInternal(Uri uri)
 		{
-			string mime;
-			FindMimeFromData(IntPtr.Zero, GetPath(uri), IntPtr.Zero, 0, null, 0x23, out mime, 0);
+			string mime = Urlmon.FindMimeFromData(null, GetPath(uri), IntPtr.Zero, 0, null, 0x23);
 			if(mime == "application/x-msdownload") return "application/octet-stream";
 			return mime;
 		}
-		#endregion
-		
-		#region Interop
-		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern int GetFileAttributes(string lpFileName);
-		
-		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern bool GetFileAttributesEx(string lpFileName, int fInfoLevelId, out WIN32_FILE_ATTRIBUTE_DATA fileData);
-		
-		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern int GetFullPathName(string lpFileName, int nBufferLength, StringBuilder lpBuffer, IntPtr lpFilePart);
-		
-	    [DllImport("shlwapi.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern int UrlCreateFromPath(string pszPath, StringBuilder pszUrl, ref int pcchUrl, int dwFlags);
-		
-	    [DllImport("shlwapi.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern int PathCreateFromUrl(string pszUrl, StringBuilder pszPath, ref int pcchPath, int dwFlags);
-		
-	    [DllImport("urlmon.dll", CharSet=CharSet.Unicode, ExactSpelling=true, PreserveSig=false)]
-	    static extern void FindMimeFromData(IntPtr pBC, string pwzUrl, IntPtr pBuffer, int cbSize, string pwzMimeProposed, int dwMimeFlags, out string ppwzMimeOut, int dwReserved);
-		
-		[StructLayout(LayoutKind.Sequential)]
-		struct WIN32_FILE_ATTRIBUTE_DATA
-		{
-			public FileAttributes dwFileAttributes;
-			public FILETIME ftCreationTime;
-			public FILETIME ftLastAccessTime;
-			public FILETIME ftLastWriteTime;
-			public int nFileSizeHigh;
-			public int nFileSizeLow;
-		}
-		
-		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		static extern IntPtr CreateFile(
-			string filename,
-			FileAccess access,
-			FileShare share,
-			IntPtr securityAttributes,
-			FileMode creationDisposition,
-			FileAttributes flagsAndAttributes,
-			IntPtr templateFile
-		);
-		
-
-	    private const int FILE_READ_EA = 0x0008;
-	    private const int FILE_FLAG_BACKUP_SEMANTICS = 0x2000000;
-	
-	    [DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-	    static extern int GetFinalPathNameByHandle(IntPtr hFile, StringBuilder lpszFilePath, int cchFilePath, int dwFlags);
-		
-	    [DllImport("kernel32.dll", SetLastError=true)]
-	    static extern bool CloseHandle(IntPtr hObject);
 		#endregion
 	}
 }

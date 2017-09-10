@@ -150,6 +150,7 @@
     <Compile Include="IO\FileSystems\IExtensionHost.cs" />
     <Compile Include="IO\FileSystems\IMountHost.cs" />
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
+    <Compile Include="IO\FileSystems\NativeFunctions.cs" />
     <Compile Include="IO\FileSystems\PipeFileSystem.cs" />
     <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
     <Compile Include="IO\PipeListener.cs" />
