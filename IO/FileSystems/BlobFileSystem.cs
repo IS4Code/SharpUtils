@@ -222,5 +222,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			throw new NotImplementedException();
 		}
+		
+		public List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

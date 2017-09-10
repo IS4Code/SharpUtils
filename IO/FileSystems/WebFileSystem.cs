@@ -94,5 +94,40 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			return request.GetResponse();
 		}
+		
+		public List<Uri> GetResources(Uri uri)
+		{
+			var request = WebRequest.Create(uri);
+			
+			var http = request as HttpWebRequest;
+			if(http != null)
+			{
+				throw new NotImplementedException();
+			}
+			
+			var ftp = request as FtpWebRequest;
+			if(ftp != null)
+			{
+				var list = new List<Uri>();
+				ftp.Method = WebRequestMethods.Ftp.ListDirectory;
+				
+				var resp = ftp.GetResponse();
+				using(var stream = resp.GetResponseStream())
+				{
+					var reader = new StreamReader(stream);
+					string line;
+					while((line = reader.ReadLine()) != null)
+					{
+						if(line != "." && line != "..")
+						{
+							list.Add(new Uri(uri, line));
+						}
+					}
+				}
+				return list;
+			}
+			
+			throw new NotImplementedException();
+		}
 	}
 }

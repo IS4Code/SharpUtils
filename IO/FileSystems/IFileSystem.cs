@@ -1,5 +1,6 @@
 ﻿/* Date: 3.9.2017, Time: 4:05 */
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -17,5 +18,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		Stream GetStream(Uri uri, FileMode mode, FileAccess access);
 		Uri GetTarget(Uri uri);
 		string GetContentType(Uri uri);
+		List<Uri> GetResources(Uri uri);
 	}
 }

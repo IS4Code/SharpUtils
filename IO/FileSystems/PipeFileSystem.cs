@@ -70,5 +70,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			throw new NotSupportedException();
 		}
+		
+		public System.Collections.Generic.List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

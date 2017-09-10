@@ -1,6 +1,9 @@
 ﻿/* Date: 3.9.2017, Time: 4:03 */
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Web;
 using IllidanS4.SharpUtils.IO.FileSystems;
 
 namespace IllidanS4.SharpUtils.IO
@@ -215,6 +218,11 @@ namespace IllidanS4.SharpUtils.IO
 			}
 		}
 		
+		public List<ResourceInfo> GetResources()
+		{
+			return fileSystem.GetResources(uri).Select(u => new ResourceInfo(u)).ToList();
+		}
+		
 		/// <summary>
 		/// Constructs a resource info from the parent URI.
 		/// </summary>
@@ -238,7 +246,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <returns>The string representation of this resource's URI.</returns>
 		public override string ToString()
 		{
-			return uri.ToString();
+			return HttpUtility.UrlDecode(AbsoluteUri);
 		}
 	}
 }

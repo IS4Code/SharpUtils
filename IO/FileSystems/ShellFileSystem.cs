@@ -1,5 +1,6 @@
 ﻿/* Date: 5.9.2017, Time: 1:58 */
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -144,6 +145,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				string dir = match.Groups[1].Value;
 				if(dir.Equals("shell:", StringComparison.OrdinalIgnoreCase)) dir = "";
 				
+				Win32FileSystem.RemoveBackslash(ref dir);
+				
 				SFGAOF sfgao;
 				IntPtr pidl = Shell32.SHParseDisplayName(dir, null, 0, out sfgao);
 				try{
@@ -172,7 +175,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 							while(true)
 							{
 								IntPtr pidl2;
-								uint num;
+								int num;
 								peidl.Next(1, out pidl2, out num);
 								if(num == 0) break;
 								try{
@@ -280,6 +283,87 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public string GetContentType(Uri uri)
 		{
 			throw new NotImplementedException();
+		}
+		
+		public List<Uri> GetResources(Uri uri)
+		{
+			var list = new List<Uri>();
+			
+			var item = GetItem(uri);
+			
+			/*try{
+				var elist = item.BindToHandler<IEnumShellItems>(null, Shell32.BHID_StorageEnum);
+				
+				try{
+					while(true)
+					{
+						IShellItem subItem;
+						int num;
+						elist.Next(1, out subItem, out num);
+						if(num == 0) break;
+						try{
+							string path = subItem.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+							var attr = subItem.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+							
+							list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
+						}finally{
+							Marshal.FinalReleaseComObject(subItem);
+						}
+					}
+				}finally{
+					Marshal.FinalReleaseComObject(elist);
+				}
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}*/
+			
+			IntPtr pidl = Shell32.SHGetIDListFromObject(item);
+			try{
+				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
+				try{
+					IEnumIDList peidl = psf.EnumObjects(IntPtr.Zero, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+					
+					if(peidl == null) return list;
+					try{
+						while(true)
+						{
+							IntPtr pidl2;
+							int num;
+							peidl.Next(1, out pidl2, out num);
+							if(num == 0) break;
+							try{
+								/*var subItem = Shell32.SHCreateItemFromIDList<IShellItem>(pidl2);
+								try{
+									string path = subItem.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+									var attr = subItem.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+									
+									list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
+								}finally{
+									Marshal.FinalReleaseComObject(subItem);
+								}*/
+								
+								STRRET sr = psf.GetDisplayNameOf(pidl2, SHGDNF.SHGDN_FORPARSING);
+								string path = Shlwapi.StrRetToStr(ref sr, pidl2);
+								
+								SFGAOF attr = SFGAOF.SFGAO_FILESYSTEM;
+								psf.GetAttributesOf(1, new[]{pidl2}, ref attr);
+								
+								list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
+							}finally{
+								Marshal.FreeCoTaskMem(pidl2);
+							}
+						}
+					}finally{
+						Marshal.FinalReleaseComObject(peidl);
+					}
+				}finally{
+					Marshal.FinalReleaseComObject(psf);
+				}
+			}finally{
+				Marshal.FreeCoTaskMem(pidl);
+			}
+			
+			return list;
 		}
 		#endregion
 		

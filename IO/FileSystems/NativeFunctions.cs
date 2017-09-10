@@ -1,5 +1,6 @@
 ﻿/* Date: 10.9.2017, Time: 12:47 */
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -13,8 +14,241 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 {
 	partial class Win32FileSystem
 	{
+		static class Ntdll
+		{
+			public enum FILE_INFORMATION_CLASS
+			{
+				FileDirectoryInformation = 1,
+				FileFullDirectoryInformation,
+				FileBothDirectoryInformation,
+				FileBasicInformation,
+				FileStandardInformation,
+				FileInternalInformation,
+				FileEaInformation,
+				FileAccessInformation,
+				FileNameInformation,
+				FileRenameInformation,
+				FileLinkInformation,
+				FileNamesInformation,
+				FileDispositionInformation,
+				FilePositionInformation,
+				FileFullEaInformation,
+				FileModeInformation,
+				FileAlignmentInformation,
+				FileAllInformation,
+				FileAllocationInformation,
+				FileEndOfFileInformation,
+				FileAlternateNameInformation,
+				FileStreamInformation,
+				FilePipeInformation,
+				FilePipeLocalInformation,
+				FilePipeRemoteInformation,
+				FileMailslotQueryInformation,
+				FileMailslotSetInformation,
+				FileCompressionInformation,
+				FileObjectIdInformation,
+				FileCompletionInformation,
+				FileMoveClusterInformation,
+				FileQuotaInformation,
+				FileReparsePointInformation,
+				FileNetworkOpenInformation,
+				FileAttributeTagInformation,
+				FileTrackingInformation,
+				FileIdBothDirectoryInformation,
+				FileIdFullDirectoryInformation,
+				FileValidDataLengthInformation,
+				FileShortNameInformation,
+				FileIoCompletionNotificationInformation,
+				FileIoStatusBlockRangeInformation,
+				FileIoPriorityHintInformation,
+				FileSfioReserveInformation,
+				FileSfioVolumeInformation,
+				FileHardLinkInformation,
+				FileProcessIdsUsingFileInformation,
+				FileNormalizedNameInformation,
+				FileNetworkPhysicalNameInformation,
+				FileIdGlobalTxDirectoryInformation,
+				FileIsRemoteDeviceInformation,
+				FileUnusedInformation,
+				FileNumaNodeInformation,
+				FileStandardLinkInformation,
+				FileRemoteProtocolInformation,
+				FileRenameInformationBypassAccessCheck,
+				FileLinkInformationBypassAccessCheck,
+				FileVolumeNameInformation,
+				FileIdInformation,
+				FileIdExtdDirectoryInformation,
+				FileReplaceCompletionInformation,
+				FileHardLinkFullIdInformation,
+				FileIdExtdBothDirectoryInformation,
+				FileMaximumInformation,
+			}
+			
+			[StructLayout(LayoutKind.Sequential)]
+			public struct IO_STATUS_BLOCK
+			{
+				[StructLayout(LayoutKind.Explicit)]
+				public struct StatusBlockUnion
+				{
+					[FieldOffset(0)]
+					public int Status;
+					[FieldOffset(0)]
+					public IntPtr Pointer;
+				}
+				
+				public StatusBlockUnion StatusBlock;
+				public IntPtr Information;
+			}
+			
+			[StructLayout(LayoutKind.Sequential)]
+			public struct FILE_FULL_DIR_INFORMATION
+			{
+				public int NextEntryOffset;
+				public int FileIndex;
+				public long CreationTime;
+				public long LastAccessTime;
+				public long LastWriteTime;
+				public long ChangeTime;
+				public long EndOfFile;
+				public long AllocationSize;
+				public int FileAttributes;
+				public int FileNameLength;
+				public int EaSize;
+				
+				ushort FileNameString;
+				
+				public unsafe string FileName{
+					get{
+						fixed(ushort* ptr = &FileNameString)
+						{
+							return Marshal.PtrToStringUni((IntPtr)ptr, FileNameLength/2);
+						}
+					}
+				}
+			}
+			
+			[DllImport("ntdll.dll", SetLastError=true)]
+			public static extern int RtlNtStatusToDosError(int Status);
+			
+			[DllImport("ntdll.dll", SetLastError=true, CharSet= CharSet.Unicode)]
+			public static extern int NtQueryDirectoryFile(
+				IntPtr FileHandle, [Optional]IntPtr Event, [Optional]IntPtr ApcRoutine,
+				[Optional]IntPtr ApcContext, out IO_STATUS_BLOCK IoStatusBlock,
+				IntPtr FileInformation, int Length, FILE_INFORMATION_CLASS FileInformationClass,
+				bool ReturnSingleEntry, [Optional]string FileName, bool RestartScan
+			);
+		}
+		
 		static class Kernel32
 		{
+			public enum FILE_INFO_BY_HANDLE_CLASS
+			{
+				FileBasicInfo = 0,
+				FileStandardInfo = 1,
+				FileNameInfo = 2,
+				FileRenameInfo = 3,
+				FileDispositionInfo = 4,
+				FileAllocationInfo = 5,
+				FileEndOfFileInfo = 6,
+				FileStreamInfo = 7,
+				FileCompressionInfo = 8,
+				FileAttributeTagInfo = 9,
+				FileIdBothDirectoryInfo = 10, // 0xA
+				FileIdBothDirectoryRestartInfo = 11, // 0xB
+				FileIoPriorityHintInfo = 12, // 0xC
+				FileRemoteProtocolInfo = 13, // 0xD
+				FileFullDirectoryInfo = 14, // 0xE
+				FileFullDirectoryRestartInfo = 15, // 0xF
+				FileStorageInfo = 16, // 0x10
+				FileAlignmentInfo = 17, // 0x11
+				FileIdInfo = 18, // 0x12
+				FileIdExtdDirectoryInfo = 19, // 0x13
+				FileIdExtdDirectoryRestartInfo = 20, // 0x14
+				MaximumFileInfoByHandlesClass
+			}
+			
+			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+			public struct FILE_FULL_DIR_INFO
+			{
+				public int NextEntryOffset;
+				public int FileIndex;
+				public long CreationTime;
+				public long LastAccessTime;
+				public long LastWriteTime;
+				public long ChangeTime;
+				public long EndOfFile;
+				public long AllocationSize;
+				public int FileAttributes;
+				public int FileNameLength;
+				public int EaSize;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+				public string FileName;
+			}
+			
+			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+			public struct FILE_ID_BOTH_DIR_INFO
+			{
+				public static readonly int Size = Marshal.SizeOf(typeof(FILE_ID_BOTH_DIR_INFO));
+				
+				public int NextEntryOffset;
+				public int FileIndex;
+				public long CreationTime;
+				public long LastAccessTime;
+				public long LastWriteTime;
+				public long ChangeTime;
+				public long EndOfFile;
+				public long AllocationSize;
+				public int FileAttributes;
+				public int FileNameLength;
+				public int EaSize;
+				public int ShortNameLength;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=12)]
+				public string ShortName;
+				public long FileId;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+				public string FileName;
+			}
+			
+			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+			public struct FILE_STREAM_INFO
+			{
+				public static readonly int Size = Marshal.SizeOf(typeof(FILE_STREAM_INFO));
+				
+				public int NextEntryOffset;
+				public int StreamNameLength;
+				public long StreamSize;
+				public long StreamAllocationSize;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+				private string StreamNameInternal;
+				
+				public string StreamName{
+					get{
+						return StreamNameInternal.Substring(0, StreamNameLength/2);
+					}
+				}
+			}
+			
+			//[DllImport("kernel32.dll", SetLastError=true)]
+			//public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_FULL_DIR_INFO lpFileInformation, int dwBufferSize);
+			
+			[DllImport("kernel32.dll", SetLastError=true)]
+			static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_ID_BOTH_DIR_INFO lpFileInformation, int dwBufferSize);
+			
+			[DllImport("kernel32.dll", SetLastError=true)]
+			public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, IntPtr lpFileInformation, int dwBufferSize);
+			
+			public static bool GetFileInformationByHandleEx(IntPtr hFile, out FILE_ID_BOTH_DIR_INFO lpFileInformation)
+			{
+				bool result = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileIdBothDirectoryInfo, out lpFileInformation, FILE_ID_BOTH_DIR_INFO.Size);
+				if(!result)
+				{
+					int error = Marshal.GetLastWin32Error();
+					if(error != 18) throw new Win32Exception(error);
+					return false;
+				}
+				return true;
+			}
+			
 			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
 			public static extern int GetFileAttributes(string lpFileName);
 			
@@ -59,6 +293,62 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 		    [DllImport("kernel32.dll", SetLastError=true, EntryPoint="CloseHandle")]
 		    static extern bool _CloseHandle(IntPtr hObject);
+		    
+			
+			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
+			public struct WIN32_FIND_DATA
+			{
+				public FileAttributes dwFileAttributes;
+				public FILETIME ftCreationTime;
+				public FILETIME ftLastAccessTime;
+				public FILETIME ftLastWriteTime;
+				public int nFileSizeHigh;
+				public int nFileSizeLow;
+				public int dwReserved0;
+				public int dwReserved1;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=260)]
+  				public string cFileName;
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=14)]
+				public string cAlternateFileName;
+			}
+			
+		    [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
+		    static extern IntPtr FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
+		    
+		    [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
+		    static extern bool FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATA lpFindFileData);
+		    
+		    [DllImport("kernel32.dll", SetLastError=true)]
+		    static extern bool FindClose(IntPtr hFindFile);
+		    
+		    public static IEnumerable<WIN32_FIND_DATA> FindFiles(string lpFileName)
+		    {
+		    	WIN32_FIND_DATA findFileData;
+		    	
+		    	IntPtr handle = FindFirstFile(lpFileName, out findFileData);
+		    	if(handle == (IntPtr)(-1))
+		    	{
+		    		int error = Marshal.GetLastWin32Error();
+		    		if(error != 2) throw new Win32Exception(error);
+		    		yield break;
+		    	}
+		    	try{
+		    		yield return findFileData;
+		    		
+		    		while(true)
+		    		{
+		    			if(!FindNextFile(handle, out findFileData))
+		    			{
+				    		int error = Marshal.GetLastWin32Error();
+				    		if(error != 18) throw new Win32Exception(error);
+				    		yield break;
+		    			}
+		    			yield return findFileData;
+		    		}
+		    	}finally{
+		    		if(!FindClose(handle)) throw new Win32Exception();
+		    	}
+		    }
 		    
 			[DebuggerStepThrough]
 		    public static string GetFinalPathNameByHandle(IntPtr hFile, int dwFlags)
@@ -173,6 +463,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public static readonly Guid BHID_Stream = new Guid("1CEBB3AB-7C10-499a-A417-92CA16C4CB83");
 			public static readonly Guid BHID_LinkTargetItem = new Guid("3981E228-F559-11D3-8E3A-00C04F6837D5");
 			public static readonly Guid BHID_SFUIObject = new Guid("3981E225-F559-11D3-8E3A-00C04F6837D5");
+			public static readonly Guid BHID_StorageEnum = new Guid("4621A4E3-F0D6-4773-8A9C-46E77B174840");
 			
 			[DllImport("shell32.dll", CharSet=CharSet.Unicode, PreserveSig=false)]
 			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
@@ -226,7 +517,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			[DllImport("shell32.dll", PreserveSig=false)]
-			static extern IntPtr SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object punk);
+			public static extern IntPtr SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object punk);
 			
 			public static IShellLink CreateShellLink()
 			{

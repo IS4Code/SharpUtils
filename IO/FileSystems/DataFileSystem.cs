@@ -153,5 +153,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 		}
+		
+		public List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

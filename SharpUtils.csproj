@@ -105,6 +105,7 @@
     <Compile Include="COM\ComExtensions.cs" />
     <Compile Include="COM\IDispatch.cs" />
     <Compile Include="COM\IEnumIDList.cs" />
+    <Compile Include="COM\IEnumShellItems.cs" />
     <Compile Include="COM\IPersist.cs" />
     <Compile Include="COM\IPersistStream.cs" />
     <Compile Include="COM\IShellFolder.cs" />

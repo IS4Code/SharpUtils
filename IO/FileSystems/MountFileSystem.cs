@@ -108,5 +108,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			return GetContentTypeInternal(uri);
 		}
+		
+		protected abstract List<Uri> GetResourcesInternal(Uri uri);
+		public List<Uri> GetResources(Uri uri)
+		{
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.GetResources(uri);
+			
+			return GetResourcesInternal(uri);
+		}
 	}
 }
