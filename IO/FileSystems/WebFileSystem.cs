@@ -1,5 +1,6 @@
 ﻿/* Date: 3.9.2017, Time: 23:10 */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
@@ -83,7 +84,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		private WebResponse GetResponse(Uri uri, string method)
 		{
 			var request = WebRequest.Create(uri);
-			request.Method = "HEAD";
+			request.Method = method;
 			
 			var http = request as HttpWebRequest;
 			if(http != null)
