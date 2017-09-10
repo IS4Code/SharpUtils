@@ -144,6 +144,7 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
+    <Compile Include="IO\FileSystems\BlobFileSystem.cs" />
     <Compile Include="IO\FileSystems\DataExtension\IDataExtension.cs" />
     <Compile Include="IO\FileSystems\DataExtension\ShellLinkDataExtension.cs" />
     <Compile Include="IO\FileSystems\IExtensionHost.cs" />
