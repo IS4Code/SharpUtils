@@ -24,7 +24,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			Mount(shellUri, new ShellFileSystem(shellUri));
 		}
 		
-		public static Uri UriOrPath(string path)
+		#region Public API
+		public Uri UriOrPath(string path)
 		{
 			Uri uri;
 			if(Uri.TryCreate(path, UriKind.Absolute, out uri) && (uri.Scheme != Uri.UriSchemeFile || path.StartsWith(Uri.UriSchemeFile+Uri.SchemeDelimiter, StringComparison.Ordinal)))
@@ -35,7 +36,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public static Uri FileUriFromPath(string path)
+		public Uri FileUriFromPath(string path)
 		{
 			if(!extendedRegex.IsMatch(path))
 			{
@@ -44,7 +45,130 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			RemoveBackslash(ref path);
 			return FileUriFromPathInternal(path);
 		}
+	
+		public static DateTime GetDateTime(FILETIME ft)
+		{
+			unchecked{
+				var fileTime = ((long)((ulong)(uint)ft.dwHighDateTime << 32) | (long)(uint)ft.dwLowDateTime);
+				return DateTime.FromFileTimeUtc(fileTime);
+			}
+		}
 		
+		public string GetFullPath(string path)
+		{
+			var buffer = new StringBuilder(0);
+			int len = GetFullPathName(path, 0, buffer, IntPtr.Zero);
+			if(len == 0) throw new Win32Exception();
+			buffer.EnsureCapacity(len);
+			len = GetFullPathName(path, len, buffer, IntPtr.Zero);
+			if(len == 0) throw new Win32Exception();
+			return buffer.ToString();
+		}
+		
+		public string PathFromFileUri(Uri uri)
+		{
+			var bareUri = new UriBuilder(uri){Fragment = null}.Uri;
+			
+			string absUri = bareUri.AbsoluteUri;
+			
+			int len = 1;
+			var buffer = new StringBuilder(len);
+			int result = PathCreateFromUrl(absUri, buffer, ref len, 0);
+			if(len == 1) Marshal.ThrowExceptionForHR(result);
+			else if(len == 0) return String.Empty;
+			
+			buffer.EnsureCapacity(len);
+			result = PathCreateFromUrl(absUri, buffer, ref len, 0);
+			Marshal.ThrowExceptionForHR(result);
+			
+			string path = buffer.ToString();
+			if(bareUri.Host == "localhost")
+			{
+				return @"\\localhost"+path;
+			}else{
+				return path;
+			}
+		}
+		
+		private static readonly Regex backslashRegex = new Regex(@"([^:\\])\\$", RegexOptions.Compiled);
+		public static void RemoveBackslash(ref string path)
+		{
+			path = backslashRegex.Replace(path, "$1");
+		}
+		#endregion
+		
+		private string GetPath(Uri uri)
+		{
+			string path = PathFromFileUri(uri);
+			if(String.IsNullOrEmpty(uri.Host))
+			{
+				if(path.Length > 256)
+				{
+					return @"\\?\"+path;
+				}else{
+					return @"\\.\"+path;
+				}
+			}else{
+				if(path.Length > 260)
+				{
+					return @"\\?\UNC\"+path.Substring(2);
+				}else{
+					return path;
+				}
+			}
+		}
+		
+		private static WIN32_FILE_ATTRIBUTE_DATA GetAttributeData(string path)
+		{
+			WIN32_FILE_ATTRIBUTE_DATA data;
+			if(!GetFileAttributesEx(path, 0, out data)) throw new Win32Exception();
+			return data;
+		}
+		
+		private static readonly Regex extendedRegex = new Regex(@"^\\[\?\\](\?\\UNC|\?)(?:\\|$)");
+		private static readonly Regex virtualRegex = new Regex(@"^::");
+		private static readonly Regex prefixRegex = new Regex(@"^\\\\(\.|localhost)(\\.*|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		private static readonly Regex filePrefixRegex = new Regex(@"^file:///");
+		
+		private Uri FileUriFromPathInternal(string path)
+		{
+			const string device = @"\\";
+			
+			path = extendedRegex.Replace(path, device);
+			
+			var match = prefixRegex.Match(path);
+			string share;
+			if(match.Success)
+			{
+				share = match.Groups[1].Value;
+				if(!share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+				{
+					string local = match.Groups[2].Value;
+					path = device+local;
+				}
+			}else{
+				share = null;
+			}
+			
+			int len = 1;
+			var buffer = new StringBuilder(len);
+			int result = UrlCreateFromPath(path, buffer, ref len, 0);
+			if(len == 1) Marshal.ThrowExceptionForHR(result);
+			
+			buffer.EnsureCapacity(len);
+			result = UrlCreateFromPath(path, buffer, ref len, 0);
+			if(result == 1) throw new ArgumentException("Argument is not a valid path.", "path");
+			Marshal.ThrowExceptionForHR(result);
+			
+			string uri = buffer.ToString();
+			if(share != null && share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+			{
+				uri = filePrefixRegex.Replace(uri, "file://"+share+"/");
+			}
+			return new Uri(uri);
+		}
+		
+		#region Implementation
 		protected override FileAttributes GetAttributesInternal(Uri uri)
 		{
 			int attr = GetFileAttributes(GetPath(uri));
@@ -128,128 +252,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			if(mime == "application/x-msdownload") return "application/octet-stream";
 			return mime;
 		}
+		#endregion
 		
-		private static string GetPath(Uri uri)
-		{
-			string path = PathFromFileUri(uri);
-			if(String.IsNullOrEmpty(uri.Host))
-			{
-				if(path.Length > 256)
-				{
-					return @"\\?\"+path;
-				}else{
-					return @"\\.\"+path;
-				}
-			}else{
-				if(path.Length > 260)
-				{
-					return @"\\?\UNC\"+path.Substring(2);
-				}else{
-					return path;
-				}
-			}
-		}
-		
-		private static WIN32_FILE_ATTRIBUTE_DATA GetAttributeData(string path)
-		{
-			WIN32_FILE_ATTRIBUTE_DATA data;
-			if(!GetFileAttributesEx(path, 0, out data)) throw new Win32Exception();
-			return data;
-		}
-	
-		public static DateTime GetDateTime(FILETIME ft)
-		{
-			unchecked{
-				var fileTime = ((long)((ulong)(uint)ft.dwHighDateTime << 32) | (long)(uint)ft.dwLowDateTime);
-				return DateTime.FromFileTimeUtc(fileTime);
-			}
-		}
-		
-		public static string GetFullPath(string path)
-		{
-			var buffer = new StringBuilder(0);
-			int len = GetFullPathName(path, 0, buffer, IntPtr.Zero);
-			if(len == 0) throw new Win32Exception();
-			buffer.EnsureCapacity(len);
-			len = GetFullPathName(path, len, buffer, IntPtr.Zero);
-			if(len == 0) throw new Win32Exception();
-			return buffer.ToString();
-		}
-		
-		private static readonly Regex extendedRegex = new Regex(@"^\\[\?\\](\?\\UNC|\?)(?:\\|$)");
-		private static readonly Regex virtualRegex = new Regex(@"^::");
-		private static readonly Regex prefixRegex = new Regex(@"^\\\\(\.|localhost)(\\.*|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-		private static readonly Regex filePrefixRegex = new Regex(@"^file:///");
-		
-		private static Uri FileUriFromPathInternal(string path)
-		{
-			const string device = @"\\";
-			
-			path = extendedRegex.Replace(path, device);
-			
-			var match = prefixRegex.Match(path);
-			string share;
-			if(match.Success)
-			{
-				share = match.Groups[1].Value;
-				if(!share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
-				{
-					string local = match.Groups[2].Value;
-					path = device+local;
-				}
-			}else{
-				share = null;
-			}
-			
-			int len = 1;
-			var buffer = new StringBuilder(len);
-			int result = UrlCreateFromPath(path, buffer, ref len, 0);
-			if(len == 1) Marshal.ThrowExceptionForHR(result);
-			
-			buffer.EnsureCapacity(len);
-			result = UrlCreateFromPath(path, buffer, ref len, 0);
-			if(result == 1) throw new ArgumentException("Argument is not a valid path.", "path");
-			Marshal.ThrowExceptionForHR(result);
-			
-			string uri = buffer.ToString();
-			if(share != null && share.Equals("localhost", StringComparison.OrdinalIgnoreCase))
-			{
-				uri = filePrefixRegex.Replace(uri, "file://"+share+"/");
-			}
-			return new Uri(uri);
-		}
-		
-		public static string PathFromFileUri(Uri uri)
-		{
-			var bareUri = new UriBuilder(uri){Fragment = null}.Uri;
-			
-			string absUri = bareUri.AbsoluteUri;
-			
-			int len = 1;
-			var buffer = new StringBuilder(len);
-			int result = PathCreateFromUrl(absUri, buffer, ref len, 0);
-			if(len == 1) Marshal.ThrowExceptionForHR(result);
-			else if(len == 0) return String.Empty;
-			
-			buffer.EnsureCapacity(len);
-			result = PathCreateFromUrl(absUri, buffer, ref len, 0);
-			Marshal.ThrowExceptionForHR(result);
-			
-			string path = buffer.ToString();
-			if(bareUri.Host == "localhost")
-			{
-				return @"\\localhost"+path;
-			}else{
-				return path;
-			}
-		}
-		
-		private static readonly Regex backslashRegex = new Regex(@"([^:\\])\\$", RegexOptions.Compiled);
-		public static void RemoveBackslash(ref string path)
-		{
-			path = backslashRegex.Replace(path, "$1");
-		}
-		
+		#region Interop
 		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
 		static extern int GetFileAttributes(string lpFileName);
 		
@@ -299,5 +304,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 	    [DllImport("kernel32.dll", SetLastError=true)]
 	    static extern bool CloseHandle(IntPtr hObject);
+		#endregion
 	}
 }

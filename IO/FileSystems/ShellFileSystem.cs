@@ -26,6 +26,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			this.baseUri = baseUri;
 		}
 		
+		#region Public API
 		public string GetShellPath(Uri uri)
 		{
 			var rel = baseUri.MakeRelativeUri(uri);
@@ -122,6 +123,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				Marshal.FreeCoTaskMem(pidl);
 			}
 		}
+		#endregion
 		
 		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
 		private IShellItem GetItem(Uri uri)

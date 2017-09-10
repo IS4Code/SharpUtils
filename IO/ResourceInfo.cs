@@ -27,7 +27,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// Constructs a resource info from a string represeting either a system path, or a valid URI.
 		/// </summary>
 		/// <param name="path">A valid Windows file system path or a URI.</param>
-		public ResourceInfo(string pathOrUri) : this(Win32FileSystem.UriOrPath(pathOrUri))
+		public ResourceInfo(string pathOrUri) : this(Win32FileSystem.Instance.UriOrPath(pathOrUri))
 		{
 			
 		}
