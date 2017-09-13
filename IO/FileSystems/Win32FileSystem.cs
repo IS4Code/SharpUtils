@@ -15,7 +15,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// This file system contains files in the Win32 path scheme, also
 	/// supporting NTFS file system extensions and UNC paths.
 	/// </summary>
-	public partial class Win32FileSystem : MountFileSystem, IFileSystem
+	public partial class Win32FileSystem : MountFileSystem, IHandleProvider
 	{
 		public static readonly Win32FileSystem Instance = new Win32FileSystem();
 		
@@ -138,6 +138,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		#region Implementation
+		public ResourceHandle ObtainHandle(Uri uri)
+		{
+			IntPtr handle = Kernel32.CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
+			try{
+				return new Win32FileHandle(uri, handle, this);
+			}finally{
+				Kernel32.CloseHandle(handle);
+			}
+		}
+		
 		protected override FileAttributes GetAttributesInternal(Uri uri)
 		{
 			int attr = Kernel32.GetFileAttributes(GetPath(uri));
@@ -254,7 +264,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					if(!result)
 					{
 						int error = Marshal.GetLastWin32Error();
-						if(error != 38) throw new Win32Exception(error);
+						if(error != 38 && error != 87) throw new Win32Exception(error);
 					}else{
 						int offset = 0;
 						do{

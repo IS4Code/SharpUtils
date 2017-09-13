@@ -228,15 +228,59 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			//[DllImport("kernel32.dll", SetLastError=true)]
-			//public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_FULL_DIR_INFO lpFileInformation, int dwBufferSize);
+			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+			public struct FILE_NAME_INFO
+			{
+				public static readonly int Size = Marshal.SizeOf(typeof(FILE_NAME_INFO));
+				
+				public int FileNameLength;
+				
+				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+				private string FileNameInternal;
+				
+				public string FileName{
+					get{
+						return FileNameInternal.Substring(0, FileNameLength/2);
+					}
+				}
+			}
+			
+			[StructLayout(LayoutKind.Sequential)]
+			public struct BY_HANDLE_FILE_INFORMATION
+			{
+				public int dwFileAttributes;
+				public FILETIME ftCreationTime;
+				public FILETIME ftLastAccessTime;
+				public FILETIME ftLastWriteTime;
+				public int dwVolumeSerialNumber;
+				public int nFileSizeHigh;
+				public int nFileSizeLow;
+				public int nNumberOfLinks;
+				public int nFileIndexHigh;
+				public int nFileIndexLow;
+			}
+			
+			[DllImport("kernel32.dll", SetLastError=true)]
+			static extern bool GetFileInformationByHandle(IntPtr hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+			
+			[DebuggerStepThrough]
+			public static BY_HANDLE_FILE_INFORMATION GetFileInformationByHandle(IntPtr hFile)
+			{
+				BY_HANDLE_FILE_INFORMATION fileInformation;
+				if(!GetFileInformationByHandle(hFile, out fileInformation)) throw new Win32Exception();
+				return fileInformation;
+			}
 			
 			[DllImport("kernel32.dll", SetLastError=true)]
 			static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_ID_BOTH_DIR_INFO lpFileInformation, int dwBufferSize);
 			
 			[DllImport("kernel32.dll", SetLastError=true)]
+			static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_NAME_INFO lpFileInformation, int dwBufferSize);
+			
+			[DllImport("kernel32.dll", SetLastError=true)]
 			public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, IntPtr lpFileInformation, int dwBufferSize);
 			
+			[DebuggerStepThrough]
 			public static bool GetFileInformationByHandleEx(IntPtr hFile, out FILE_ID_BOTH_DIR_INFO lpFileInformation)
 			{
 				bool result = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileIdBothDirectoryInfo, out lpFileInformation, FILE_ID_BOTH_DIR_INFO.Size);
@@ -247,6 +291,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					return false;
 				}
 				return true;
+			}
+			
+			[DebuggerStepThrough]
+			public static void GetFileInformationByHandleEx(IntPtr hFile, out FILE_NAME_INFO lpFileInformation)
+			{
+				bool result = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileNameInfo, out lpFileInformation, FILE_NAME_INFO.Size);
+				if(!result)
+				{
+					throw new Win32Exception();
+				}
 			}
 			
 			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
@@ -284,6 +338,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="CreateFile")]
 			static extern IntPtr _CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, FileAttributes dwFlagsAndAttributes, IntPtr templateFile);
 			
+			[DllImport("kernel32.dll")]
+			public static extern IntPtr GetCurrentProcess();
 			
 		    private const int FILE_READ_EA = 0x0008;
 		    private const int FILE_FLAG_BACKUP_SEMANTICS = 0x2000000;
@@ -294,6 +350,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    [DllImport("kernel32.dll", SetLastError=true, EntryPoint="CloseHandle")]
 		    static extern bool _CloseHandle(IntPtr hObject);
 		    
+		    [DllImport("kernel32.dll", SetLastError=true)]
+		    static extern bool DuplicateHandle(IntPtr hSourceProcessHandle, IntPtr hSourceHandle, IntPtr hTargetProcessHandle, out IntPtr lpTargetHandle, int dwDesiredAccess, bool bInheritHandle, int dwOptions);
 			
 			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
 			public struct WIN32_FIND_DATA
@@ -321,6 +379,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    [DllImport("kernel32.dll", SetLastError=true)]
 		    static extern bool FindClose(IntPtr hFindFile);
 		    
+			[DebuggerStepThrough]
 		    public static IEnumerable<WIN32_FIND_DATA> FindFiles(string lpFileName)
 		    {
 		    	WIN32_FIND_DATA findFileData;
@@ -382,6 +441,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    public static void CloseHandle(IntPtr hObject)
 		    {
 		    	if(!_CloseHandle(hObject)) throw new Win32Exception();
+		    }
+		    
+			[DebuggerStepThrough]
+		    public static IntPtr DuplicateHandle(IntPtr hSourceProcessHandle, IntPtr hSourceHandle, IntPtr hTargetProcessHandle, int dwDesiredAccess, bool bInheritHandle, int dwOptions)
+		    {
+		    	IntPtr targetHandle;
+		    	if(!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out targetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) throw new Win32Exception();
+		    	return targetHandle;
 		    }
 		}
 		

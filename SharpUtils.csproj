@@ -150,6 +150,7 @@
     <Compile Include="IO\FileSystems\DataExtensions\ShellLinkDataExtension.cs" />
     <Compile Include="IO\FileSystems\Handles\DataFileHandle.cs" />
     <Compile Include="IO\FileSystems\Handles\ShellFileHandle.cs" />
+    <Compile Include="IO\FileSystems\Handles\Win32FileHandle.cs" />
     <Compile Include="IO\FileSystems\IExtensionHost.cs" />
     <Compile Include="IO\FileSystems\IHandleProvider.cs" />
     <Compile Include="IO\FileSystems\IMountHost.cs" />

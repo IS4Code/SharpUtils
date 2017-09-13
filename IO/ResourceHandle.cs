@@ -22,6 +22,16 @@ namespace IllidanS4.SharpUtils.IO
 			
 		}
 		
+		public static ResourceHandle Create(ResourceInfo info)
+		{
+			var fs = info.FileSystem as IHandleProvider;
+			if(fs != null)
+			{
+				return fs.ObtainHandle(info.Uri);
+			}
+			throw new ArgumentException("This resource's file system doesn't support handles.");
+		}
+		
 		public abstract override Uri Uri{
 			get;
 		} 

@@ -26,6 +26,8 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual Uri Uri{get{return uri;}}
 		
+		internal IFileSystem FileSystem{get{return fileSystem;}}
+		
 		/// <summary>
 		/// Constructs a resource info from a string represeting either a system path, or a valid URI.
 		/// </summary>
