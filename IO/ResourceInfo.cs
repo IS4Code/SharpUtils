@@ -24,7 +24,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// The URI of this resource.
 		/// </summary>
-		public Uri Uri{get{return uri;}}
+		public virtual Uri Uri{get{return uri;}}
 		
 		/// <summary>
 		/// Constructs a resource info from a string represeting either a system path, or a valid URI.
@@ -48,6 +48,11 @@ namespace IllidanS4.SharpUtils.IO
 			
 			this.uri = uri;
 			fileSystem = GetFileSystem(uri.Scheme);
+		}
+		
+		protected ResourceInfo(IFileSystem fileSystem)
+		{
+			this.fileSystem = fileSystem;
 		}
 		
 		/// <summary>
@@ -117,7 +122,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the attribute flags of this resource.
 		/// </summary>
-		public FileAttributes Attributes{
+		public virtual FileAttributes Attributes{
 			get{
 				return fileSystem.GetAttributes(uri);
 			}
@@ -135,7 +140,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the creation time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public DateTime CreationTimeUtc{
+		public virtual DateTime CreationTimeUtc{
 			get{
 				return fileSystem.GetCreationTime(uri);
 			}
@@ -153,7 +158,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the last access time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public DateTime LastAccessTimeUtc{
+		public virtual DateTime LastAccessTimeUtc{
 			get{
 				return fileSystem.GetLastAccessTime(uri);
 			}
@@ -171,7 +176,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the last write time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public DateTime LastWriteTimeUtc{
+		public virtual DateTime LastWriteTimeUtc{
 			get{
 				return fileSystem.GetLastWriteTime(uri);
 			}
@@ -180,7 +185,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the length of the resource's data.
 		/// </summary>
-		public long Length{
+		public virtual long Length{
 			get{
 				return fileSystem.GetLength(uri);
 			}
@@ -192,7 +197,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <param name="mode">The opening mode of the stream.</param>
 		/// <param name="access">The access flags of the stream.</param>
 		/// <returns>The newly created stream to the resource.</returns>
-		public Stream GetStream(FileMode mode, FileAccess access)
+		public virtual Stream GetStream(FileMode mode, FileAccess access)
 		{
 			return fileSystem.GetStream(uri, mode, access);
 		}
@@ -203,7 +208,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// Otherwise returns the resource info representing the canonical
 		/// path in the file system.
 		/// </summary>
-		public ResourceInfo Target{
+		public virtual ResourceInfo Target{
 			get{
 				return new ResourceInfo(fileSystem.GetTarget(uri));
 			}
@@ -212,13 +217,13 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the content type of the resource, in MIME format.
 		/// </summary>
-		public string ContentType{
+		public virtual string ContentType{
 			get{
 				return fileSystem.GetContentType(uri);
 			}
 		}
 		
-		public List<ResourceInfo> GetResources()
+		public virtual List<ResourceInfo> GetResources()
 		{
 			return fileSystem.GetResources(uri).Select(u => new ResourceInfo(u)).ToList();
 		}
@@ -229,7 +234,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <remarks>
 		/// This may not represent an actual parent of the resource.
 		/// </remarks>
-		public ResourceInfo Parent{
+		public virtual ResourceInfo Parent{
 			get{
 				if(uri.AbsolutePath.EndsWith("/"))
 				{

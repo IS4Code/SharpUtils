@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.IO;
 
-namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtension
+namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 {
 	using DataUri = DataFileSystem.DataUri;
 	/// <summary>
@@ -18,5 +18,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtension
 		DateTime GetLastAccessTime(DataUri dataUri);
 		DateTime GetLastWriteTime(DataUri dataUri);
 		Uri GetTarget(DataUri dataUri);
+		ResourceInfo GetTargetResource(DataUri dataUri);
 	}
 }

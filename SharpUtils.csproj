@@ -146,9 +146,12 @@
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
     <Compile Include="IO\FileSystems\BlobFileSystem.cs" />
-    <Compile Include="IO\FileSystems\DataExtension\IDataExtension.cs" />
-    <Compile Include="IO\FileSystems\DataExtension\ShellLinkDataExtension.cs" />
+    <Compile Include="IO\FileSystems\DataExtensions\IDataExtension.cs" />
+    <Compile Include="IO\FileSystems\DataExtensions\ShellLinkDataExtension.cs" />
+    <Compile Include="IO\FileSystems\Handles\DataFileHandle.cs" />
+    <Compile Include="IO\FileSystems\Handles\ShellFileHandle.cs" />
     <Compile Include="IO\FileSystems\IExtensionHost.cs" />
+    <Compile Include="IO\FileSystems\IHandleProvider.cs" />
     <Compile Include="IO\FileSystems\IMountHost.cs" />
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions.cs" />
@@ -156,6 +159,7 @@
     <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
     <Compile Include="IO\PipeListener.cs" />
     <Compile Include="IO\PipeServer.cs" />
+    <Compile Include="IO\ResourceHandle.cs" />
     <Compile Include="IO\ResourceInfo.cs" />
     <Compile Include="IO\DeviceStream.cs" />
     <Compile Include="IO\FileSystems\DataFileSystem.cs" />
@@ -409,7 +413,8 @@
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
     <Folder Include="IO\FileSystems" />
-    <Folder Include="IO\FileSystems\DataExtension" />
+    <Folder Include="IO\FileSystems\DataExtensions" />
+    <Folder Include="IO\FileSystems\Handles" />
     <Folder Include="Metadata" />
     <Folder Include="COM" />
     <Folder Include="Interop" />

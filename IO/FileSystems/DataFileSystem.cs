@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
-using IllidanS4.SharpUtils.IO.FileSystems.DataExtension;
+using IllidanS4.SharpUtils.IO.FileSystems.DataExtensions;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
 	/// <summary>
 	/// This file system handles URI using the "data" scheme.
 	/// </summary>
-	public class DataFileSystem : IExtensionHost
+	public partial class DataFileSystem : IExtensionHost, IHandleProvider
 	{
 		public static readonly DataFileSystem Instance = new DataFileSystem();
 		
@@ -51,6 +51,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				return ext;
 			}
 			return null;
+		}
+		
+		public ResourceHandle ObtainHandle(Uri uri)
+		{
+			return new DataFileHandle(new DataUri(uri, true, true), this);
 		}
 		
 		public FileAttributes GetAttributes(Uri uri)
@@ -113,8 +118,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new DataUri(uri, false, false).ContentType;
 		}
 		
+		public List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
+		
 		public struct DataUri
 		{
+			public Uri Uri{get; private set;}
 			public string ContentType{get; private set;}
 			public byte[] Data{get; private set;}
 			public Dictionary<string, string> Parameters{get; private set;}
@@ -122,6 +133,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			static readonly Regex dataUri = new Regex(@"^(?<type>[a-z\-]+\/[a-z\-]+)?(?:;(?<parameters>.+?=.+?))*(?<base64>;base64)?,", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 			public DataUri(Uri uri, bool parseParameters, bool parseData) : this()
 			{
+				Uri = uri;
+				
 				string path = uri.AbsolutePath;
 				var match = dataUri.Match(path);
 				
@@ -152,11 +165,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}
 				}
 			}
-		}
-		
-		public List<Uri> GetResources(Uri uri)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

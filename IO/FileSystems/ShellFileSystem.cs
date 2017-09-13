@@ -16,7 +16,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// This file system contains locations accessible using the Win32 shell model.
 	/// The resources in this system may be real files, but also virtual shell items.
 	/// </summary>
-	public partial class ShellFileSystem : IFileSystem
+	public partial class ShellFileSystem : IHandleProvider
 	{
 		public static readonly ShellFileSystem Instance = new ShellFileSystem(new Uri("shell:"));
 		
@@ -93,6 +93,22 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		[CLSCompliant(false)]
+		public ResourceHandle GetLinkTargetResource(IShellLink link)
+		{
+			var target = GetLinkTarget(link);
+			try{
+				IntPtr pidl = Shell32.SHGetIDListFromObject(target);
+				try{
+					return new ShellFileHandle(pidl, this);
+				}finally{
+					Marshal.FreeCoTaskMem(pidl);
+				}
+			}finally{
+				Marshal.FinalReleaseComObject(target);
+			}
+		}
+		
 		public Uri LoadLinkTargetUri(byte[] linkData)
 		{
 			var link = LoadLink(linkData);
@@ -108,6 +124,26 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var link = LoadLink(linkFile);
 			try{
 				return GetLinkTargetUri(link);
+			}finally{
+				Marshal.FinalReleaseComObject(link);
+			}
+		}
+		
+		public ResourceHandle LoadLinkTargetResource(byte[] linkData)
+		{
+			var link = LoadLink(linkData);
+			try{
+				return GetLinkTargetResource(link);
+			}finally{
+				Marshal.FinalReleaseComObject(link);
+			}
+		}
+		
+		public ResourceHandle LoadLinkTargetResource(string linkFile)
+		{
+			var link = LoadLink(linkFile);
+			try{
+				return GetLinkTargetResource(link);
 			}finally{
 				Marshal.FinalReleaseComObject(link);
 			}
@@ -204,6 +240,21 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		#region Implementation
+		public ResourceHandle ObtainHandle(Uri uri)
+		{
+			var item = GetItem(uri);
+			try{
+				IntPtr pidl = Shell32.SHGetIDListFromObject(item);
+				try{
+					return new ShellFileHandle(pidl, this);
+				}finally{
+					Marshal.FreeCoTaskMem(pidl);
+				}
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
 		public FileAttributes GetAttributes(Uri uri)
 		{
 			throw new NotImplementedException();
@@ -408,6 +459,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}finally{
 				Marshal.FinalReleaseComObject(target);
 			}
+		}
+		
+		private Uri GetItemUri(IShellItem item)
+		{
+			string path = item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+			var attr = item.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
+			
+			bool isFs = (attr & SFGAOF.SFGAO_FILESYSTEM) != 0;
+			
+			return GetShellUri(path, isFs);
 		}
 	}
 }

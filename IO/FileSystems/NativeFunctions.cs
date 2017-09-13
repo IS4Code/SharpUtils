@@ -519,6 +519,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("shell32.dll", PreserveSig=false)]
 			public static extern IntPtr SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object punk);
 			
+			[DllImport("shell32.dll", SetLastError=true)]
+			public static extern IntPtr ILClone(IntPtr pidl);
+			
+			
 			public static IShellLink CreateShellLink()
 			{
 				return (IShellLink)new ShellLink();

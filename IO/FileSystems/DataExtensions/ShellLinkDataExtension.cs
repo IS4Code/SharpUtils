@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtension
+namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 {
 	using DataUri = DataFileSystem.DataUri;
 	
@@ -58,6 +58,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtension
 		{
 			CheckSupported(dataUri);
 			return ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data);
+		}
+		
+		public ResourceInfo GetTargetResource(DataUri dataUri)
+		{
+			CheckSupported(dataUri);
+			return ShellFileSystem.Instance.LoadLinkTargetResource(dataUri.Data);
 		}
 	}
 }

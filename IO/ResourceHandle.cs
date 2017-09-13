@@ -1,0 +1,78 @@
+﻿/* Date: 11.9.2017, Time: 2:09 */
+using System;
+using System.Collections.Generic;
+using System.IO;
+using IllidanS4.SharpUtils.IO.FileSystems;
+
+namespace IllidanS4.SharpUtils.IO
+{
+	/// <summary>
+	/// This class is implemented by individual file systems and represents
+	/// a system-specific handle to a resource. The purpose of this class is
+	/// to avoid parsing the URI each time to access the properties.
+	/// </summary>
+	/// <remarks>
+	/// As the handle may contain unmanaged resources, call Dispose
+	/// when you are finished with an instance of this class.
+	/// </remarks>
+	public abstract class ResourceHandle : ResourceInfo, IDisposable
+	{
+		public ResourceHandle(IHandleProvider fileSystem) : base(fileSystem)
+		{
+			
+		}
+		
+		public abstract override Uri Uri{
+			get;
+		} 
+		
+		public abstract override FileAttributes Attributes{
+			get;
+		}
+		
+		public abstract override DateTime CreationTimeUtc{
+			get;
+		}
+		
+		public abstract override DateTime LastAccessTimeUtc{
+			get;
+		}
+		
+		public abstract override DateTime LastWriteTimeUtc{
+			get;
+		}
+		
+		public abstract override long Length{
+			get;
+		}
+		
+		public abstract override Stream GetStream(FileMode mode, FileAccess access);
+		
+		public abstract override ResourceInfo Target{
+			get;
+		}
+		
+		public abstract override string ContentType{
+			get;
+		}
+		
+		public abstract override List<ResourceInfo> GetResources();
+		
+		public abstract override ResourceInfo Parent{
+			get;
+		}
+		
+		protected abstract void Dispose(bool disposing);
+		
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		
+		~ResourceHandle()
+		{
+			Dispose(false);
+		}
+	}
+}
