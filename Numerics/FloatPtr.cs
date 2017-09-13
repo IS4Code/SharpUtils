@@ -6,7 +6,7 @@ namespace IllidanS4.SharpUtils.Numerics
 {
 	/// <summary>
 	/// Native-size floating point number. Note that this shouldn't increase the computational speed at all,
-	/// since the CLR uses its own float type (F) to do all computations, and then convert the result to Single or Double.
+	/// since the CLR uses its own float type (F) to do all computations, and then converts the result to Single or Double.
 	/// </summary>
 	[StructLayout(LayoutKind.Explicit)]
 	public struct FloatPtr : IEquatable<FloatPtr>, IConvertible
