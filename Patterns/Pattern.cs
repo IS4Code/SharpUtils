@@ -57,7 +57,7 @@ namespace IllidanS4.SharpUtils.Patterns
 				}
 				templateType = def.MakeGenericType(genArgs);
 			}
-			var tb = Resources.DynamicModule.DefineType("DynamicTemplate", TypeAttributes.Public);
+			var tb = DynamicResources.DynamicModule.DefineType("DynamicTemplate", TypeAttributes.Public);
 			if(templateType.IsInterface)
 			{
 				tb.SetParent(typeofObject);

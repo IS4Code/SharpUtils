@@ -8,11 +8,11 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		private class AnonymousMethodTypeDescription : LanguageType
 		{
 			public override string LocalizedName{
-				get{ return Resources.GetString("AnonMethod", CultureInfo.CurrentCulture); }
+				get{ return DynamicResources.GetString("AnonMethod", CultureInfo.CurrentCulture); }
 			}
 			
 			public override string Name{
-				get{ return Resources.GetString("AnonMethod", CultureInfo.InvariantCulture); }
+				get{ return DynamicResources.GetString("AnonMethod", CultureInfo.InvariantCulture); }
 			}
 		}
 	}

@@ -12,7 +12,20 @@ namespace IllidanS4.SharpUtils.Unsafe
 	{
 		T[] data;
 		
+		/// <summary>
+		/// Creates a new by-val array.
+		/// </summary>
+		/// <param name="length">The length of the array</param>
 		public ByValArray(int length)
+		{
+			data = new T[length];
+		}
+		
+		/// <summary>
+		/// Creates a new by-val array.
+		/// </summary>
+		/// <param name="length">The length of the array</param>
+		public ByValArray(long length)
 		{
 			data = new T[length];
 		}
@@ -23,10 +36,23 @@ namespace IllidanS4.SharpUtils.Unsafe
 			data = ReferenceStorage.FindInstance(ref this, data);
 		}
 		
+		/// <summary>
+		/// Gets the length of the array.
+		/// </summary>
 		public int Length{
 			get{
 				Update();
 				return data.Length;
+			}
+		}
+		
+		/// <summary>
+		/// Gets the long length of the array.
+		/// </summary>
+		public long LongLength{
+			get{
+				Update();
+				return data.LongLength;
 			}
 		}
 		
@@ -42,6 +68,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 			}
 		}
 		
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
 		public T this[int index]
 		{
 			get{
@@ -54,7 +83,28 @@ namespace IllidanS4.SharpUtils.Unsafe
 			}
 		}
 		
-		public bool IsReadOnly{
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
+		public T this[long index]
+		{
+			get{
+				Update();
+				return data[index];
+			}
+			set{
+				Update();
+				data[index] = value;
+			}
+		}
+		
+		bool IList.IsReadOnly{
+			get{
+				return false;
+			}
+		}
+		
+		bool ICollection<T>.IsReadOnly{
 			get{
 				return false;
 			}
@@ -120,6 +170,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return ((ICollection<T>)data).Remove(item);
 		}
 		
+		/// <summary>
+		/// Returns the enumerator of the array.
+		/// </summary>
 		public IEnumerator<T> GetEnumerator()
 		{
 			Update();

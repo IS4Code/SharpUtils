@@ -12,7 +12,7 @@ namespace IllidanS4.SharpUtils.Reflection.Emit
 		{
 			string name = desc.Name;
 			Type t = desc.GetType();
-			TypeBuilder tb = Resources.DynamicModule.DefineType(name, TypeAttributes.Public, t);
+			TypeBuilder tb = DynamicResources.DynamicModule.DefineType(name, TypeAttributes.Public, t);
 			foreach(var mi in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
 			{
 				var args = mi.GetParameters();

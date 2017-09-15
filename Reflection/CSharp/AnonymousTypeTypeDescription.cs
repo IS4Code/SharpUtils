@@ -9,11 +9,11 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		private class AnonymousTypeTypeDescription : LanguageType
 		{
 			public override string LocalizedName{
-				get{ return Resources.GetString("AnonymousType", CultureInfo.CurrentCulture); }
+				get{ return DynamicResources.GetString("AnonymousType", CultureInfo.CurrentCulture); }
 			}
 			
 			public override string Name{
-				get{ return Resources.GetString("AnonymousType", CultureInfo.InvariantCulture); }
+				get{ return DynamicResources.GetString("AnonymousType", CultureInfo.InvariantCulture); }
 			}
 			
 			public override MemberInfo[] GetMember(string name, BindingFlags bindingAttr)

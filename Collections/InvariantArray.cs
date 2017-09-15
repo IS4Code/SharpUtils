@@ -17,6 +17,9 @@ namespace IllidanS4.SharpUtils.Collections
 		static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
 		readonly Element[] array;
 		
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
 		public T this[int index]{
 			get{
 				return array[index].Value;
@@ -26,6 +29,9 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
 		public T this[long index]{
 			get{
 				return array[index].Value;
@@ -35,16 +41,25 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Creates a new invariant array from its size.
+		/// </summary>
 		public InvariantArray(int size)
 		{
 			array = new Element[size];
 		}
 		
+		/// <summary>
+		/// Creates a new invariant array from its size.
+		/// </summary>
 		public InvariantArray(long size)
 		{
 			array = new Element[size];
 		}
 		
+		/// <summary>
+		/// Determines whether two invariant arrays are identical.
+		/// </summary>
 		public override bool Equals(object obj)
 		{
 			if(obj is InvariantArray<T>)
@@ -55,21 +70,33 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Determines whether two invariant arrays are identical.
+		/// </summary>
 		public bool Equals(InvariantArray<T> other)
 		{
 			return array.Equals(other.array);
 		}
 		
+		/// <summary>
+		/// Returns the hash code of this object.
+		/// </summary>
 		public override int GetHashCode()
 		{
 			return array.GetHashCode();
 		}
 		
+		/// <summary>
+		/// Return true if two invariant arrays are identical.
+		/// </summary>
 		public static bool operator ==(InvariantArray<T> left, InvariantArray<T> right)
 		{
 			return left.Equals(right);
 		}
 		
+		/// <summary>
+		/// Return true if two invariant arrays are not identical.
+		/// </summary>
 		public static bool operator !=(InvariantArray<T> left, InvariantArray<T> right)
 		{
 			return !left.Equals(right);
@@ -81,19 +108,25 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Gets the length of the array.
+		/// </summary>
 		public int Length{
 			get{
 				return array.Length;
 			}
 		}
 		
+		/// <summary>
+		/// Gets the long length of the array.
+		/// </summary>
 		public long LongLength{
 			get{
 				return array.LongLength;
 			}
 		}
 		
-		public bool IsReadOnly{
+		bool ICollection<T>.IsReadOnly{
 			get{
 				return array.IsReadOnly;
 			}
@@ -111,32 +144,32 @@ namespace IllidanS4.SharpUtils.Collections
 			return -1;
 		}
 		
-		public void Insert(int index, T item)
+		void IList<T>.Insert(int index, T item)
 		{
 			throw new NotSupportedException();
 		}
 		
-		public void RemoveAt(int index)
+		void IList<T>.RemoveAt(int index)
 		{
 			throw new NotSupportedException();
 		}
 		
-		public void Add(T item)
+		void ICollection<T>.Add(T item)
 		{
 			throw new NotSupportedException();
 		}
 		
-		public void Clear()
+		void ICollection<T>.Clear()
 		{
 			throw new NotSupportedException();
 		}
 		
-		public bool Contains(T item)
+		bool ICollection<T>.Contains(T item)
 		{
 			return IndexOf(item) != -1;
 		}
 		
-		public void CopyTo(T[] array, int arrayIndex)
+		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
 			for(int i = 0; i < this.array.Length; i++)
 			{
@@ -144,11 +177,14 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
-		public bool Remove(T item)
+		bool ICollection<T>.Remove(T item)
 		{
 			throw new NotSupportedException();
 		}
 		
+		/// <summary>
+		/// Returns the enumerator of this array.
+		/// </summary>
 		public IEnumerator<T> GetEnumerator()
 		{
 			foreach(var e in array)
@@ -172,21 +208,33 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Obtains a reference to an element in this array.
+		/// </summary>
 		public TRet GetReference<TRet>(int index, Reference.RefFunc<T, TRet> func)
 		{
 			return func(ref array[index].Value);
 		}
 		
+		/// <summary>
+		/// Obtains a reference to an element in this array.
+		/// </summary>
 		public TRet GetReference<TRet>(int index, Reference.OutFunc<T, TRet> func)
 		{
 			return func(out array[index].Value);
 		}
 		
+		/// <summary>
+		/// Obtains a reference to an element in this array.
+		/// </summary>
 		public TRet GetReference<TRet>(int index, Func<SafeReference, TRet> func)
 		{
 			return SafeReference.Create(ref array[index].Value, func);
 		}
 		
+		/// <summary>
+		/// Obtains a reference to an element in this array.
+		/// </summary>
 		public TRet GetReference<TRet>(object index, Func<SafeReference, TRet> func)
 		{
 			return GetReference<TRet>((int)index, func);

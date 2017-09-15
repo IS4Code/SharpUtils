@@ -152,7 +152,7 @@ namespace IllidanS4.SharpUtils.Interop
 			{
 				Type iType = typeof(T);
 				
-				TypeBuilder tb = Resources.DefineDynamicType(TypeAttributes.Public | TypeAttributes.Sealed);
+				TypeBuilder tb = DynamicResources.DefineDynamicType(TypeAttributes.Public | TypeAttributes.Sealed);
 				tb.SetParent(iType);
 				
 				
@@ -182,7 +182,7 @@ namespace IllidanS4.SharpUtils.Interop
 					if(import == null) continue;
 					
 					
-					var delType = Resources.DefineDynamicType(TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass);
+					var delType = DynamicResources.DefineDynamicType(TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass);
 					delType.SetParent(typeof(MulticastDelegate));
 					var cb = delType.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new[]{typeof(object), typeof(IntPtr)});
 					cb.SetImplementationFlags(MethodImplAttributes.Runtime | MethodImplAttributes.Managed);

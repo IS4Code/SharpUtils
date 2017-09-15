@@ -6,7 +6,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 {
 	/// <summary>
 	/// This class can be used to enforce value-type semantics onto
-	/// a reference-containing structure.
+	/// a reference-containing structure. It allows users to query
+	/// for a reference type based on the current address of a provided
+	/// value type.
 	/// </summary>
 	public static class ReferenceStorage
 	{

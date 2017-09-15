@@ -8,15 +8,28 @@ using IllidanS4.SharpUtils.Reflection;
 
 namespace IllidanS4.SharpUtils
 {
+	/// <summary>
+	/// Use this class to convert between various enum types and their underlying
+	/// primitive types.
+	/// </summary>
 	public sealed class EnumTools : EnumToolsBase<Enum>
 	{
 		private EnumTools(){}
 	}
 	
+	/// <summary>
+	/// The base class for <see cref="EnumTools"/> to limit the argument to <see cref="System.Enum"/>.
+	/// Do not use this class directly.
+	/// </summary>
 	public abstract class EnumToolsBase<TEnumBase> where TEnumBase : class, IComparable, IFormattable
 	{
 		internal EnumToolsBase(){}
 		
+		/// <summary>
+		/// Converts a primitive value to an enum value.
+		/// </summary>
+		/// <param name="value">The primitive value to convert.</param>
+		/// <returns>The converted enum value.</returns>
 		public static unsafe TEnum ToEnum<TEnum, TValue>(TValue value) where TEnum : struct, TEnumBase where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
 			var tr = __makeref(value);
@@ -24,6 +37,11 @@ namespace IllidanS4.SharpUtils
 			return __refvalue(tr, TEnum);
 		}
 		
+		/// <summary>
+		/// Converts an enum value to a primitive value.
+		/// </summary>
+		/// <param name="enm">The enum value to convert.</param>
+		/// <returns>The converted primitive value.</returns>
 		public static unsafe TValue ToValue<TEnum, TValue>(TEnum enm) where TEnum : struct, TEnumBase where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
 		{
 			var tr = __makeref(enm);
@@ -31,6 +49,11 @@ namespace IllidanS4.SharpUtils
 			return __refvalue(tr, TValue);
 		}
 		
+		/// <summary>
+		/// Obtains the Int64 binary representation of any enum value.
+		/// </summary>
+		/// <param name="enm">The enum value to convert.</param>
+		/// <returns>The binary representation.</returns>
 		public static long ToValueBinary<TEnum>(TEnum enm) where TEnum : struct, TEnumBase
 		{
 			Type underlyingType = Enum.GetUnderlyingType(TypeOf<TEnum>.TypeID);
@@ -59,6 +82,11 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// Creates an enum value from its Int64 binary representation.
+		/// </summary>
+		/// <param name="value">The binary representation.</param>
+		/// <returns>The converted enum value.</returns>
 		public static TEnum ToEnumBinary<TEnum>(long value) where TEnum : struct, TEnumBase
 		{
 			Type underlyingType = Enum.GetUnderlyingType(TypeOf<TEnum>.TypeID);
@@ -90,11 +118,22 @@ namespace IllidanS4.SharpUtils
 		private delegate void GetCachedValuesAndNamesDelegate(Type enumType, out ulong[] values, out string[] names, bool getValues, bool getNames);
 		private static readonly GetCachedValuesAndNamesDelegate GetCachedValuesAndNames = Hacks.GetInvoker<GetCachedValuesAndNamesDelegate>(typeof(Enum), "GetCachedValuesAndNames", false);
 		
+		/// <summary>
+		/// Converts a string to its respective enum value.
+		/// </summary>
+		/// <param name="value">The string to parse. Can contain a number or an enum field name.</param>
+		/// <returns>The parsed enum value.</returns>
 		public static TEnum Parse<TEnum>(string value) where TEnum : struct, TEnumBase
 		{
 			return Parse<TEnum>(value, false);
 		}
 		
+		/// <summary>
+		/// Converts a string to its respective enum value.
+		/// </summary>
+		/// <param name="value">The string to parse. Can contain a number or an enum field name.</param>
+		/// <param name="ignoreCase">Whether to ignore case when parsing the enum name.</param>
+		/// <returns>The parsed enum value.</returns>
 		public static TEnum Parse<TEnum>(string value, bool ignoreCase) where TEnum : struct, TEnumBase
 		{
 			TEnum result;
@@ -103,11 +142,24 @@ namespace IllidanS4.SharpUtils
 			return result;
 		}
 		
+		/// <summary>
+		/// Attempts to convert a string to its respective enum value.
+		/// </summary>
+		/// <param name="value">The string to parse. Can contain a number or an enum field name.</param>
+		/// <param name="result">The parsed enum value.</param>
+		/// <returns>True if the conversion was successful, false otherwise.</returns>
 		public static bool TryParse<TEnum>(string value, out TEnum result) where TEnum : struct, TEnumBase
 		{
 			return TryParse<TEnum>(value, false, out result);
 		}
 		
+		/// <summary>
+		/// Attempts to convert a string to its respective enum value.
+		/// </summary>
+		/// <param name="value">The string to parse. Can contain a number or an enum field name.</param>
+		/// <param name="ignoreCase">Whether to ignore case when parsing the enum name.</param>
+		/// <param name="result">The parsed enum value.</param>
+		/// <returns>True if the conversion was successful, false otherwise.</returns>
 		public static bool TryParse<TEnum>(string value, bool ignoreCase, out TEnum result) where TEnum : struct, TEnumBase
 		{
 			return TryParseEnum<TEnum>(value, ignoreCase, false, out result) == null;

@@ -267,6 +267,9 @@ namespace IllidanS4.SharpUtils
 			GC.SuppressFinalize(this);
 		}
 		
+		/// <summary>
+		/// Permors finalization on the reference.
+		/// </summary>
 		~SafeReference()
 		{
 			Dispose();
@@ -290,11 +293,17 @@ namespace IllidanS4.SharpUtils
 			}
 		}
 		
+		/// <summary>
+		/// True if this reference is equal to another one.
+		/// </summary>
 		public bool Equals(SafeReference other)
 		{
 			return m_ref == other.m_ref;
 		}
 		
+		/// <summary>
+		/// True if this reference is equal to another one.
+		/// </summary>
 		public override bool Equals(object obj)
 		{
 			SafeReference other = obj as SafeReference;
@@ -303,6 +312,9 @@ namespace IllidanS4.SharpUtils
 			return Equals(other);
 		}
 		
+		/// <summary>
+		/// Returns the hash code of this reference.
+		/// </summary>
 		public override int GetHashCode()
 		{
 			int hashCode = 0;
@@ -313,32 +325,49 @@ namespace IllidanS4.SharpUtils
 			return hashCode;
 		}
 		
-		
+		/// <summary>
+		/// Creates a safe reference from a field in an object.
+		/// </summary>
 		public static void MakeReference(object target, FieldInfo[] fields, Action<SafeReference> act)
 		{
 			TypedReferenceTools.MakeTypedReference(target, fields, tr => Create(tr, act));
 		}
 		
+		/// <summary>
+		/// Creates a safe reference from a field in an object.
+		/// </summary>
 		public static TRet MakeReference<TRet>(object target, FieldInfo[] fields, Func<SafeReference, TRet> func)
 		{
 			return TypedReferenceTools.MakeTypedReference(target, fields, tr => Create(tr, func));
 		}
 		
+		/// <summary>
+		/// Creates a safe reference from a field in an object.
+		/// </summary>
 		public static void MakeReference(object target, Action<SafeReference> act, params FieldInfo[] fields)
 		{
 			MakeReference(target, fields, act);
 		}
 		
+		/// <summary>
+		/// Creates a safe reference from a field in an object.
+		/// </summary>
 		public static TRet MakeReference<TRet>(object target, Func<SafeReference, TRet> func, params FieldInfo[] fields)
 		{
 			return MakeReference(target, fields, func);
 		}
 		
+		/// <summary>
+		/// Creates a safe reference from a boxed value type.
+		/// </summary>
 		public static void GetBoxedReference(ValueType target, Action<SafeReference> act)
 		{
 			MakeReference(target, act);
 		}
 		
+		/// <summary>
+		/// Creates a safe reference from a boxed value type.
+		/// </summary>
 		public static TRet GetBoxedReference<TRet>(ValueType target, Func<SafeReference,TRet> func)
 		{
 			return MakeReference(target, func);
@@ -363,6 +392,9 @@ namespace IllidanS4.SharpUtils
 			m_ref = tr;
 		}
 		
+		/// <summary>
+		/// Sets the value of a variable specified by the safe reference.
+		/// </summary>
 		public unsafe void SetValue(SafeReference value)
 		{
 			var tr1 = m_ref.Value;

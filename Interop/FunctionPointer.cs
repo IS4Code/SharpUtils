@@ -6,9 +6,6 @@ using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils.Interop
 {
-	/// <summary>
-	/// Description of FunctionPointer.
-	/// </summary>
 	public struct FunctionPointer : IPointer
 	{
 		readonly IntPtr ptr;

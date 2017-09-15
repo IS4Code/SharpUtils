@@ -19,24 +19,39 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	/// </summary>
 	public abstract class PinHandle : IDisposable
 	{
+		/// <summary>
+		/// Used to tell the pinning thread to stop pinning the object.
+		/// </summary>
 		protected AutoResetEvent Reset{get; set;}
 		
+		/// <summary>
+		/// Initializes the pin handle.
+		/// </summary>
 		protected PinHandle()
 		{
 			Reset = new AutoResetEvent(false);
 		}
 		
+		/// <summary>
+		/// Finalizes the pin handle.
+		/// </summary>
 		~PinHandle()
 		{
 			Dispose(false);
 		}
 		
+		/// <summary>
+		/// Disposes the pin handle.
+		/// </summary>
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		
+		/// <summary>
+		/// Disposes the pin handle.
+		/// </summary>
 		protected virtual void Dispose(bool disposing)
 		{
 			Reset.Set();
@@ -46,7 +61,6 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	/// <summary>
 	/// Pins a reference so that its address remains unchanged.
 	/// </summary>
-	
 	public abstract class ReferencePinHandle<T> : PinHandle
 	{
 		#if STORE_REFERENCE
@@ -58,6 +72,10 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 		public SafeReference Reference{get; private set;}
 		#endif
 		
+		/// <summary>
+		/// Pins a reference in a memory and constructs its pin handle.
+		/// </summary>
+		/// <param name="r">The reference to pin.</param>
 		protected void ReferenceAction(SafeReference r)
 		{
 			using(var re1 = new AutoResetEvent(false))
@@ -114,6 +132,10 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	/// </summary>
 	public class RefPinHandle<T> : ReferencePinHandle<T>
 	{
+		/// <summary>
+		/// Pins a reference in a memory and constructs its pin handle.
+		/// </summary>
+		/// <param name="obj">The reference to pin.</param>
 		public RefPinHandle(ref T obj)
 		{
 			SafeReference.Create(ref obj, ReferenceAction);
@@ -125,6 +147,10 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	/// </summary>
 	public class OutPinHandle<T> : ReferencePinHandle<T>
 	{
+		/// <summary>
+		/// Pins a reference in a memory and constructs its pin handle.
+		/// </summary>
+		/// <param name="obj">The reference to pin.</param>
 		public OutPinHandle(out T obj)
 		{
 			SafeReference.CreateOut(out obj, ReferenceAction);
@@ -138,8 +164,15 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	/// </summary>
 	public class ObjectPinHandle : PinHandle
 	{
+		/// <summary>
+		/// Gets the pinned object.
+		/// </summary>
 		public object Object{get; private set;}
 		
+		/// <summary>
+		/// Pins an object in a memory and constructs its pin handle.
+		/// </summary>
+		/// <param name="obj">The object to pin.</param>
 		public ObjectPinHandle(object obj)
 		{
 			Object = obj;

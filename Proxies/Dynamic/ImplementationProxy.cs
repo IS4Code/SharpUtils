@@ -24,7 +24,7 @@ namespace IllidanS4.SharpUtils.Proxies.Dynamic
 		
 		static ImplementationProxy()
 		{
-			var impl = Resources.DefineDynamicType(TypeAttributes.Public);
+			var impl = DynamicResources.DefineDynamicType(TypeAttributes.Public);
 			var saType = typeof(StaticAdapter);
 			
 			var adapterField = impl.DefineField("adapter", saType, FieldAttributes.Private);

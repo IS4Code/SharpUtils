@@ -13,16 +13,25 @@ namespace IllidanS4.SharpUtils.Collections
 	{
 		T[] arr;
 		
+		/// <summary>
+		/// Creates a new flexible array from its size.
+		/// </summary>
 		public FlexibleArray(int size)
 		{
 			arr = new T[size];
 		}
 		
+		/// <summary>
+		/// Creates a new flexible array from its size.
+		/// </summary>
 		public FlexibleArray(long size)
 		{
 			arr = new T[size];
 		}
 		
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
 		public T this[int index]{
 			get{
 				return arr[index];
@@ -32,6 +41,9 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Gets or sets an element in the array.
+		/// </summary>
 		public T this[long index]{
 			get{
 				return arr[index];
@@ -41,6 +53,9 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Gets or sets the length of the array.
+		/// </summary>
 		public int Length{
 			get{
 				return arr.Length;
@@ -50,12 +65,18 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
+		/// <summary>
+		/// Gets the long length of the array.
+		/// </summary>
 		public long LongLength{
 			get{
 				return arr.LongLength;
 			}
 		}
 		
+		/// <summary>
+		/// Resizes the array to a new size.
+		/// </summary>
 		public void Resize(int newSize)
 		{
 			Array.Resize(ref arr, newSize);
@@ -67,52 +88,55 @@ namespace IllidanS4.SharpUtils.Collections
 			}
 		}
 		
-		public bool IsReadOnly{
+		bool ICollection<T>.IsReadOnly{
 			get{
 				return arr.IsReadOnly;
 			}
 		}
 		
-		public int IndexOf(T item)
+		int IList<T>.IndexOf(T item)
 		{
 			return ((IList<T>)arr).IndexOf(item);
 		}
 		
-		public void Insert(int index, T item)
+		void IList<T>.Insert(int index, T item)
 		{
 			((IList<T>)arr).Insert(index, item);
 		}
 		
-		public void RemoveAt(int index)
+		void IList<T>.RemoveAt(int index)
 		{
 			((IList<T>)arr).RemoveAt(index);
 		}
 		
-		public void Add(T item)
+		void ICollection<T>.Add(T item)
 		{
 			((IList<T>)arr).Add(item);
 		}
 		
-		public void Clear()
+		void ICollection<T>.Clear()
 		{
 			((IList<T>)arr).Clear();
 		}
 		
-		public bool Contains(T item)
+		bool ICollection<T>.Contains(T item)
 		{
 			return arr.Contains(item);
 		}
 		
-		public void CopyTo(T[] array, int arrayIndex)
+		void ICollection<T>.CopyTo(T[] array, int arrayIndex)
 		{
 			arr.CopyTo(array, arrayIndex);
 		}
 		
-		public bool Remove(T item)
+		bool ICollection<T>.Remove(T item)
 		{
 			return ((IList<T>)arr).Remove(item);
 		}
 		
+		/// <summary>
+		/// Returns the enumerator of this array.
+		/// </summary>
 		public IEnumerator<T> GetEnumerator()
 		{
 			foreach(T item in arr) yield return item;

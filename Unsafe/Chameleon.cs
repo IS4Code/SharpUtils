@@ -43,6 +43,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 			}
 		}
 		
+		/// <summary>
+		/// Creates a new chameleon object.
+		/// </summary>
 		public Chameleon()
 		{
 			
@@ -62,7 +65,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			Type type;
 			if(!chameleons.TryGetValue(size, out type))
 			{
-				TypeBuilder tb = Resources.DynamicModule.DefineType("Chameleon"+size, TypeAttributes.Public | TypeAttributes.Sealed, chameleonType, size);
+				TypeBuilder tb = DynamicResources.DynamicModule.DefineType("Chameleon"+size, TypeAttributes.Public | TypeAttributes.Sealed, chameleonType, size);
 				type = chameleons[size] = tb.CreateType();
 			}
 			return ((Chameleon)Activator.CreateInstance(type)).Mutate<Chameleon>();

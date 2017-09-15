@@ -23,7 +23,7 @@ namespace IllidanS4.SharpUtils.Interop
 		
 		public static Delegate FromMethod(MethodInfo method, object target)
 		{
-			TypeBuilder tb = Resources.DynamicModule.DefineType(method.Name+"Delegate", TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass);
+			TypeBuilder tb = DynamicResources.DynamicModule.DefineType(method.Name+"Delegate", TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass);
 			tb.SetParent(TypeOf<MulticastDelegate>.TypeID);
 			ConstructorBuilder cb = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.HasThis, new[]{TypeOf<object>.TypeID, TypeOf<IntPtr>.TypeID});
 			cb.SetImplementationFlags(MethodImplAttributes.Runtime | MethodImplAttributes.Managed | MethodImplAttributes.Synchronized | MethodImplAttributes.NoInlining);

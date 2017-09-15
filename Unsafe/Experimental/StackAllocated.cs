@@ -20,6 +20,9 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 	public static class StackAllocated<T>
 	{
 		private static readonly Type type = typeof(T);
+		/// <summary>
+		/// The minimum required size to hold the instance.
+		/// </summary>
 		public static readonly int Size = UnsafeTools.BaseInstanceSizeOf(type);
 		
 		static StackAllocated()
@@ -34,6 +37,11 @@ namespace IllidanS4.SharpUtils.Unsafe.Experimental
 			}
 		}
 		
+		/// <summary>
+		/// Constructs an object instance in a specific place in the memory.
+		/// </summary>
+		/// <param name="target">The target address of the object.</param>
+		/// <returns>The constructed object.</returns>
 		public static unsafe T Init(void* target)
 		{
 			IntPtr* vtable = ((IntPtr*)target)+1;

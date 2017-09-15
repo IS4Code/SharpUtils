@@ -8,11 +8,11 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		private class TypeParameterTypeDescription : LanguageType
 		{
 			public override string LocalizedName{
-				get{ return Resources.GetString("SK_TYVAR", CultureInfo.CurrentCulture); }
+				get{ return DynamicResources.GetString("SK_TYVAR", CultureInfo.CurrentCulture); }
 			}
 			
 			public override string Name{
-				get{ return Resources.GetString("SK_TYVAR", CultureInfo.InvariantCulture); }
+				get{ return DynamicResources.GetString("SK_TYVAR", CultureInfo.InvariantCulture); }
 			}
 		}
 	}

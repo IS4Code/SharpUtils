@@ -5,11 +5,17 @@ using IllidanS4.SharpUtils.Unsafe;
 
 namespace IllidanS4.SharpUtils.Threads
 {
+	/// <summary>
+	/// Tools for threading.
+	/// </summary>
 	public static class ThreadingTools
 	{
 		private delegate void ExchangeDelegate(TypedReference tr1, TypedReference tr2);
 		private static readonly ExchangeDelegate _Exchange = Hacks.GetInvoker<ExchangeDelegate>(typeof(Interlocked), "_Exchange", false, 0);
 		
+		/// <summary>
+		/// Atomically exchanges two values.
+		/// </summary>
 		[CLSCompliant(false)]
 		public static void Exchange(TypedReference location1, TypedReference location2)
 		{
@@ -18,6 +24,9 @@ namespace IllidanS4.SharpUtils.Threads
 			_Exchange(location1, location2);
 		}
 		
+		/// <summary>
+		/// Atomically exchanges two values.
+		/// </summary>
 		public static T Exchange<T>(ref T location1, T value)
 		{
 			if(UnsafeTools.SizeOf(TypeOf<T>.TypeID) > IntPtr.Size) throw new ArgumentException("Value is longer than native reference size.");
@@ -25,6 +34,9 @@ namespace IllidanS4.SharpUtils.Threads
 			return value;
 		}
 		
+		/// <summary>
+		/// Atomically exchanges two values.
+		/// </summary>
 		public static void Exchange<T>(ref T location1, ref T location2)
 		{
 			if(UnsafeTools.SizeOf(TypeOf<T>.TypeID) > IntPtr.Size) throw new ArgumentException("Value is longer than native reference size.");

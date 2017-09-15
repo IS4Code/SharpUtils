@@ -14,6 +14,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 		static readonly int tsize;
 		static readonly byte[] init;
 		
+		/// <summary>
+		/// Allocates unmanaged memory for an object.
+		/// </summary>
 		public static T Allocate()
 		{
 			IntPtr handle = Marshal.AllocHGlobal(tsize);
@@ -22,6 +25,9 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return UnsafeTools.GetObject(ptr) as T;
 		}
 		
+		/// <summary>
+		/// Frees the unmanaged memory associated with an object.
+		/// </summary>
 		public static void Free(T obj)
 		{
 			IntPtr ptr = UnsafeTools.GetAddress(obj);

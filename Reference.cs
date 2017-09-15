@@ -7,6 +7,9 @@ using IllidanS4.SharpUtils.Reflection.Linq;
 
 namespace IllidanS4.SharpUtils
 {
+	/// <summary>
+	/// Various tools to operate on references.
+	/// </summary>
 	public static class Reference
 	{
 		/// <summary>
@@ -150,6 +153,12 @@ namespace IllidanS4.SharpUtils
 		/// An action taking a single "out" parameter.
 		/// </summary>
 		public delegate void OutAction<T>(out T r);
+		
+		/// <summary>
+		/// Passes an "out" parameter to an action taking a "ref" parameter.
+		/// </summary>
+		/// <param name="r">"out" reference.</param>
+		/// <param name="act">The action taking the reference.</param>
 		public static void OutToRef<T>(out T r, RefAction<T> act)
 		{
 			RefToOutAction<T>(act)(out r);

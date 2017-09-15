@@ -379,7 +379,7 @@
     <Compile Include="Reflection\TypeSupport\PointerType.cs" />
     <Compile Include="Reflection\TypeSupport\TypeAppendConstruct.cs" />
     <Compile Include="Reflection\TypeSupport\TypeConstruct.cs" />
-    <Compile Include="Resources.cs" />
+    <Compile Include="DynamicResources.cs" />
     <Compile Include="Serialization\Serialization.cs" />
     <Compile Include="Patterns\BindNameAttribute.cs" />
     <Compile Include="Patterns\IParseable.cs" />
@@ -405,7 +405,6 @@
     <Compile Include="Tmp.cs" />
     <Compile Include="TypeOf.cs" />
     <Compile Include="Unsafe\Chameleon.cs" />
-    <Compile Include="Unsafe\DummyObject.cs" />
     <Compile Include="Unsafe\ObjectHandle.cs" />
     <Compile Include="Unsafe\UnmanagedInstance.cs" />
     <Compile Include="Unsafe\UnsafeTools.cs" />

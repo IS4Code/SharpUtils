@@ -135,6 +135,11 @@ namespace IllidanS4.SharpUtils.Interop
 			return SizeOfHacks.SizeOfHelper(t, true);
 		}
 		
+		/// <summary>
+		/// Returns the size of an unmanaged type.
+		/// </summary>
+		/// <param name="t">The unmanaged type.</param>
+		/// <returns>The size.</returns>
 		public static int SizeOf(UnmanagedType t)
 		{
 			switch(t)

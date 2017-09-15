@@ -7,10 +7,13 @@ namespace IllidanS4.SharpUtils
 	/// Descriptive exception per Microsoft's standards.
 	/// </summary>
 	/// <remarks>
-	/// Inspired by https://twitter.com/jonathantimar/status/626269345908285441/photo/1
+	/// Inspired by http://cdn.windowsreport.com/wp-content/uploads/2016/02/something-happened.jpg
 	/// </remarks>
 	public sealed class SomeException : Exception
 	{
+		/// <summary>
+		/// Creates a new exception for any occasion.
+		/// </summary>
 		public SomeException() : base("Something happened")
 		{
 			

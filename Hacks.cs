@@ -12,17 +12,27 @@ using IllidanS4.SharpUtils.Reflection.Emit;
 
 namespace IllidanS4.SharpUtils
 {
+	/// <summary>
+	/// Used to obtain invokable delegates from private members.
+	/// </summary>
 	public sealed class Hacks : HacksBase<MulticastDelegate>
 	{
 		private Hacks(){}
 	}
 	
+	/// <summary>
+	/// The base class for <see cref="Hacks"/> to limit the argument to <see cref="System.MulticastDelegate"/>.
+	/// Do not use this class directly.
+	/// </summary>
 	public abstract class HacksBase<TDelegateBase> where TDelegateBase : class, ICloneable, ISerializable
 	{
 		internal HacksBase(){}
 		
 		const BindingFlags privflags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 		
+		/// <summary>
+		/// Creates an invokable delegate from a method in a specific type, found by its name and index.
+		/// </summary>
 		public static TDelegate GetInvoker<TDelegate>(Type type, string method, bool instance, int ord=0) where TDelegate : TDelegateBase
 		{
 			BindingFlags flags = privflags;
@@ -43,6 +53,9 @@ namespace IllidanS4.SharpUtils
 			return GetInvoker<TDelegate>(mi);
 		}
 		
+		/// <summary>
+		/// Creates an invokable delegate from a specific method.
+		/// </summary>
 		public static TDelegate GetInvoker<TDelegate>(MethodInfo mi) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
@@ -78,11 +91,17 @@ namespace IllidanS4.SharpUtils
 			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
+		/// <summary>
+		/// Creates an invokable delegate from a constructor in a type, found by its index.
+		/// </summary>
 		public static TDelegate GetConstructor<TDelegate>(Type type, int ord) where TDelegate : TDelegateBase
 		{
 			return GetConstructor<TDelegate>(type.GetConstructors(privflags)[ord]);
 		}
 		
+		/// <summary>
+		/// Creates an invokable delegate from a specific constructor.
+		/// </summary>
 		public static TDelegate GetConstructor<TDelegate>(ConstructorInfo ctor) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
@@ -105,11 +124,17 @@ namespace IllidanS4.SharpUtils
 			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
+		/// <summary>
+		/// Creates a get delegate from a specific field.
+		/// </summary>
 		public static TDelegate GetFieldGetter<TDelegate>(Type type, string field) where TDelegate : TDelegateBase
 		{
 			return GetFieldGetter<TDelegate>(type.GetField(field, privflags));
 		}
 		
+		/// <summary>
+		/// Creates a get delegate from a specific field.
+		/// </summary>
 		public static TDelegate GetFieldGetter<TDelegate>(FieldInfo fi) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
@@ -131,11 +156,17 @@ namespace IllidanS4.SharpUtils
 			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
+		/// <summary>
+		/// Creates a set delegate from a specific field or a collection of fields.
+		/// </summary>
 		public static TDelegate GetFieldSetter<TDelegate>(Type type, params string[] fields) where TDelegate : TDelegateBase
 		{
 			return GetFieldSetter<TDelegate>(fields.Select(f => type.GetField(f, privflags)).ToList());
 		}
 		
+		/// <summary>
+		/// Creates a set delegate from a specific field or a collection of fields.
+		/// </summary>
 		public static TDelegate GetFieldSetter<TDelegate>(IList<FieldInfo> fields) where TDelegate : TDelegateBase
 		{
 			Type delType = typeof(TDelegate);
@@ -169,21 +200,33 @@ namespace IllidanS4.SharpUtils
 			return (TDelegate)(object)dyn.CreateDelegate(delType);
 		}
 		
+		/// <summary>
+		/// Creates a get delegate from a specific property.
+		/// </summary>
 		public static TDelegate GetPropertyGetter<TDelegate>(Type type, string property) where TDelegate : TDelegateBase
 		{
 			return GetPropertyGetter<TDelegate>(type.GetProperty(property, privflags));
 		}
 		
+		/// <summary>
+		/// Creates a get delegate from a specific property.
+		/// </summary>
 		public static TDelegate GetPropertyGetter<TDelegate>(PropertyInfo pi) where TDelegate : TDelegateBase
 		{
 			return GetInvoker<TDelegate>(pi.GetGetMethod(true));
 		}
 		
+		/// <summary>
+		/// Creates a set delegate from a specific property.
+		/// </summary>
 		public static TDelegate GetPropertySetter<TDelegate>(Type type, string property) where TDelegate : TDelegateBase
 		{
 			return GetPropertySetter<TDelegate>(type.GetProperty(property, privflags));
 		}
 		
+		/// <summary>
+		/// Creates a set delegate from a specific property.
+		/// </summary>
 		public static TDelegate GetPropertySetter<TDelegate>(PropertyInfo pi) where TDelegate : TDelegateBase
 		{
 			return GetInvoker<TDelegate>(pi.GetSetMethod(true));

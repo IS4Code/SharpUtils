@@ -222,44 +222,68 @@ namespace IllidanS4.SharpUtils.Unsafe
 			return Reference.CacheHelper<T>.WithRet<TRet>.FromPtr(ptr, func);
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a reference.
+		/// </summary>
 		public static void GetPointer<T>(out T reference, Action<IntPtr> act) where T : struct
 		{
 			GetPointer<T>(out reference, ptr => act(ptr.ToIntPtr()));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a reference.
+		/// </summary>
 		public static TRet GetPointer<T, TRet>(out T reference, Func<IntPtr, TRet> func) where T : struct
 		{
 			return GetPointer<T, TRet>(out reference, ptr => func(ptr.ToIntPtr()));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a reference.
+		/// </summary>
 		public static unsafe void GetPointer<T>(out T reference, Action<Pointer<T>> act) where T : struct
 		{
 			Reference.CacheHelper<T>.ToPtr(out reference, ptr => act(new Pointer<T>(ptr)));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a reference.
+		/// </summary>
 		public static unsafe TRet GetPointer<T, TRet>(out T reference, Func<Pointer<T>, TRet> func) where T : struct
 		{
 			return Reference.CacheHelper<T>.WithRet<TRet>.ToPtr(out reference, ptr => func(new Pointer<T>(ptr)));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a typed reference.
+		/// </summary>
 		[CLSCompliant(false)]
 		public static void GetPointer<T>(TypedReference tr, Action<IntPtr> act) where T : struct
 		{
 			GetPointer<T>(tr, ptr => act(ptr.ToIntPtr()));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a typed reference.
+		/// </summary>
 		[CLSCompliant(false)]
 		public static TRet GetPointer<T, TRet>(TypedReference tr, Func<IntPtr, TRet> func) where T : struct
 		{
 			return GetPointer<T, TRet>(tr, ptr => func(ptr.ToIntPtr()));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a typed reference.
+		/// </summary>
 		[CLSCompliant(false)]
 		public static void GetPointer<T>(TypedReference tr, Action<Pointer<T>> act) where T : struct
 		{
 			tr.AsRef((ref T r)=>GetPointer<T>(out r, act));
 		}
 		
+		/// <summary>
+		/// Obtains a pointer to a typed reference.
+		/// </summary>
 		[CLSCompliant(false)]
 		public static TRet GetPointer<T, TRet>(TypedReference tr, Func<Pointer<T>, TRet> func) where T : struct
 		{
@@ -298,11 +322,17 @@ namespace IllidanS4.SharpUtils.Unsafe
 			target.ChangeAddress(addr);
 		}
 		
+		/// <summary>
+		/// Creates an uninitialized instance of a type.
+		/// </summary>
 		public static object GetUninitializedObject(Type type)
 		{
 			return GetUninitializedObject(type, 0);
 		}
 		
+		/// <summary>
+		/// Creates an uninitialized instance of a type, specifying a length if the type has dynamic size.
+		/// </summary>
 		public static object GetUninitializedObject(Type type, int length)
 		{
 			if(type.IsArray) return Activator.CreateInstance(type, new object[]{length});
@@ -385,41 +415,65 @@ namespace IllidanS4.SharpUtils.Unsafe
 		}
 		
 		#region CreateUnion
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static TUnion CreateUnion<TUnion>() where TUnion : IMemoryUnion
 		{
 			return UnionCache<TUnion>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2> CreateUnion<T1, T2>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3> CreateUnion<T1, T2, T3>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3, T4> CreateUnion<T1, T2, T3, T4>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3, T4, T5> CreateUnion<T1, T2, T3, T4, T5>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3, T4, T5, T6> CreateUnion<T1, T2, T3, T4, T5, T6>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3, T4, T5, T6, T7> CreateUnion<T1, T2, T3, T4, T5, T6, T7>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6, T7>>.CreateNew();
 		}
 		
+		/// <summary>
+		/// Creates a new union.
+		/// </summary>
 		public static IMemoryUnion<T1, T2, T3, T4, T5, T6, T7, T8> CreateUnion<T1, T2, T3, T4, T5, T6, T7, T8>()
 		{
 			return UnionCache<IMemoryUnion<T1, T2, T3, T4, T5, T6, T7, T8>>.CreateNew();
@@ -444,7 +498,7 @@ namespace IllidanS4.SharpUtils.Unsafe
 			static UnionCache()
 			{
 				Type infType = TypeOf<TUnion>.TypeID;
-				TypeBuilder tb = Resources.DefineDynamicType(TypeAttributes.Sealed | TypeAttributes.Public | TypeAttributes.ExplicitLayout);
+				TypeBuilder tb = DynamicResources.DefineDynamicType(TypeAttributes.Sealed | TypeAttributes.Public | TypeAttributes.ExplicitLayout);
 				tb.SetParent(TypeOf<ValueType>.TypeID);
 				tb.AddInterfaceImplementation(infType);
 				ImplementInterfaces(tb, infType);

@@ -8,11 +8,11 @@ namespace IllidanS4.SharpUtils.Reflection.CSharp
 		private class MethodTypeDescription : LanguageType
 		{
 			public override string LocalizedName{
-				get{ return Resources.GetString("SK_METHOD", CultureInfo.CurrentCulture); }
+				get{ return DynamicResources.GetString("SK_METHOD", CultureInfo.CurrentCulture); }
 			}
 			
 			public override string Name{
-				get{ return Resources.GetString("SK_METHOD", CultureInfo.InvariantCulture); }
+				get{ return DynamicResources.GetString("SK_METHOD", CultureInfo.InvariantCulture); }
 			}
 		}
 	}

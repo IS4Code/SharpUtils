@@ -13,6 +13,9 @@ namespace IllidanS4.SharpUtils.Interop
 	/// </summary>
 	public static class FnPtrCaller<TDelegate> where TDelegate : class
 	{
+		/// <summary>
+		/// Invokes a function pointer.
+		/// </summary>
 		public static readonly TDelegate Invoke;
 		
 		static FnPtrCaller()
