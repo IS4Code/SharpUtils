@@ -78,7 +78,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				data.Load(stream);
 			}
 			var link = (IShellLink)data;
-			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
+			link.Resolve(OwnerHwnd, SLR_FLAGS.SLR_UPDATE);
 			return link;
 		}
 		
@@ -88,7 +88,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var data = (IPersistFile)Shell32.CreateShellLink();
 			data.Load(linkFile, 0);
 			var link = (IShellLink)data;
-			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
+			link.Resolve(OwnerHwnd, SLR_FLAGS.SLR_UPDATE);
 			return link;
 		}
 		
@@ -181,7 +181,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		[CLSCompliant(false)]
 		public IShellItem GetLinkTarget(IShellLink link)
 		{
-			link.Resolve(IntPtr.Zero, SLR_FLAGS.SLR_UPDATE);
+			link.Resolve(OwnerHwnd, SLR_FLAGS.SLR_UPDATE);
 			IntPtr pidl = link.GetIDList();
 			try{
 				return Shell32.SHCreateItemFromIDList<IShellItem>(pidl);
@@ -221,7 +221,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					try{
 						uint tmp;
 						IntPtr pidl2;
-						psf.ParseDisplayName(IntPtr.Zero, null, path, out tmp, out pidl2, 0);
+						psf.ParseDisplayName(OwnerHwnd, null, path, out tmp, out pidl2, 0);
 						try{
 							return Shell32.SHCreateItemWithParent<IShellItem>(pidl, psf, pidl2);
 						}finally{
@@ -234,7 +234,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}catch(IOException)
 					{
 						//Probably not needed
-						IEnumIDList peidl = psf.EnumObjects(IntPtr.Zero, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+						IEnumIDList peidl = psf.EnumObjects(OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
 						
 						try{
 							while(true)
@@ -413,7 +413,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			try{
 				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
 				try{
-					IEnumIDList peidl = psf.EnumObjects(IntPtr.Zero, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+					IEnumIDList peidl = psf.EnumObjects(OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
 					
 					if(peidl == null) return list;
 					try{
