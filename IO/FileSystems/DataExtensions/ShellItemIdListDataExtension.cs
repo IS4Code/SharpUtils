@@ -1,4 +1,4 @@
-﻿/* Date: 6.9.2017, Time: 16:22 */
+﻿/* Date: 18.9.2017, Time: 13:56 */
 using System;
 using System.IO;
 
@@ -7,11 +7,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 	using DataUri = DataFileSystem.DataUri;
 	
 	/// <summary>
-	/// Resolves links represented by the "application/x-ms-shortcut" MIME type.
+	/// Resolves links represented by the "application/x-ms-itemidlist" MIME type.
 	/// </summary>
-	public class ShellLinkDataExtension : DataExtension
+	public class ShellItemIdListDataExtension : DataExtension
 	{
-		public ShellLinkDataExtension() : base("application/x-ms-shortcut")
+		public ShellItemIdListDataExtension() : base("application/x-ms-itemidlist")
 		{
 			
 		}
@@ -38,12 +38,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 		
 		protected override Uri GetTargetInternal(DataUri dataUri)
 		{
-			return ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data);
+			return ShellFileSystem.Instance.LoadShellHandleUri(dataUri.Data);
 		}
 		
 		protected override ResourceInfo GetTargetResourceInternal(DataUri dataUri)
 		{
-			return ShellFileSystem.Instance.LoadLinkTargetResource(dataUri.Data);
+			return ShellFileSystem.Instance.LoadShellHandle(dataUri.Data);
 		}
 	}
 }

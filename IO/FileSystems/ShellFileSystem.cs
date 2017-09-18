@@ -160,6 +160,24 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		public Uri LoadShellHandleUri(byte[] itemList)
+		{
+			using(var handle = new ShellFileHandle(itemList, this))
+			{
+				return handle.Uri;
+			}
+		}
+		
+		public ResourceHandle LoadShellHandle(byte[] itemList)
+		{
+			return new ShellFileHandle(itemList, this);
+		}
+		
+		public byte[] SaveShellHandle(ResourceHandle handle)
+		{
+			return ((ShellFileHandle)handle).SaveIdList();
+		}
+		
 		[CLSCompliant(false)]
 		public IShellItem GetLinkTarget(IShellLink link)
 		{
@@ -263,6 +281,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					if(!Shell32.ILRemoveLastID(pidlrel)) break; //TODO check if really desktop
 					list.Push(name);
 				}
+			}catch(ArgumentException)
+			{
+				return ConstructDataLink(pidl);
 			}finally{
 				Marshal.FreeCoTaskMem(pidlrel);
 			}
@@ -270,6 +291,17 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			string path = String.Join("/", list.Select(n => HttpUtility.UrlEncode(n)));
 			
 			return GetShellUri(path);
+		}
+		
+		private Uri ConstructDataLink(IntPtr pidl)
+		{
+			using(var buffer = new MemoryStream())
+			{
+				Shell32.ILSaveToStream(new StreamWrapper(buffer), pidl);
+				byte[] data = buffer.ToArray();
+				var uri = new DataFileSystem.DataUri("application/x-ms-itemidlist", data, true);
+				return uri.Uri;
+			}
 		}
 		
 		#region Implementation

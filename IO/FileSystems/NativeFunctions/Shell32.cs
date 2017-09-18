@@ -103,6 +103,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("shell32.dll", PreserveSig=false)]
 			public static extern void ILSaveToStream(IStream pstm, IntPtr pidl);
 			
+			[DllImport("shell32.dll", PreserveSig=false)]
+			public static extern IntPtr ILLoadFromStreamEx(IStream pstm);
+			
 			[DllImport("shell32.dll")]
 			public static extern int ILGetSize(IntPtr pidl);
 			

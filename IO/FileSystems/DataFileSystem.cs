@@ -18,6 +18,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public DataFileSystem()
 		{
 			Register(new ShellLinkDataExtension());
+			Register(new ShellItemIdListDataExtension());
 		}
 		
 		private readonly List<IDataExtension> extensions = new List<IDataExtension>();
@@ -163,6 +164,23 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}else{
 						Data = HttpUtility.UrlDecodeToBytes(data);
 					}
+				}
+			}
+			
+			public DataUri(string contentType, byte[] data, bool base64) : this()
+			{
+				ContentType = contentType;
+				Data = data;
+				
+				string dataString;
+				if(base64)
+				{
+					dataString = Convert.ToBase64String(data);
+					
+					Uri = new Uri("data:"+contentType+";base64,"+dataString, true);
+				}else{
+					dataString = HttpUtility.UrlEncode(data);
+					Uri = new Uri("data:"+contentType+","+dataString, true);
 				}
 			}
 		}

@@ -146,7 +146,9 @@
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
     <Compile Include="IO\FileSystems\BlobFileSystem.cs" />
+    <Compile Include="IO\FileSystems\DataExtensions\DataExtension.cs" />
     <Compile Include="IO\FileSystems\DataExtensions\IDataExtension.cs" />
+    <Compile Include="IO\FileSystems\DataExtensions\ShellItemIdListDataExtension.cs" />
     <Compile Include="IO\FileSystems\DataExtensions\ShellLinkDataExtension.cs" />
     <Compile Include="IO\FileSystems\Handles\DataFileHandle.cs" />
     <Compile Include="IO\FileSystems\Handles\ShellFileHandle.cs" />

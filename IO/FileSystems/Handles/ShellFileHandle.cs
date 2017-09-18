@@ -34,6 +34,28 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				this.fs = fs;
 			}
 			
+			public ShellFileHandle(byte[] idl, ShellFileSystem fs) : this(LoadIdList(idl), fs, true)
+			{
+				
+			}
+			
+			private static IntPtr LoadIdList(byte[] idl)
+			{
+				using(var buffer = new MemoryStream(idl))
+				{
+					return Shell32.ILLoadFromStreamEx(new StreamWrapper(buffer));
+				}
+			}
+			
+			public byte[] SaveIdList()
+			{
+				using(var buffer = new MemoryStream())
+				{
+					Shell32.ILSaveToStream(new StreamWrapper(buffer), pidl);
+					return buffer.ToArray();
+				}
+			}
+			
 			private IShellItem GetItem()
 			{
 				return Shell32.SHCreateItemFromIDList<IShellItem>(pidl);
