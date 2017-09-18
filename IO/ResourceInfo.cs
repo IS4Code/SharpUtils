@@ -18,13 +18,13 @@ namespace IllidanS4.SharpUtils.IO
 	[Serializable]
 	public partial class ResourceInfo
 	{
-		readonly Uri uri;
+		readonly Uri _uri;
 		readonly IFileSystem fileSystem;
 		
 		/// <summary>
 		/// The URI of this resource.
 		/// </summary>
-		public virtual Uri Uri{get{return uri;}}
+		public virtual Uri Uri{get{return _uri;}}
 		
 		internal IFileSystem FileSystem{get{return fileSystem;}}
 		
@@ -48,7 +48,7 @@ namespace IllidanS4.SharpUtils.IO
 		{
 			if(uri == null) throw new ArgumentNullException("uri");
 			
-			this.uri = uri;
+			this._uri = uri;
 			fileSystem = GetFileSystem(uri.Scheme);
 		}
 		
@@ -90,7 +90,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string Scheme{
 			get{
-				return uri.Scheme;
+				return Uri.Scheme;
 			}
 		}
 		
@@ -99,7 +99,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string Host{
 			get{
-				return uri.Host;
+				return Uri.Host;
 			}
 		}
 		
@@ -108,7 +108,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string AbsolutePath{
 			get{
-				return uri.AbsolutePath;
+				return Uri.AbsolutePath;
 			}
 		}
 		
@@ -117,7 +117,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public string AbsoluteUri{
 			get{
-				return uri.AbsoluteUri;
+				return Uri.AbsoluteUri;
 			}
 		}
 		
@@ -126,7 +126,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual FileAttributes Attributes{
 			get{
-				return fileSystem.GetAttributes(uri);
+				return fileSystem.GetAttributes(Uri);
 			}
 		}
 		
@@ -144,7 +144,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime CreationTimeUtc{
 			get{
-				return fileSystem.GetCreationTime(uri);
+				return fileSystem.GetCreationTime(Uri);
 			}
 		}
 		
@@ -162,7 +162,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime LastAccessTimeUtc{
 			get{
-				return fileSystem.GetLastAccessTime(uri);
+				return fileSystem.GetLastAccessTime(Uri);
 			}
 		}
 		
@@ -180,7 +180,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime LastWriteTimeUtc{
 			get{
-				return fileSystem.GetLastWriteTime(uri);
+				return fileSystem.GetLastWriteTime(Uri);
 			}
 		}
 		
@@ -189,7 +189,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual long Length{
 			get{
-				return fileSystem.GetLength(uri);
+				return fileSystem.GetLength(Uri);
 			}
 		}
 		
@@ -201,7 +201,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// <returns>The newly created stream to the resource.</returns>
 		public virtual Stream GetStream(FileMode mode, FileAccess access)
 		{
-			return fileSystem.GetStream(uri, mode, access);
+			return fileSystem.GetStream(Uri, mode, access);
 		}
 		
 		/// <summary>
@@ -212,7 +212,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual ResourceInfo Target{
 			get{
-				return new ResourceInfo(fileSystem.GetTarget(uri));
+				return new ResourceInfo(fileSystem.GetTarget(Uri));
 			}
 		}
 		
@@ -221,13 +221,13 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual string ContentType{
 			get{
-				return fileSystem.GetContentType(uri);
+				return fileSystem.GetContentType(Uri);
 			}
 		}
 		
 		public virtual List<ResourceInfo> GetResources()
 		{
-			return fileSystem.GetResources(uri).Select(u => new ResourceInfo(u)).ToList();
+			return fileSystem.GetResources(Uri).Select(u => new ResourceInfo(u)).ToList();
 		}
 		
 		/// <summary>
@@ -238,11 +238,11 @@ namespace IllidanS4.SharpUtils.IO
 		/// </remarks>
 		public virtual ResourceInfo Parent{
 			get{
-				if(uri.AbsolutePath.EndsWith("/"))
+				if(Uri.AbsolutePath.EndsWith("/"))
 				{
-					return new ResourceInfo(new Uri(uri, ".."));
+					return new ResourceInfo(new Uri(Uri, ".."));
 				}else{
-					return new ResourceInfo(new Uri(uri, "."));
+					return new ResourceInfo(new Uri(Uri, "."));
 				}
 			}
 		}

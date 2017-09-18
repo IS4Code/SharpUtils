@@ -1,8 +1,10 @@
 ﻿/* Date: 13.9.2017, Time: 18:57 */
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using IllidanS4.SharpUtils.COM;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -83,6 +85,32 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("shell32.dll", SetLastError=true)]
 			public static extern IntPtr ILClone(IntPtr pidl);
 			
+			[DllImport("shell32.dll", CharSet=CharSet.Auto)]
+			public static extern bool SHGetPathFromIDList(IntPtr pidl, StringBuilder pszPath);
+			
+			[DllImport("shell32.dll", CharSet=CharSet.Unicode, PreserveSig=false)]
+			public static extern string SHGetNameFromIDList(IntPtr pidl, SIGDN sigdnName);
+			
+			[DllImport("shell32.dll", SetLastError=true)]
+			public static extern IntPtr ILCloneFirst(IntPtr pidl);
+			
+			[DllImport("shell32.dll")]
+			public static extern bool ILRemoveLastID(IntPtr pidl);
+			
+			[DllImport("shell32.dll")]
+			public static extern IntPtr ILFindLastID(IntPtr pidl);
+			
+			[DllImport("shell32.dll", PreserveSig=false)]
+			public static extern void ILSaveToStream(IStream pstm, IntPtr pidl);
+			
+			[DllImport("shell32.dll")]
+			public static extern int ILGetSize(IntPtr pidl);
+			
+			[DebuggerStepThrough]
+			public static bool ILIsEmpty(IntPtr pidl)
+			{
+				return pidl == IntPtr.Zero || ILGetSize(pidl) == 0;
+			}
 			
 			public static IShellLink CreateShellLink()
 			{

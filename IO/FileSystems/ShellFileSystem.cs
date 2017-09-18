@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using IllidanS4.SharpUtils.COM;
@@ -19,6 +21,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	public partial class ShellFileSystem : IHandleProvider
 	{
 		public static readonly ShellFileSystem Instance = new ShellFileSystem(new Uri("shell:"));
+		
+		private IntPtr OwnerHwnd{
+			get{
+				return Process.GetCurrentProcess().MainWindowHandle;
+			}
+		}
 		
 		private readonly Uri baseUri;
 		
@@ -40,7 +48,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return "shell:"+HttpUtility.UrlDecode(path);
 		}
 		
-		public Uri GetShellUri(string path, bool isFileSystem)
+		/*public Uri GetShellUri(string path, bool isFileSystem)
 		{
 			Uri relUri;
 			if(isFileSystem || File.Exists(path))
@@ -52,6 +60,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}else{
 				relUri = new Uri(path, UriKind.Relative);
 			}
+			return new Uri(baseUri, relUri);
+		}*/
+		
+		public Uri GetShellUri(string relUri)
+		{
 			return new Uri(baseUri, relUri);
 		}
 		
@@ -84,10 +97,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			var target = GetLinkTarget(link);
 			try{
-				string path = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-				var attr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-				
-				return GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0);
+				IntPtr pidl = Shell32.SHGetIDListFromObject(target);
+				return GetShellUri(pidl, true);
 			}finally{
 				Marshal.FinalReleaseComObject(target);
 			}
@@ -239,6 +250,28 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		private Uri GetShellUri(IntPtr pidl, bool free)
+		{
+			Stack<string> list;
+			IntPtr pidlrel = free ? pidl : Shell32.ILClone(pidl);
+			try{
+				list = new Stack<string>();
+				
+				while(true)
+				{
+					string name = Shell32.SHGetNameFromIDList(pidlrel, SIGDN.SIGDN_PARENTRELATIVEPARSING);
+					if(!Shell32.ILRemoveLastID(pidlrel)) break; //TODO check if really desktop
+					list.Push(name);
+				}
+			}finally{
+				Marshal.FreeCoTaskMem(pidlrel);
+			}
+			
+			string path = String.Join("/", list.Select(n => HttpUtility.UrlEncode(n)));
+			
+			return GetShellUri(path);
+		}
+		
 		#region Implementation
 		public ResourceHandle ObtainHandle(Uri uri)
 		{
@@ -318,14 +351,15 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			var item = GetItem(uri);
 			try{
-				bool isUri, isFs;
-				string path = GetTargetPath(item, out isUri, out isFs);
-				if(isUri)
+				object targ = GetTargetItem(item);
+				string url = targ as string;
+				if(url != null)
 				{
-					return new Uri(path);
-				}else{
-					return GetShellUri(path, isFs);
+					return new Uri(url);
 				}
+				var target = (IShellItem)targ;
+				var pidl = Shell32.SHGetIDListFromObject(target);
+				return GetShellUri(pidl, true);
 			}finally{
 				Marshal.FinalReleaseComObject(item);
 			}
@@ -382,27 +416,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 							int num;
 							peidl.Next(1, out pidl2, out num);
 							if(num == 0) break;
-							try{
-								/*var subItem = Shell32.SHCreateItemFromIDList<IShellItem>(pidl2);
-								try{
-									string path = subItem.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-									var attr = subItem.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-									
-									list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
-								}finally{
-									Marshal.FinalReleaseComObject(subItem);
-								}*/
-								
-								STRRET sr = psf.GetDisplayNameOf(pidl2, SHGDNF.SHGDN_FORPARSING);
-								string path = Shlwapi.StrRetToStr(ref sr, pidl2);
-								
-								SFGAOF attr = SFGAOF.SFGAO_FILESYSTEM;
-								psf.GetAttributesOf(1, new[]{pidl2}, ref attr);
-								
-								list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
-							}finally{
-								Marshal.FreeCoTaskMem(pidl2);
-							}
+							list.Add(GetShellUri(pidl2, true));
 						}
 					}finally{
 						Marshal.FinalReleaseComObject(peidl);
@@ -418,13 +432,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		#endregion
 		
-		private string GetTargetPath(IShellItem shellItem, out bool isUri, out bool isFs)
+		internal object GetTargetItem(IShellItem shellItem)
 		{
 			var item = (IShellItem2)shellItem;
 			try{
 				string linkuri = item.GetString(Shell32.PKEY_Link_TargetUrl);
-				isUri = true;
-				isFs = false;
 				return linkuri;
 			}catch(COMException e)
 			{
@@ -449,26 +461,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					target = (IShellItem)item;
 				}
 			}
-			try{
-				string tpath = target.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-				var tattr = target.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-				
-				isUri = false;
-				isFs = (tattr & SFGAOF.SFGAO_FILESYSTEM) != 0;
-				return tpath;
-			}finally{
-				Marshal.FinalReleaseComObject(target);
-			}
+			return target;
 		}
 		
 		private Uri GetItemUri(IShellItem item)
 		{
-			string path = item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-			var attr = item.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-			
-			bool isFs = (attr & SFGAOF.SFGAO_FILESYSTEM) != 0;
-			
-			return GetShellUri(path, isFs);
+			IntPtr pidl = Shell32.SHGetIDListFromObject(item);
+			return GetShellUri(pidl, true);
 		}
 	}
 }

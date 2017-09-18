@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Web;
 using IllidanS4.SharpUtils.COM;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
@@ -21,9 +23,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			IntPtr pidl;
 			ShellFileSystem fs;
 			
-			public ShellFileHandle(IntPtr pidl, ShellFileSystem fs) : base(fs)
+			public ShellFileHandle(IntPtr pidl, ShellFileSystem fs) : this(pidl, fs, false)
 			{
-				this.pidl = Shell32.ILClone(pidl);
+				
+			}
+			
+			private ShellFileHandle(IntPtr pidl, ShellFileSystem fs, bool own) : base(fs)
+			{
+				this.pidl = own ? pidl : Shell32.ILClone(pidl);
 				this.fs = fs;
 			}
 			
@@ -34,39 +41,40 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override Uri Uri{
 				get{
-					var item = GetItem();
-					try{
-						return fs.GetItemUri(item);
-					}finally{
-						Marshal.FinalReleaseComObject(item);
-					}
+					return fs.GetShellUri(pidl, false);
 				}
 			}
 			
 			public override ResourceInfo Target{
 				get{
-					throw new NotImplementedException();
+					var item = GetItem();
+					try{
+						var targ = fs.GetTargetItem(item);
+						
+						string uri = targ as string;
+						if(uri != null)
+						{
+							return new ResourceInfo(new Uri(uri));
+						}
+						var target = (IShellItem)targ;
+						try{
+							IntPtr pidl = Shell32.SHGetIDListFromObject(target);
+							return new ShellFileHandle(pidl, fs, true);
+						}finally{
+							//TODO: this might release twice the same object
+							Marshal.FinalReleaseComObject(target);
+						}
+					}finally{
+						Marshal.FinalReleaseComObject(item);
+					}
 				}
 			}
 			
 			public override ResourceInfo Parent{
 				get{
-					var item = (IShellItem2)GetItem();
-					try{
-						var parent = item.GetParent();
-						try{
-							IntPtr pidl = Shell32.SHGetIDListFromObject(parent);
-							try{
-								return new ShellFileHandle(pidl, fs);
-							}finally{
-								Marshal.FreeCoTaskMem(pidl);
-							}
-						}finally{
-							Marshal.FinalReleaseComObject(parent);
-						}
-					}finally{
-						Marshal.FinalReleaseComObject(item);
-					}
+					IntPtr pidl = Shell32.ILClone(this.pidl);
+					Shell32.ILRemoveLastID(pidl);
+					return new ShellFileHandle(pidl, fs, true);
 				}
 			}
 			
@@ -130,7 +138,30 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override List<ResourceInfo> GetResources()
 			{
-				throw new NotImplementedException();
+				var list = new List<ResourceInfo>();
+				
+				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
+				try{
+					IEnumIDList peidl = psf.EnumObjects(fs.OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+					
+					if(peidl == null) return list;
+					try{
+						while(true)
+						{
+							IntPtr pidl2;
+							int num;
+							peidl.Next(1, out pidl2, out num);
+							if(num == 0) break;
+							list.Add(new ShellFileHandle(pidl2, fs, true));
+						}
+					}finally{
+						Marshal.FinalReleaseComObject(peidl);
+					}
+				}finally{
+					Marshal.FinalReleaseComObject(psf);
+				}
+				
+				return list;
 			}
 			
 			protected override void Dispose(bool disposing)
