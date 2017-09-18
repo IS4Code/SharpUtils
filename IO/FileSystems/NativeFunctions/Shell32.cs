@@ -109,6 +109,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("shell32.dll")]
 			public static extern int ILGetSize(IntPtr pidl);
 			
+			[DllImport("shell32.dll")]
+			public static extern IntPtr ILCombine(IntPtr pidl1, IntPtr pidl2);
+			
 			[DebuggerStepThrough]
 			public static bool ILIsEmpty(IntPtr pidl)
 			{

@@ -174,7 +174,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 							int num;
 							peidl.Next(1, out pidl2, out num);
 							if(num == 0) break;
-							list.Add(new ShellFileHandle(pidl2, fs, true));
+							try{
+								IntPtr pidl3 = Shell32.ILCombine(pidl, pidl2);
+								list.Add(new ShellFileHandle(pidl3, fs, true));
+							}finally{
+								Marshal.FreeCoTaskMem(pidl2);
+							}
 						}
 					}finally{
 						Marshal.FinalReleaseComObject(peidl);

@@ -281,10 +281,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					if(!Shell32.ILRemoveLastID(pidlrel)) break; //TODO check if really desktop
 					list.Push(name);
 				}
-			}catch(ArgumentException)
+			}/*catch(ArgumentException) //rough fallback
 			{
+				string test = Shell32.SHGetNameFromIDList(pidlrel, SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
 				return ConstructDataLink(pidl);
-			}finally{
+			}*/finally{
 				Marshal.FreeCoTaskMem(pidlrel);
 			}
 			
@@ -408,32 +409,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			var item = GetItem(uri);
 			
-			/*try{
-				var elist = item.BindToHandler<IEnumShellItems>(null, Shell32.BHID_StorageEnum);
-				
-				try{
-					while(true)
-					{
-						IShellItem subItem;
-						int num;
-						elist.Next(1, out subItem, out num);
-						if(num == 0) break;
-						try{
-							string path = subItem.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-							var attr = subItem.GetAttributes(SFGAOF.SFGAO_FILESYSTEM);
-							
-							list.Add(GetShellUri(path, (attr & SFGAOF.SFGAO_FILESYSTEM) != 0));
-						}finally{
-							Marshal.FinalReleaseComObject(subItem);
-						}
-					}
-				}finally{
-					Marshal.FinalReleaseComObject(elist);
-				}
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}*/
-			
 			IntPtr pidl = Shell32.SHGetIDListFromObject(item);
 			try{
 				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
@@ -448,7 +423,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 							int num;
 							peidl.Next(1, out pidl2, out num);
 							if(num == 0) break;
-							list.Add(GetShellUri(pidl2, true));
+							try{
+								IntPtr pidl3 = Shell32.ILCombine(pidl, pidl2);
+								list.Add(GetShellUri(pidl3, true));
+							}finally{
+								Marshal.FreeCoTaskMem(pidl2);
+							}
 						}
 					}finally{
 						Marshal.FinalReleaseComObject(peidl);
