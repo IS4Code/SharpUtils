@@ -177,7 +177,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				{
 					dataString = Convert.ToBase64String(data);
 					
-					Uri = new Uri("data:"+contentType+";base64,"+dataString, true);
+					Uri = new Uri("data:"+contentType+";base64,"+dataString);
 				}else{
 					dataString = HttpUtility.UrlEncode(data);
 					Uri = new Uri("data:"+contentType+","+dataString, true);
