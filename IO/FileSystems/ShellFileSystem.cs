@@ -184,7 +184,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var rel = baseUri.MakeRelativeUri(uri);
 			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "uri");
 			if(String.IsNullOrEmpty(rel.OriginalString)) return GetDesktop();
-			var segments = rel.OriginalString.Split('/').Where(s => s != ".").Select(s => Uri.UnescapeDataString(s));
+			var segments = rel.OriginalString.Split('/').Where(s => s != ".").Select(s => HttpUtility.UrlDecode(s));
 			
 			IShellItem item = GetDesktop();
 			/*IntPtr pidl = Shell32.SHGetIDListFromObject(parent);

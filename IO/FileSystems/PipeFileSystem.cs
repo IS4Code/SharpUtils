@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Web;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
@@ -39,7 +40,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			string server = uri.Host;
 			if(String.IsNullOrEmpty(server)) server = ".";
-			string path = Uri.UnescapeDataString(uri.AbsolutePath);
+			string path = HttpUtility.UrlDecode(uri.AbsolutePath);
 			PipeDirection direction;
 			switch(access)
 			{
@@ -75,13 +76,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			string server = uri.Host;
 			if(String.IsNullOrEmpty(server)) server = ".";
-			string path = Uri.UnescapeDataString(uri.AbsolutePath);
+			string path = HttpUtility.UrlDecode(uri.AbsolutePath);
 			return String.Format(@"\\{0}\{1}", server, path);
 		}
 		
 		public string GetDisplayPath(Uri uri)
 		{
-			return Uri.UnescapeDataString(uri.AbsolutePath);
+			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}
 		
 		public System.Collections.Generic.List<Uri> GetResources(Uri uri)

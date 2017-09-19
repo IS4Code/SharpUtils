@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Web;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
@@ -84,12 +85,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public string GetLocalPath(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
-			return Uri.UnescapeDataString(resp.ResponseUri.AbsolutePath);
+			return HttpUtility.UrlDecode(resp.ResponseUri.AbsolutePath);
 		}
 		
 		public string GetDisplayPath(Uri uri)
 		{
-			return Uri.UnescapeDataString(uri.AbsolutePath);
+			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}
 		
 		public List<Uri> GetResources(Uri uri)

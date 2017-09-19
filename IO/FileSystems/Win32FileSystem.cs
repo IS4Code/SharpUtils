@@ -80,7 +80,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		private string GetPath(Uri uri)
 		{
-			var segments = uri.AbsolutePath.Split('/').SkipWhile(String.IsNullOrEmpty).Select(s => Uri.UnescapeDataString(s)).ToList();
+			var segments = uri.AbsolutePath.Split('/').SkipWhile(String.IsNullOrEmpty).Select(s => HttpUtility.UrlDecode(s)).ToList();
 			
 			string prefix = String.IsNullOrEmpty(uri.Host) ? @"\\?\" : @"\\?\UNC\"+uri.Host+@"\";
 			
