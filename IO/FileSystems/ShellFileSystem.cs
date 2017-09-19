@@ -332,6 +332,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var item = GetItem(uri);
 			try{
 				object targ = GetTargetItem(item);
+				if(targ == null) return null;
 				string url = targ as string;
 				if(url != null)
 				{
@@ -407,20 +408,20 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			IShellItem target;
 			if((attr & SFGAOF.SFGAO_LINK) != 0)
 			{
-				target = item.BindToHandler<IShellItem>(null, Shell32.BHID_LinkTargetItem);
+				return item.BindToHandler<IShellItem>(null, Shell32.BHID_LinkTargetItem);
 			}else{
 				try{
 					var link = item.BindToHandler<IShellLink>(null, Shell32.BHID_SFUIObject);
-					target = GetLinkTarget(link);
+					return GetLinkTarget(link);
 				}catch(NotImplementedException)
 				{
-					target = (IShellItem)item;
+					
 				}catch(InvalidCastException)
 				{
-					target = (IShellItem)item;
+					
 				}
 			}
-			return target;
+			return null;
 		}
 		
 		private Uri GetItemUri(IShellItem item)

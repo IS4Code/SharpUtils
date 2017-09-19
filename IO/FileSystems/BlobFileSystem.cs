@@ -215,7 +215,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public Uri GetTarget(Uri uri)
 		{
-			return uri;
+			return null;
 		}
 		
 		public string GetContentType(Uri uri)

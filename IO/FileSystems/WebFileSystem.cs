@@ -72,7 +72,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}
 				}
 			}
-			return uri;
+			return null;
 		}
 		
 		public string GetContentType(Uri uri)

@@ -209,9 +209,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		protected override Uri GetTargetInternal(Uri uri)
 		{
-			IntPtr handle = Kernel32.CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
+			string fpath = GetPath(uri);
+			IntPtr handle = Kernel32.CreateFile(fpath, (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
 			try{
 				string path = Kernel32.GetFinalPathNameByHandle(handle, 0);
+				if(fpath == path) return null;
 				return FileUriFromPath(path);
 			}finally{
 				Kernel32.CloseHandle(handle);

@@ -111,7 +111,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var extension = ParseUri(uri, out dataUri);
 			if(extension != null) return extension.GetTarget(dataUri);
 			
-			return uri;
+			return null;
 		}
 		
 		public string GetContentType(Uri uri)

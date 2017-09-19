@@ -212,7 +212,9 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual ResourceInfo Target{
 			get{
-				return new ResourceInfo(fileSystem.GetTarget(Uri));
+				Uri target = fileSystem.GetTarget(Uri);
+				if(target == null) return null;
+				return new ResourceInfo(target);
 			}
 		}
 		

@@ -72,6 +72,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var item = GetItem();
 					try{
 						var targ = fs.GetTargetItem(item);
+						if(targ == null) return null;
 						
 						string uri = targ as string;
 						if(uri != null)
