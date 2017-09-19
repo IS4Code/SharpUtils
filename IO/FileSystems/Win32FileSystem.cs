@@ -218,6 +218,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return mime;
 		}
 		
+		protected override string GetLocalPathInternal(Uri uri)
+		{
+			return GetPath(uri);
+		}
+		
+		protected override string GetDisplayPathInternal(Uri uri)
+		{
+			return PathFromFileUri(uri);
+		}
+		
 		private static readonly Regex backslashRegex2 = new Regex(@"[^\\]$", RegexOptions.Compiled);
 		protected override List<Uri> GetResourcesInternal(Uri uri)
 		{
@@ -238,18 +248,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			IntPtr handle = Kernel32.CreateFile(path, (FileAccess)(1 | 8 | 32), FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
 			try{
-				/*Kernel32.FILE_ID_BOTH_DIR_INFO dirInfo;
-				while(true)
-				{
-					bool result = Kernel32.GetFileInformationByHandleEx(handle, out dirInfo);
-					if(!result) break;
-					
-					if(dirInfo.FileName != ".")
-					{
-						list.Add(FileUriFromPath(catPath+dirInfo.FileName));
-					}
-				}*/
-				
 				IntPtr buffer = Marshal.AllocHGlobal(32768);
 				try{
 					Kernel32.FILE_STREAM_INFO streamInfo;
@@ -269,49 +267,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}finally{
 					Marshal.FreeHGlobal(buffer);
 				}
-				
-				/*Kernel32.FILE_STREAM_INFO streamInfo;
-				while(true)
-				{
-					bool result = Kernel32.GetFileInformationByHandleEx(handle, out streamInfo);
-					if(!result) break;
-					
-					list.Add(FileUriFromPath(catPath+streamInfo.StreamName));
-				}*/
 			}finally{
 				Kernel32.CloseHandle(handle);
 			}
 			
 			return list;
-			
-			/*path = backslashRegex2.Replace(path, @"$0\");
-			IntPtr handle = Kernel32.CreateFile(path, (FileAccess)(1 | 8), FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
-			try{
-				var list = new List<Uri>();
-				unsafe{
-					Ntdll.IO_STATUS_BLOCK block;
-					byte* buffer = stackalloc byte[32768];
-					int status = Ntdll.NtQueryDirectoryFile(handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out block, (IntPtr)buffer, 32768, Ntdll.FILE_INFORMATION_CLASS.FileFullDirectoryInformation, false, null, false);
-					if(status < 0)
-					{
-						throw new Win32Exception(Ntdll.RtlNtStatusToDosError(status));
-					}
-					
-					int offset = 0;
-					do{
-						var DirInfo = (Ntdll.FILE_FULL_DIR_INFORMATION*)(buffer+offset);
-						
-						string name = DirInfo->FileName;
-						list.Add(FileUriFromPath(path+name));
-						
-						offset = DirInfo->NextEntryOffset;
-					}while(offset != 0);
-				}
-				
-				return list;
-			}finally{
-				Kernel32.CloseHandle(handle);
-			}*/
 		}
 		#endregion
 	}

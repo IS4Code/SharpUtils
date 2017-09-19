@@ -39,7 +39,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			string server = uri.Host;
 			if(String.IsNullOrEmpty(server)) server = ".";
-			string path = uri.AbsolutePath;
+			string path = Uri.UnescapeDataString(uri.AbsolutePath);
 			PipeDirection direction;
 			switch(access)
 			{
@@ -69,6 +69,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		public string GetContentType(Uri uri)
 		{
 			throw new NotSupportedException();
+		}
+		
+		public string GetLocalPath(Uri uri)
+		{
+			string server = uri.Host;
+			if(String.IsNullOrEmpty(server)) server = ".";
+			string path = Uri.UnescapeDataString(uri.AbsolutePath);
+			return String.Format(@"\\{0}\{1}", server, path);
+		}
+		
+		public string GetDisplayPath(Uri uri)
+		{
+			return Uri.UnescapeDataString(uri.AbsolutePath);
 		}
 		
 		public System.Collections.Generic.List<Uri> GetResources(Uri uri)

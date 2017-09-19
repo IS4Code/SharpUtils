@@ -351,6 +351,26 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
+		public string GetLocalPath(Uri uri)
+		{
+			var item = GetItem(uri);
+			try{
+				return item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public string GetDisplayPath(Uri uri)
+		{
+			var item = GetItem(uri);
+			try{
+				return item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
 		public List<Uri> GetResources(Uri uri)
 		{
 			var list = new List<Uri>();

@@ -66,6 +66,14 @@ namespace IllidanS4.SharpUtils.IO
 			get;
 		}
 		
+		public abstract override string LocalPath{
+			get;
+		}
+		
+		public abstract override string DisplayPath{
+			get;
+		}
+		
 		public abstract override List<ResourceInfo> GetResources();
 		
 		public abstract override ResourceInfo Parent{

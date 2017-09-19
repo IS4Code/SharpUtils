@@ -207,6 +207,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
+			public override string LocalPath{
+				get{
+					return Shell32.SHGetNameFromIDList(pidl, SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
+				}
+			}
+			
+			public override string DisplayPath{
+				get{
+					return Shell32.SHGetNameFromIDList(pidl, SIGDN.SIGDN_DESKTOPABSOLUTEEDITING);
+				}
+			}
+			
 			public override FileAttributes Attributes{
 				get{
 					throw new NotImplementedException();

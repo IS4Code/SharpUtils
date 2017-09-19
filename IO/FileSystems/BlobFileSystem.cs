@@ -223,6 +223,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
+		public string GetLocalPath(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public string GetDisplayPath(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
+		
 		public List<Uri> GetResources(Uri uri)
 		{
 			throw new NotImplementedException();

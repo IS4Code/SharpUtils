@@ -81,18 +81,15 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return resp.ContentType;
 		}
 		
-		private WebResponse GetResponse(Uri uri, string method)
+		public string GetLocalPath(Uri uri)
 		{
-			var request = WebRequest.Create(uri);
-			request.Method = method;
-			
-			var http = request as HttpWebRequest;
-			if(http != null)
-			{
-				http.AllowAutoRedirect = false;
-			}
-			
-			return request.GetResponse();
+			var resp = GetResponse(uri, "HEAD");
+			return Uri.UnescapeDataString(resp.ResponseUri.AbsolutePath);
+		}
+		
+		public string GetDisplayPath(Uri uri)
+		{
+			return Uri.UnescapeDataString(uri.AbsolutePath);
 		}
 		
 		public List<Uri> GetResources(Uri uri)
@@ -128,6 +125,20 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			throw new NotImplementedException();
+		}
+		
+		private WebResponse GetResponse(Uri uri, string method)
+		{
+			var request = WebRequest.Create(uri);
+			request.Method = method;
+			
+			var http = request as HttpWebRequest;
+			if(http != null)
+			{
+				http.AllowAutoRedirect = false;
+			}
+			
+			return request.GetResponse();
 		}
 	}
 }

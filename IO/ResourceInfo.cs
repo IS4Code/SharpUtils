@@ -227,6 +227,24 @@ namespace IllidanS4.SharpUtils.IO
 			}
 		}
 		
+		/// <summary>
+		/// Gets the path of the resource in its files system.
+		/// </summary>
+		public virtual string LocalPath{
+			get{
+				return fileSystem.GetLocalPath(Uri);
+			}
+		}
+		
+		/// <summary>
+		/// Gets the path of the resource, suitable for display.
+		/// </summary>
+		public virtual string DisplayPath{
+			get{
+				return fileSystem.GetDisplayPath(Uri);
+			}
+		}
+		
 		public virtual List<ResourceInfo> GetResources()
 		{
 			return fileSystem.GetResources(Uri).Select(u => new ResourceInfo(u)).ToList();

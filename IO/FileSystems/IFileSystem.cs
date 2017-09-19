@@ -18,6 +18,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		Stream GetStream(Uri uri, FileMode mode, FileAccess access);
 		Uri GetTarget(Uri uri);
 		string GetContentType(Uri uri);
+		string GetLocalPath(Uri uri);
+		string GetDisplayPath(Uri uri);
 		List<Uri> GetResources(Uri uri);
 	}
 }

@@ -102,6 +102,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					throw new NotImplementedException();
 				}
 			}
+			
+			public override string LocalPath{
+				get{
+					return fs.GetLocalPath(uri);
+				}
+			}
+			
+			public override string DisplayPath{
+				get{
+					return fs.GetDisplayPath(uri);
+				}
+			}
 		}
 	}
 }
