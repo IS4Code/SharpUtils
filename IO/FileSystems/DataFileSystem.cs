@@ -180,7 +180,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					Uri = new Uri("data:"+contentType+";base64,"+dataString);
 				}else{
 					dataString = HttpUtility.UrlEncode(data);
-					Uri = new Uri("data:"+contentType+","+dataString, true);
+					Uri = new Uri("data:"+contentType+","+dataString);
 				}
 			}
 		}
