@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -79,23 +80,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		private string GetPath(Uri uri)
 		{
-			string path = PathFromFileUri(uri);
-			if(String.IsNullOrEmpty(uri.Host))
-			{
-				if(path.Length > 256)
-				{
-					return @"\\?\"+path;
-				}else{
-					return @"\\.\"+path;
-				}
-			}else{
-				if(path.Length > 260)
-				{
-					return @"\\?\UNC\"+path.Substring(2);
-				}else{
-					return path;
-				}
-			}
+			var segments = uri.AbsolutePath.Split('/').SkipWhile(String.IsNullOrEmpty).Select(s => Uri.UnescapeDataString(s)).ToList();
+			
+			string prefix = String.IsNullOrEmpty(uri.Host) ? @"\\?\" : @"\\?\UNC\"+uri.Host+@"\";
+			
+			if(segments.Any(s => s.Contains(@"\"))) throw new ArgumentException("The URI contains invalid characters.", "uri");
+			
+			return prefix+String.Join(@"\", segments);
 		}
 		
 		private static readonly Regex extendedRegex = new Regex(@"^\\[\?\\](\?\\UNC|\?)(?:\\|$)");
