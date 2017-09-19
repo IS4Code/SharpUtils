@@ -26,7 +26,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public static readonly Guid BHID_Stream = new Guid("1CEBB3AB-7C10-499a-A417-92CA16C4CB83");
 			public static readonly Guid BHID_LinkTargetItem = new Guid("3981E228-F559-11D3-8E3A-00C04F6837D5");
 			public static readonly Guid BHID_SFUIObject = new Guid("3981E225-F559-11D3-8E3A-00C04F6837D5");
+			public static readonly Guid BHID_SFObject = new Guid("3981E224-F559-11D3-8E3A-00C04F6837D5");
 			public static readonly Guid BHID_StorageEnum = new Guid("4621A4E3-F0D6-4773-8A9C-46E77B174840");
+			
+			public static readonly Guid FOLDERID_Desktop = new Guid("B4BFCC3A-DB2C-424C-B029-7FE99A87C641");
 			
 			[DllImportAttribute("shell32.dll", CharSet=CharSet.Unicode, PreserveSig=false)]
 			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
@@ -116,6 +119,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public static bool ILIsEmpty(IntPtr pidl)
 			{
 				return pidl == IntPtr.Zero || ILGetSize(pidl) == 0;
+			}
+			
+			[DllImport("shell32.dll", PreserveSig=false)]
+			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=4)]
+			static extern object SHGetKnownFolderItem([MarshalAs(UnmanagedType.LPStruct)]Guid rfid, int dwFlags, IntPtr hToken, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
+			
+			
+			
+			[DebuggerStepThrough]
+			public static T SHGetKnownFolderItem<T>(Guid rfid, int dwFlags, IntPtr hToken) where T : class
+			{
+				return (T)SHGetKnownFolderItem(rfid, dwFlags, hToken, typeof(T).GUID);
 			}
 			
 			public static IShellLink CreateShellLink()

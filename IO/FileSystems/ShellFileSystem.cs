@@ -30,6 +30,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		private readonly Uri baseUri;
 		
+		private const SHCONTF EnumConst = SHCONTF.SHCONTF_INCLUDEHIDDEN | SHCONTF.SHCONTF_SHAREABLE | SHCONTF.SHCONTF_STORAGE | SHCONTF.SHCONTF_INCLUDESUPERHIDDEN | SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS;
+		
 		public ShellFileSystem(Uri baseUri)
 		{
 			this.baseUri = baseUri;
@@ -47,21 +49,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			return "shell:"+HttpUtility.UrlDecode(path);
 		}
-		
-		/*public Uri GetShellUri(string path, bool isFileSystem)
-		{
-			Uri relUri;
-			if(isFileSystem || File.Exists(path))
-			{
-				relUri = new Uri(@"MyComputerFolder\"+path, UriKind.Relative);
-			}else if(path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase))
-			{
-				relUri = new Uri(path.Substring(6), UriKind.Relative);
-			}else{
-				relUri = new Uri(path, UriKind.Relative);
-			}
-			return new Uri(baseUri, relUri);
-		}*/
 		
 		public Uri GetShellUri(string relUri)
 		{
@@ -194,78 +181,38 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
 		private IShellItem GetItem(Uri uri)
 		{
-			string path = GetShellPath(uri);
-			return GetItem(path);
-		}
-		
-		private IShellItem GetItem(string path)
-		{
-			try{
-				return Shell32.SHCreateItemFromParsingName<IShellItem>(path, null);
-			}catch(IOException)
+			var rel = baseUri.MakeRelativeUri(uri);
+			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "uri");
+			if(String.IsNullOrEmpty(rel.OriginalString)) return GetDesktop();
+			var segments = rel.OriginalString.Split('/').Where(s => s != ".").Select(s => Uri.UnescapeDataString(s));
+			
+			IShellItem item = GetDesktop();
+			/*IntPtr pidl = Shell32.SHGetIDListFromObject(parent);
+			IShellFolder psf = null;*/
+			foreach(var name in segments)
 			{
-				var match = pathNameRegex.Match(path);
-				if(!match.Success) throw new ArgumentException("Argument is not a valid path.", "path");
+				/*var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
+				uint tmp;
+				psf.ParseDisplayName(OwnerHwnd, null, name, out tmp, out pidl, 0);
+				item = Shell32.SHCreateItemWithParent<IShellItem>(IntPtr.Zero, psf, pidl);*/
 				
-				string dir = match.Groups[1].Value;
-				if(dir.Equals("shell:", StringComparison.OrdinalIgnoreCase)) dir = "";
-				
-				Win32FileSystem.RemoveBackslash(ref dir);
-				
-				SFGAOF sfgao;
-				IntPtr pidl = Shell32.SHParseDisplayName(dir, null, 0, out sfgao);
+				var psf = item.BindToHandler<IShellFolder>(null, Shell32.BHID_SFObject);
+				uint tmp;
+				IntPtr pidl;
+				psf.ParseDisplayName(OwnerHwnd, null, name, out tmp, out pidl, 0);
 				try{
-					path = match.Groups[2].Value;
-					var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
-					
-					try{
-						uint tmp;
-						IntPtr pidl2;
-						psf.ParseDisplayName(OwnerHwnd, null, path, out tmp, out pidl2, 0);
-						try{
-							return Shell32.SHCreateItemWithParent<IShellItem>(pidl, psf, pidl2);
-						}finally{
-							Marshal.FreeCoTaskMem(pidl2);
-						}
-					}catch(ArgumentException)
-					{
-						if(!String.IsNullOrWhiteSpace(path)) throw;
-						return Shell32.SHCreateItemFromIDList<IShellItem>(pidl);
-					}catch(IOException)
-					{
-						//Probably not needed
-						IEnumIDList peidl = psf.EnumObjects(OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
-						
-						try{
-							while(true)
-							{
-								IntPtr pidl2;
-								int num;
-								peidl.Next(1, out pidl2, out num);
-								if(num == 0) break;
-								try{
-									STRRET sr = psf.GetDisplayNameOf(pidl2, SHGDNF.SHGDN_FORPARSING);
-									
-									string name = Shlwapi.StrRetToStr(ref sr, pidl2);
-									if(pathNameRegex.Replace(name, "$2") == path)
-									{
-										return Shell32.SHCreateItemWithParent<IShellItem>(pidl, psf, pidl2);
-									}
-								}finally{
-									Marshal.FreeCoTaskMem(pidl2);
-								}
-							}
-						}finally{
-							Marshal.FinalReleaseComObject(peidl);
-						}
-					}finally{
-						Marshal.FinalReleaseComObject(psf);
-					}
+					item = Shell32.SHCreateItemWithParent<IShellItem>(IntPtr.Zero, psf, pidl);
 				}finally{
 					Marshal.FreeCoTaskMem(pidl);
 				}
-				throw;
 			}
+			
+			return item;
+		}
+		
+		private IShellItem GetDesktop()
+		{
+			return Shell32.SHGetKnownFolderItem<IShellItem>(Shell32.FOLDERID_Desktop, 0, IntPtr.Zero);
 		}
 		
 		private Uri GetShellUri(IntPtr pidl, bool free)
@@ -413,7 +360,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			try{
 				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
 				try{
-					IEnumIDList peidl = psf.EnumObjects(OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+					IEnumIDList peidl = psf.EnumObjects(OwnerHwnd, EnumConst);
 					
 					if(peidl == null) return list;
 					try{

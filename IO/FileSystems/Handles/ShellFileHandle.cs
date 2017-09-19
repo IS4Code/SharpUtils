@@ -164,7 +164,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				
 				var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
 				try{
-					IEnumIDList peidl = psf.EnumObjects(fs.OwnerHwnd, SHCONTF.SHCONTF_FOLDERS | SHCONTF.SHCONTF_NONFOLDERS);
+					IEnumIDList peidl = psf.EnumObjects(fs.OwnerHwnd, EnumConst);
 					
 					if(peidl == null) return list;
 					try{
