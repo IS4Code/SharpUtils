@@ -12,6 +12,7 @@ namespace IllidanS4.SharpUtils.COM
     [CLSCompliant(false)]
 	public interface IShellItem2
 	{
+		//IShellItem
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
 		object BindToHandler(IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid bhid, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
         IShellItem GetParent();

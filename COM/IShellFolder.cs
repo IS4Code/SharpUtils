@@ -24,12 +24,11 @@ namespace IllidanS4.SharpUtils.COM
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=3)]
 	    object GetUIObjectOf(IntPtr hwndOwner, uint cidl, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]IntPtr[] apidl, [MarshalAs(UnmanagedType.LPStruct)] Guid riid, ref uint rgfReserved);
 		STRRET GetDisplayNameOf(IntPtr pidl, SHGDNF uFlags);
-		IntPtr SetNameOf(IntPtr hwnd, IntPtr pidl, string pszName, SHGDNF uFlags);
+		IntPtr SetNameOf(IntPtr hwnd, IntPtr pidl, [MarshalAs(UnmanagedType.LPWStr)]string pszName, SHGDNF uFlags);
 	}
     
-    [CLSCompliant(false)]
     [Flags]
-	public enum SFGAOF : uint
+	public enum SFGAOF
     {
 		SFGAO_CANCOPY = 0x00000001,
 		SFGAO_CANMOVE = 0x00000002,
@@ -52,8 +51,8 @@ namespace IllidanS4.SharpUtils.COM
 		SFGAO_FILESYSANCESTOR = 0x10000000,
 		SFGAO_FOLDER = 0x20000000,
 		SFGAO_FILESYSTEM = 0x40000000,
-		SFGAO_HASSUBFOLDER = 0x80000000,
-		SFGAO_CONTENTSMASK = 0x80000000,
+		SFGAO_HASSUBFOLDER = unchecked((int)0x80000000),
+		SFGAO_CONTENTSMASK = unchecked((int)0x80000000),
 		SFGAO_VALIDATE = 0x01000000,
 		SFGAO_REMOVABLE = 0x02000000,
 		SFGAO_COMPRESSED = 0x04000000,

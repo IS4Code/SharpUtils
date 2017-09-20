@@ -8,7 +8,6 @@ namespace IllidanS4.SharpUtils.COM
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE")]
-    [CLSCompliant(false)]
 	public interface IShellItem
 	{
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
@@ -20,28 +19,26 @@ namespace IllidanS4.SharpUtils.COM
         int Compare(IShellItem psi, SICHINTF hint);
 	}
 	
-	[CLSCompliant(false)]
 	[Flags]
-	public enum SICHINTF : uint
+	public enum SICHINTF
 	{
 		SICHINT_DISPLAY = 0x00000000,
-		SICHINT_ALLFIELDS  = 0x80000000,
+		SICHINT_ALLFIELDS  = unchecked((int)0x80000000),
 		SICHINT_CANONICAL = 0x10000000,
 		SICHINT_TEST_FILESYSPATH_IF_NOT_EQUAL = 0x20000000,
 	}
 	
-	[CLSCompliant(false)]
-	public enum SIGDN : uint
+	public enum SIGDN
 	{
 		SIGDN_NORMALDISPLAY = 0x00000000,
-		SIGDN_PARENTRELATIVEPARSING = 0x80018001,
-		SIGDN_DESKTOPABSOLUTEPARSING = 0x80028000,
-		SIGDN_PARENTRELATIVEEDITING = 0x80031001,
-		SIGDN_DESKTOPABSOLUTEEDITING = 0x8004c000,
-		SIGDN_FILESYSPATH = 0x80058000,
-		SIGDN_URL = 0x80068000,
-		SIGDN_PARENTRELATIVEFORADDRESSBAR = 0x8007c001,
-		SIGDN_PARENTRELATIVE  = 0x80080001,
-		SIGDN_PARENTRELATIVEFORUI  = 0x80094001,
+		SIGDN_PARENTRELATIVEPARSING = unchecked((int)0x80018001),
+		SIGDN_DESKTOPABSOLUTEPARSING = unchecked((int)0x80028000),
+		SIGDN_PARENTRELATIVEEDITING = unchecked((int)0x80031001),
+		SIGDN_DESKTOPABSOLUTEEDITING = unchecked((int)0x8004c000),
+		SIGDN_FILESYSPATH = unchecked((int)0x80058000),
+		SIGDN_URL = unchecked((int)0x80068000),
+		SIGDN_PARENTRELATIVEFORADDRESSBAR = unchecked((int)0x8007c001),
+		SIGDN_PARENTRELATIVE = unchecked((int)0x80080001),
+		SIGDN_PARENTRELATIVEFORUI = unchecked((int)0x80094001),
 	}
 }

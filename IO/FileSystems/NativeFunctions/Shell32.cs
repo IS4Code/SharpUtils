@@ -73,7 +73,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			[DllImport("shell32.dll", PreserveSig=false)]
-			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex = 2)]
+			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex = 1)]
 			static extern object SHCreateItemFromIDList(IntPtr pidl, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
 			
 			[DebuggerStepThrough]
@@ -122,7 +122,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			[DllImport("shell32.dll", PreserveSig=false)]
-			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=4)]
+			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=3)]
 			static extern object SHGetKnownFolderItem([MarshalAs(UnmanagedType.LPStruct)]Guid rfid, int dwFlags, IntPtr hToken, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
 			
 			
@@ -133,14 +133,28 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				return (T)SHGetKnownFolderItem(rfid, dwFlags, hToken, typeof(T).GUID);
 			}
 			
+			[DebuggerStepThrough]
 			public static IShellLink CreateShellLink()
 			{
 				return (IShellLink)new ShellLink();
 			}
 			
+			[DebuggerStepThrough]
+			public static IFileOperation CreateFileOperation()
+			{
+				return (IFileOperation)new FileOperation();
+			}
+			
 		    [ComImport]
 			[Guid("00021401-0000-0000-C000-000000000046")]
 			private class ShellLink
+			{
+				
+			}
+			
+		    [ComImport]
+			[Guid("3AD05575-8857-4850-9277-11B85BDB8E09")]
+			private class FileOperation
 			{
 				
 			}
