@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
-using IllidanS4.SharpUtils.COM;
+using IllidanS4.SharpUtils.Com;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems

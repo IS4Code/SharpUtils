@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace IllidanS4.SharpUtils.COM
+namespace IllidanS4.SharpUtils.Com
 {
 	[ComImport]
 	[Guid("00000109-0000-0000-C000-000000000046")]

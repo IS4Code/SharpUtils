@@ -1,7 +1,7 @@
 ﻿/* Date: 21.9.2017, Time: 11:10 */
 using System;
 
-namespace IllidanS4.SharpUtils.COM
+namespace IllidanS4.SharpUtils.Com
 {
 	public enum HRESULT
 	{

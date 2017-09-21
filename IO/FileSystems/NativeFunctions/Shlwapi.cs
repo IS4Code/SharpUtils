@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using IllidanS4.SharpUtils.COM;
+using IllidanS4.SharpUtils.Com;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {

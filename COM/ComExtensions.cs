@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace IllidanS4.SharpUtils.COM
+namespace IllidanS4.SharpUtils.Com
 {
 	[CLSCompliant(false)]
 	public static class ComExtensions

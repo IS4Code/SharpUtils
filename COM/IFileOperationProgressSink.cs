@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace IllidanS4.SharpUtils.COM
+namespace IllidanS4.SharpUtils.Com
 {
 	[ComImport]
 	[Guid("04B0F1A7-9490-44BC-96E1-4296A31252E2")]
