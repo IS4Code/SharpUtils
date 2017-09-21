@@ -140,6 +140,7 @@
     <Compile Include="Interop\WinApi\Kernel32.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
+    <Compile Include="Interop\WinApi\Native.cs" />
     <Compile Include="Interop\WinApi\PsApi.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
