@@ -120,8 +120,6 @@
     <Compile Include="Com\IStreamWrapper.cs" />
     <Compile Include="Com\StreamToIStreamMarshaler.cs" />
     <Compile Include="Com\StreamWrapper.cs" />
-    <Compile Include="Coroutines\Coroutine.cs" />
-    <Compile Include="Coroutines\CoroutineStatus.cs" />
     <Compile Include="Empty.cs" />
     <Compile Include="Interop\LibImportAttribute.cs">
       <DependentUpon>NativeLibrary.cs</DependentUpon>
@@ -273,7 +271,6 @@
     <Compile Include="Unsafe\VariadicUnion.cs" />
     <Compile Include="_Examples.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Globalization\Term.cs" />
     <Compile Include="Hacks.cs" />
     <Compile Include="Interop\BitUtils.cs" />
     <Compile Include="Interop\InteropTools.cs" />
@@ -421,8 +418,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Collections\Async" />
-    <Folder Include="Coroutines" />
-    <Folder Include="Globalization" />
     <Folder Include="Accessing" />
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
