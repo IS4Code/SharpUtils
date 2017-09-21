@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.COM;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
@@ -184,18 +185,29 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			var rel = baseUri.MakeRelativeUri(uri);
 			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "uri");
 			if(String.IsNullOrEmpty(rel.OriginalString)) return GetDesktop();
-			var segments = rel.OriginalString.Split('/').Where(s => s != ".").Select(s => HttpUtility.UrlDecode(s));
+			var segments = rel.OriginalString.Split('/').Where(s => s != "." && s != "").Select(s => HttpUtility.UrlDecode(s)).ToList();
 			
-			IShellItem item = GetDesktop();
-			/*IntPtr pidl = Shell32.SHGetIDListFromObject(parent);
-			IShellFolder psf = null;*/
+			if(segments.Count == 0) return GetDesktop();
+			
+			IShellItem item = null;
 			foreach(var name in segments)
 			{
-				/*var psf = Shell32.SHBindToObject<IShellFolder>(null, pidl, null);
-				uint tmp;
-				psf.ParseDisplayName(OwnerHwnd, null, name, out tmp, out pidl, 0);
-				item = Shell32.SHCreateItemWithParent<IShellItem>(IntPtr.Zero, psf, pidl);*/
-				
+				if(item == null)
+				{
+					try{
+						item = Shell32.SHCreateItemFromParsingName<IShellItem>("shell:"+name, null);
+						continue;
+					}catch(IOException)
+					{
+						try{
+							item = Shell32.SHCreateItemFromParsingName<IShellItem>(name, null);
+							continue;
+						}catch(IOException)
+						{
+							item = GetDesktop();
+						}
+					}
+				}
 				var psf = item.BindToHandler<IShellFolder>(null, Shell32.BHID_SFObject);
 				uint tmp;
 				IntPtr pidl;
@@ -228,11 +240,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					if(!Shell32.ILRemoveLastID(pidlrel)) break; //TODO check if really desktop
 					list.Push(name);
 				}
-			}/*catch(ArgumentException) //rough fallback
-			{
-				string test = Shell32.SHGetNameFromIDList(pidlrel, SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-				return ConstructDataLink(pidl);
-			}*/finally{
+			}finally{
 				Marshal.FreeCoTaskMem(pidlrel);
 			}
 			
@@ -270,7 +278,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public FileAttributes GetAttributes(Uri uri)
 		{
-			throw new NotImplementedException();
+			var item = (IShellItem2)GetItem(uri);
+			try{
+				return (FileAttributes)item.GetUInt32(Shell32.PKEY_FileAttributes);
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
 		}
 		
 		public DateTime GetCreationTime(Uri uri)
@@ -410,7 +423,103 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			return list;
 		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		{
+			IShellItem source = null, target = null;
+			string name = null;
+			FileAttributes attributes = 0;
+			IPropertyChangeArray properties = null;
+			
+			switch(operation)
+			{
+				case ResourceOperation.Create:
+					attributes = (FileAttributes)arg;
+					name = HttpUtility.UrlDecode(uri.Segments[uri.Segments.Length-1]);
+					uri = new Uri(uri, ".");
+					source = GetItem(uri);
+					break;
+				case ResourceOperation.Delete:
+					source = GetItem(uri);
+					break;
+				case ResourceOperation.Move:
+					source = GetItem(uri);
+					name = arg as string;
+					if(name == null)
+					{
+						uri = (Uri)arg;
+						name = HttpUtility.UrlDecode(uri.Segments[uri.Segments.Length-1]);
+						uri = new Uri(uri, ".");
+						target = GetItem(uri);
+					}
+					break;
+				case ResourceOperation.Copy:
+					source = GetItem(uri);
+					uri = (Uri)arg;
+					name = HttpUtility.UrlDecode(uri.Segments[uri.Segments.Length-1]);
+					uri = new Uri(uri, ".");
+					target = GetItem(uri);
+					break;
+				case ResourceOperation.ChangeAttributes:
+					source = GetItem(uri);
+					attributes = (FileAttributes)arg;
+					var propvar = Propsys.VariantToPropVariant((uint)attributes);
+					properties = Propsys.PSCreatePropertyChangeArray<IPropertyChangeArray>(new[]{Shell32.PKEY_FileAttributes}, new[]{Propsys.PKA_FLAGS.PKA_SET}, new[]{propvar});
+					break;
+			}
+			
+			FileOperationProgressSink sink;
+			var op = CreateOperation(operation, source, target, name, attributes, properties, out sink);
+			return Task.Run((Func<Task<ResourceHandle>>)(async ()=>await FinishOperation(op, sink)));
+		}
 		#endregion
+		
+		private async Task<ResourceHandle> FinishOperation(IFileOperation operation, FileOperationProgressSink sink)
+		{
+			operation.PerformOperations();
+			await sink.WhenCompleted();
+			var item = sink.CreatedItems.LastOrDefault();
+			if(item != null)
+			{
+				return new ShellFileHandle(item, this);
+			}else{
+				return null;
+			}
+		}
+		
+		private IFileOperation CreateOperation(ResourceOperation operation, IShellItem source, IShellItem target, string name, FileAttributes attributes, IPropertyChangeArray properties, out FileOperationProgressSink sink)
+		{
+			var op = Shell32.CreateFileOperation();
+			sink = new FileOperationProgressSink();
+			op.Advise(sink);
+			op.SetOwnerWindow(OwnerHwnd);
+			op.SetOperationFlags(0x0400 | 0x0004 | 0x0200 | 0x00100000);
+			switch(operation)
+			{
+				case ResourceOperation.Create:
+					op.NewItem(source, attributes, name, null, null);
+					break;
+				case ResourceOperation.Delete:
+					op.DeleteItem(source, null);
+					break;
+				case ResourceOperation.Move:
+					if(target == null)
+					{
+						op.RenameItem(source, name, null);
+					}else{
+						op.MoveItem(source, target, name, null);
+					}
+					break;
+				case ResourceOperation.Copy:
+					op.CopyItem(source, target, name, null);
+					break;
+				case ResourceOperation.ChangeAttributes:
+					op.SetProperties(properties);
+					op.ApplyPropertiesToItem(source);
+					break;
+			}
+			return op;
+		}
 		
 		internal object GetTargetItem(IShellItem shellItem)
 		{
@@ -425,7 +534,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			var attr = item.GetAttributes(SFGAOF.SFGAO_LINK | SFGAOF.SFGAO_FILESYSTEM);
 			
-			IShellItem target;
 			if((attr & SFGAOF.SFGAO_LINK) != 0)
 			{
 				return item.BindToHandler<IShellItem>(null, Shell32.BHID_LinkTargetItem);
@@ -448,6 +556,110 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			IntPtr pidl = Shell32.SHGetIDListFromObject(item);
 			return GetShellUri(pidl, true);
+		}
+		
+		private class FileOperationProgressSink : IFileOperationProgressSink
+		{
+			readonly TaskCompletionSource<object> task;
+			
+			public List<IShellItem> CreatedItems{get; private set;}
+			
+			public FileOperationProgressSink()
+			{
+				task = new TaskCompletionSource<object>();
+				CreatedItems = new List<IShellItem>();
+			}
+			
+			public Task WhenCompleted()
+			{
+				return task.Task;
+			}
+			
+			void IFileOperationProgressSink.StartOperations()
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.FinishOperations(HRESULT hrResult)
+			{
+				var exception = Marshal.GetExceptionForHR((int)hrResult);
+				if(exception != null)
+				{
+					task.TrySetException(exception);
+				}else{
+					task.TrySetResult(null);
+				}
+			}
+			
+			void IFileOperationProgressSink.PreRenameItem(int dwFlags, IShellItem psiItem, string pszNewName)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PostRenameItem(int dwFlags, IShellItem psiItem, string pszNewName, HRESULT hrRename, IShellItem psiNewlyCreated)
+			{
+				CreatedItems.Add(psiNewlyCreated);
+			}
+			
+			void IFileOperationProgressSink.PreMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PostMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName, HRESULT hrMove, IShellItem psiNewlyCreated)
+			{
+				CreatedItems.Add(psiNewlyCreated);
+			}
+			
+			void IFileOperationProgressSink.PreCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PostCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName, HRESULT hrCopy, IShellItem psiNewlyCreated)
+			{
+				CreatedItems.Add(psiNewlyCreated);
+			}
+			
+			void IFileOperationProgressSink.PreDeleteItem(int dwFlags, IShellItem psiItem)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PostDeleteItem(int dwFlags, IShellItem psiItem, HRESULT hrDelete, IShellItem psiNewlyCreated)
+			{
+				CreatedItems.Add(psiNewlyCreated);
+			}
+			
+			void IFileOperationProgressSink.PreNewItem(int dwFlags, IShellItem psiDestinationFolder, string pszNewName)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PostNewItem(int dwFlags, IShellItem psiDestinationFolder, string pszNewName, string pszTemplateName, int dwFileAttributes, HRESULT hrNew, IShellItem psiNewItem)
+			{
+				CreatedItems.Add(psiNewItem);
+			}
+			
+			void IFileOperationProgressSink.UpdateProgress(int iWorkTotal, int iWorkSoFar)
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.ResetTimer()
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.PauseTimer()
+			{
+				
+			}
+			
+			void IFileOperationProgressSink.ResumeTimer()
+			{
+				
+			}
 		}
 	}
 }

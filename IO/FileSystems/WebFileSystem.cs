@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -140,6 +141,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			return request.GetResponse();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

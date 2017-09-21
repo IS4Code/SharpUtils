@@ -28,6 +28,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				
 			}
 			
+			public ShellFileHandle(IShellItem item, ShellFileSystem fs) : this(Shell32.SHGetIDListFromObject(item), fs, true)
+			{
+				
+			}
+			
 			private ShellFileHandle(IntPtr pidl, ShellFileSystem fs, bool own) : base(fs)
 			{
 				this.pidl = own ? pidl : Shell32.ILClone(pidl);
@@ -221,7 +226,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override FileAttributes Attributes{
 				get{
-					throw new NotImplementedException();
+					var item = (IShellItem2)GetItem();
+					try{
+						return (FileAttributes)item.GetUInt32(Shell32.PKEY_FileAttributes);
+					}finally{
+						Marshal.FinalReleaseComObject(item);
+					}
 				}
 			}
 		}

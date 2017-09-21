@@ -1,5 +1,6 @@
 ﻿/* Date: 20.9.2017, Time: 23:32 */
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace IllidanS4.SharpUtils.COM
@@ -14,7 +15,7 @@ namespace IllidanS4.SharpUtils.COM
 		PROPERTYKEY GetPropertyKey();
 		
 		//IPropertyChange
-		IntPtr ApplyToPropVariant(IntPtr propvarIn);
+		PROPVARIANT ApplyToPropVariant(ref PROPVARIANT propvarIn);
 	}
 	
 	[ComImport]
@@ -30,6 +31,12 @@ namespace IllidanS4.SharpUtils.COM
 		void AppendOrReplace(IPropertyChange ppropChange);
 		void RemoveAt(int iIndex);
 		[PreserveSig]
-		int IsKeyInArray(ref PROPERTYKEY key);
+		HRESULT IsKeyInArray(ref PROPERTYKEY key);
+	}
+			
+	[StructLayout(LayoutKind.Sequential, Size=16)]
+	public struct PROPVARIANT
+	{
+		uint vt;
 	}
 }

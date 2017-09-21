@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.COM
 		Guid GetClassID();
 		
 		[PreserveSig]
-		int IsDirty();
+		HRESULT IsDirty();
 		
 		void Load(IStream pStm);
 		void Save(IStream pStm, bool fClearDirty);

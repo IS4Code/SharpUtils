@@ -237,5 +237,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		{
 			throw new NotImplementedException();
 		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

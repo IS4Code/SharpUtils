@@ -103,6 +103,7 @@
     <Compile Include="Collections\MutableList.cs" />
     <Compile Include="Collections\ValueTypeEnumerator.cs" />
     <Compile Include="COM\ComExtensions.cs" />
+    <Compile Include="COM\HRESULT.cs" />
     <Compile Include="COM\IDispatch.cs" />
     <Compile Include="COM\IEnumIDList.cs" />
     <Compile Include="COM\IEnumShellItems.cs" />
@@ -163,6 +164,7 @@
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Kernel32.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Ntdll.cs" />
+    <Compile Include="IO\FileSystems\NativeFunctions\Propsys.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Shell32.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Shlwapi.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Urlmon.cs" />
@@ -177,6 +179,7 @@
     <Compile Include="IO\FileSystems\IFileSystem.cs" />
     <Compile Include="IO\FileSystems\WebFileSystem.cs" />
     <Compile Include="IO\FileSystems\Win32FileSystem.cs" />
+    <Compile Include="IO\ResourceOperation.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />

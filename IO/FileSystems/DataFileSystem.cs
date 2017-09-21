@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.IO.FileSystems.DataExtensions;
 
@@ -130,6 +131,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		public List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
 		{
 			throw new NotImplementedException();
 		}

@@ -10,17 +10,17 @@ namespace IllidanS4.SharpUtils.COM
 	public interface IFileOperationProgressSink
 	{
 		void StartOperations();
-		void FinishOperations(int hrResult);
+		void FinishOperations(HRESULT hrResult);
 		void PreRenameItem(int dwFlags, IShellItem psiItem, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName);
-		void PostRenameItem(int dwFlags, IShellItem psiItem, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, int hrRename, IShellItem psiNewlyCreated);
+		void PostRenameItem(int dwFlags, IShellItem psiItem, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, HRESULT hrRename, IShellItem psiNewlyCreated);
 		void PreMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName);
-		void PostMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, int hrMove, IShellItem psiNewlyCreated);
+		void PostMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, HRESULT hrMove, IShellItem psiNewlyCreated);
 		void PreCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName);
-		void PostCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, int hrCopy, IShellItem psiNewlyCreated);
+		void PostCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, HRESULT hrCopy, IShellItem psiNewlyCreated);
 		void PreDeleteItem(int dwFlags, IShellItem psiItem);
-		void PostDeleteItem(int dwFlags, IShellItem psiItem, int hrDelete, IShellItem psiNewlyCreated);
+		void PostDeleteItem(int dwFlags, IShellItem psiItem, HRESULT hrDelete, IShellItem psiNewlyCreated);
 		void PreNewItem(int dwFlags, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName);
-		void PostNewItem(int dwFlags, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, [MarshalAs(UnmanagedType.LPWStr)]string pszTemplateName, int dwFileAttributes, int hrNew, IShellItem psiNewItem);
+		void PostNewItem(int dwFlags, IShellItem psiDestinationFolder, [MarshalAs(UnmanagedType.LPWStr)]string pszNewName, [MarshalAs(UnmanagedType.LPWStr)]string pszTemplateName, int dwFileAttributes, HRESULT hrNew, IShellItem psiNewItem);
 		void UpdateProgress(int iWorkTotal, int iWorkSoFar);
 		void ResetTimer();
 		void PauseTimer();

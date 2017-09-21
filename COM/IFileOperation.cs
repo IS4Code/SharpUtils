@@ -1,5 +1,6 @@
 ﻿/* Date: 20.9.2017, Time: 23:02 */
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace IllidanS4.SharpUtils.COM
@@ -26,7 +27,7 @@ namespace IllidanS4.SharpUtils.COM
 		void CopyItems([MarshalAs(UnmanagedType.IUnknown)]object punkItems, IShellItem psiDestinationFolder);
 		void DeleteItem(IShellItem psiItem, IFileOperationProgressSink pfopsItem);
 		void DeleteItems([MarshalAs(UnmanagedType.IUnknown)]object punkItems);
-		void NewItem( IShellItem psiDestinationFolder, int dwFileAttributes, [MarshalAs(UnmanagedType.LPWStr)]string pszName, [MarshalAs(UnmanagedType.LPWStr)]string pszTemplateName, IFileOperationProgressSink pfopsItem);
+		void NewItem(IShellItem psiDestinationFolder, FileAttributes dwFileAttributes, [MarshalAs(UnmanagedType.LPWStr)]string pszName, [MarshalAs(UnmanagedType.LPWStr)]string pszTemplateName, IFileOperationProgressSink pfopsItem);
 		void PerformOperations();
 		bool GetAnyOperationsAborted();
 	}

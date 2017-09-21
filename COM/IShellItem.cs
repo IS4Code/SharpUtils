@@ -11,7 +11,7 @@ namespace IllidanS4.SharpUtils.COM
 	public interface IShellItem
 	{
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
-		object BindToHandler(IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid bhid, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+		object BindToHandler(IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)]Guid bhid, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
         IShellItem GetParent();
         [return: MarshalAs(UnmanagedType.LPWStr)]
         string GetDisplayName(SIGDN sigdnName);

@@ -1,8 +1,10 @@
 ﻿/* Date: 7.9.2017, Time: 13:51 */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -85,7 +87,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}
 		
-		public System.Collections.Generic.List<Uri> GetResources(Uri uri)
+		public List<Uri> GetResources(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
 		{
 			throw new NotImplementedException();
 		}

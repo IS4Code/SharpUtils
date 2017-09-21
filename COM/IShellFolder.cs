@@ -14,15 +14,15 @@ namespace IllidanS4.SharpUtils.COM
 	    void ParseDisplayName(IntPtr hwnd, IBindCtx pbc, [MarshalAs(UnmanagedType.LPWStr)]string pszDisplayName, out uint pchEaten, out IntPtr ppidl, ref uint pdwAttributes);
 		IEnumIDList EnumObjects(IntPtr hwnd, SHCONTF grfFlags);
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
-	    object BindToObject(IntPtr pidl, IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+	    object BindToObject(IntPtr pidl, IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
-	    object BindToStorage(IntPtr pidl, IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
-		[PreserveSig]Int32 CompareIDs(Int32 lParam, IntPtr pidl1, IntPtr pidl2);
+	    object BindToStorage(IntPtr pidl, IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
+		[PreserveSig]HRESULT CompareIDs(Int32 lParam, IntPtr pidl1, IntPtr pidl2);
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
 	    object CreateViewObject(IntPtr hwndOwner, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
-		void GetAttributesOf(uint cidl, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]IntPtr[] apidl, ref SFGAOF rgfInOut);
+		void GetAttributesOf(uint cidl, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=0)]IntPtr[] apidl, ref SFGAOF rgfInOut);
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=3)]
-	    object GetUIObjectOf(IntPtr hwndOwner, uint cidl, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]IntPtr[] apidl, [MarshalAs(UnmanagedType.LPStruct)] Guid riid, ref uint rgfReserved);
+	    object GetUIObjectOf(IntPtr hwndOwner, uint cidl, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)]IntPtr[] apidl, [MarshalAs(UnmanagedType.LPStruct)]Guid riid, ref uint rgfReserved);
 		STRRET GetDisplayNameOf(IntPtr pidl, SHGDNF uFlags);
 		IntPtr SetNameOf(IntPtr hwnd, IntPtr pidl, [MarshalAs(UnmanagedType.LPWStr)]string pszName, SHGDNF uFlags);
 	}

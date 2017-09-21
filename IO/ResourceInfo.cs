@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.IO.FileSystems;
 
@@ -274,6 +275,36 @@ namespace IllidanS4.SharpUtils.IO
 		public override string ToString()
 		{
 			return HttpUtility.UrlDecode(AbsoluteUri);
+		}
+		
+		public Task<ResourceHandle> Rename(string newName)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Move, newName);
+		}
+		
+		public Task<ResourceHandle> Move(Uri newUri)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Move, newUri);
+		}
+		
+		public Task<ResourceHandle> Copy(Uri newUri)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Copy, newUri);
+		}
+		
+		public Task<ResourceHandle> Delete()
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Delete, null);
+		}
+		
+		public Task<ResourceHandle> ChangeAttributes(FileAttributes newAttributes)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.ChangeAttributes, newAttributes);
+		}
+		
+		public Task<ResourceHandle> Create(FileAttributes attributes)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Create, attributes);
 		}
 	}
 }

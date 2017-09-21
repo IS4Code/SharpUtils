@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
@@ -272,6 +273,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			return list;
+		}
+		
+		protected override Task<ResourceHandle> PerformOperationAsyncInternal(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
 		}
 		#endregion
 	}

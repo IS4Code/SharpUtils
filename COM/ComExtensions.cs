@@ -67,5 +67,11 @@ namespace IllidanS4.SharpUtils.COM
 		{
 			return (T)psf.GetUIObjectOf(hwndOwner, unchecked((uint)apidl.Length), apidl, typeof(T).GUID, ref rgfReserved);
 		}
+		
+		[DebuggerStepThrough]
+		public static T GetAt<T>(this IPropertyChangeArray pproparray, int iIndex) where T : class
+		{
+			return (T)pproparray.GetAt(iIndex, typeof(T).GUID);
+		}
 	}
 }

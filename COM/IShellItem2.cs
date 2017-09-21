@@ -42,7 +42,7 @@ namespace IllidanS4.SharpUtils.COM
 	}
 	
 	[StructLayout(LayoutKind.Sequential)]
-	public struct PROPERTYKEY
+	public struct PROPERTYKEY : IEquatable<PROPERTYKEY>
 	{
 		public Guid fmtid;
 		public int pid;
@@ -52,6 +52,37 @@ namespace IllidanS4.SharpUtils.COM
 			this.fmtid = new Guid(fmtid);
 			this.pid = pid;
 		}
+		
+		public bool Equals(PROPERTYKEY other)
+		{
+			return this.fmtid == other.fmtid && this.pid == other.pid;
+		}
+		
+		public override bool Equals(object obj)
+		{
+			return (obj is PROPERTYKEY) && Equals((PROPERTYKEY)obj);
+		}
+		
+		public override int GetHashCode()
+		{
+			int hashCode = 0;
+			unchecked {
+				hashCode += 1000000007 * fmtid.GetHashCode();
+				hashCode += 1000000009 * pid.GetHashCode();
+			}
+			return hashCode;
+		}
+		
+		public static bool operator ==(PROPERTYKEY lhs, PROPERTYKEY rhs)
+		{
+			return lhs.Equals(rhs);
+		}
+		
+		public static bool operator !=(PROPERTYKEY lhs, PROPERTYKEY rhs)
+		{
+			return !(lhs == rhs);
+		}
+
 	}
 	
 	[Flags]
