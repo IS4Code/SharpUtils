@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -176,8 +177,25 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-			public static extern int GetFileAttributes(string lpFileName);
+			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="GetFileAttributes")]
+			static extern int _GetFileAttributes(string lpFileName);
+			
+			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="SetFileAttributes")]
+			static extern bool _SetFileAttributes(string lpFileName, int dwFileAttributes);
+			
+			[DebuggerStepThrough]
+			public static int GetFileAttributes(string lpFileName)
+			{
+				int attr = _GetFileAttributes(lpFileName);
+				if(attr == -1) throw new Win32Exception();
+				return attr;
+			}
+			
+			[DebuggerStepThrough]
+			public static void SetFileAttributes(string lpFileName, int dwFileAttributes)
+			{
+				if(!_SetFileAttributes(lpFileName, dwFileAttributes)) throw new Win32Exception();
+			}
 			
 			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
 			static extern bool GetFileAttributesEx(string lpFileName, int fInfoLevelId, out WIN32_FILE_ATTRIBUTE_DATA fileData);
@@ -220,11 +238,86 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    [DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
 		    static extern int GetFinalPathNameByHandle(IntPtr hFile, StringBuilder lpszFilePath, int cchFilePath, int dwFlags);
 			
+		    [DllImport("kernel32.dll")]
+		    public static extern bool CompareObjectHandles(IntPtr hFirstObjectHandle, IntPtr hSecondObjectHandle);
+		    
 		    [DllImport("kernel32.dll", SetLastError=true, EntryPoint="CloseHandle")]
 		    static extern bool _CloseHandle(IntPtr hObject);
 		    
 		    [DllImport("kernel32.dll", SetLastError=true)]
 		    static extern bool DuplicateHandle(IntPtr hSourceProcessHandle, IntPtr hSourceHandle, IntPtr hTargetProcessHandle, out IntPtr lpTargetHandle, int dwDesiredAccess, bool bInheritHandle, int dwOptions);
+		    
+		    [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
+		    static extern bool CopyFileEx(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, IntPtr lpData, IntPtr pbCancel, int dwCopyFlags);
+		    
+			[DebuggerStepThrough]
+		    public static bool CopyFileEx(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, int dwCopyFlags, bool throwOnCancel)
+		    {
+		    	bool ok = CopyFileEx(lpExistingFileName, lpNewFileName, lpProgressRoutine, IntPtr.Zero, IntPtr.Zero, dwCopyFlags);
+		    	if(!ok)
+		    	{
+		    		var exception = new Win32Exception();
+		    		if(throwOnCancel || unchecked((uint)exception.NativeErrorCode != 1235)) throw exception;
+		    		return false;
+		    	}
+		    	return true;
+		    }
+		    
+			[DebuggerStepThrough]
+		    public static bool CopyFileEx(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, int dwCopyFlags, CancellationToken cancellationToken)
+		    {
+		    	IntPtr pbCancel = Marshal.AllocHGlobal(4);
+		    	try{
+			    	cancellationToken.Register(()=>Marshal.WriteInt32(pbCancel, 1));
+			    	bool ok = CopyFileEx(lpExistingFileName, lpNewFileName, lpProgressRoutine, IntPtr.Zero, pbCancel, dwCopyFlags);
+			    	if(!ok)
+			    	{
+			    		var exception = new Win32Exception();
+			    		if(unchecked((uint)exception.NativeErrorCode != 1235)) throw exception;
+			    		return false;
+			    	}
+		    	}finally{
+		    		Marshal.FreeHGlobal(pbCancel);
+		    	}
+		    	return true;
+		    }
+		    
+		    public delegate int CopyProgressRoutine(long TotalFileSize, long TotalBytesTransferred, long StreamSize, long StreamBytesTransferred, int dwStreamNumber, int dwCallbackReason, IntPtr hSourceFile, IntPtr hDestinationFile, IntPtr lpData);
+		    
+		    [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto, EntryPoint="MoveFileEx")]
+		    static extern bool _MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags);
+		    
+			[DebuggerStepThrough]
+		    public static void MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags)
+		    {
+		    	bool ok = _MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags);
+		    	if(!ok) throw new Win32Exception();
+		    }
+		    
+		    [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto, EntryPoint="DeleteFile")]
+		    static extern bool _DeleteFile(string lpFileName);
+		    
+			[DebuggerStepThrough]
+			public static void DeleteFile(string lpFileName)
+			{
+				if(!_DeleteFile(lpFileName)) throw new Win32Exception();
+			}
+			
+			[DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
+			static extern bool MoveFileWithProgress(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, IntPtr lpData, int dwFlags);
+			
+			[DebuggerStepThrough]
+		    public static bool MoveFileWithProgress(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, int dwFlags, bool throwOnCancel)
+		    {
+		    	bool ok = MoveFileWithProgress(lpExistingFileName, lpNewFileName, lpProgressRoutine, IntPtr.Zero, dwFlags);
+		    	if(!ok)
+		    	{
+		    		var exception = new Win32Exception();
+		    		if(throwOnCancel || unchecked((uint)exception.NativeErrorCode != 1235)) throw exception;
+		    		return false;
+		    	}
+		    	return true;
+		    }
 			
 			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
 			public struct WIN32_FIND_DATA

@@ -114,6 +114,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					return fs.GetDisplayPath(uri);
 				}
 			}
+			
+			public override int GetHashCode()
+			{
+				return handle.GetHashCode();
+			}
+			
+			public override bool Equals(ResourceHandle other)
+			{
+				var handle = (Win32FileHandle)other;
+				if(handle != null) return Kernel32.CompareObjectHandles(this.handle, handle.handle);
+				return false;
+			}
 		}
 	}
 }

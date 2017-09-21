@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.IO.FileSystems.DataExtensions;
@@ -135,7 +136,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

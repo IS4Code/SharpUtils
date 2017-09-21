@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
@@ -275,10 +276,129 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return list;
 		}
 		
-		protected override Task<ResourceHandle> PerformOperationAsyncInternal(Uri uri, ResourceOperation operation, object arg)
+		protected override ResourceHandle PerformOperationInternal(Uri uri, ResourceOperation operation, object arg)
 		{
-			throw new NotImplementedException();
+			Uri target;
+			string tpath, spath;
+			switch(operation)
+			{
+				case ResourceOperation.Create:
+					spath = GetPath(uri);
+					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, IntPtr.Zero);
+					try{
+						return new Win32FileHandle(uri, handle, this);
+					}finally{
+						Kernel32.CloseHandle(handle);
+					}
+				case ResourceOperation.Delete:
+					spath = GetPath(uri);
+					Kernel32.DeleteFile(spath);
+					break;
+				case ResourceOperation.Move:
+					string name = arg as string;
+					if(name != null)
+					{
+						target = new Uri(uri, name);
+					}else{
+						target = (Uri)arg;
+					}
+					spath = GetPath(uri);
+					tpath = GetPath(target);
+					Kernel32.MoveFileEx(spath, tpath, 0x2 | 0x8);
+					break;
+				case ResourceOperation.Copy:
+					target = (Uri)arg;
+					spath = GetPath(uri);
+					tpath = GetPath(target);
+					Kernel32.CopyFileEx(spath, tpath, null, 0x00000800 | 0x00000001, true);
+					break;
+				case ResourceOperation.ChangeAttributes:
+					spath = GetPath(uri);
+					Kernel32.SetFileAttributes(spath, (int)(FileAttributes)arg);
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+			return null;
+		}
+		
+		protected override async Task<ResourceHandle> PerformOperationAsyncInternal(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			
+			Uri target;
+			string tpath, spath;
+			switch(operation)
+			{
+				case ResourceOperation.Create:
+					spath = GetPath(uri);
+					cancellationToken.ThrowIfCancellationRequested();
+					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, IntPtr.Zero);
+					try{
+						return new Win32FileHandle(uri, handle, this);
+					}finally{
+						Kernel32.CloseHandle(handle);
+					}
+				case ResourceOperation.Delete:
+					spath = GetPath(uri);
+					cancellationToken.ThrowIfCancellationRequested();
+					Kernel32.DeleteFile(spath);
+					break;
+				case ResourceOperation.Move:
+					string name = arg as string;
+					if(name != null)
+					{
+						target = new Uri(uri, name);
+					}else{
+						target = (Uri)arg;
+					}
+					spath = GetPath(uri);
+					tpath = GetPath(target);
+					await MoveFile(spath, tpath, cancellationToken);
+					break;
+				case ResourceOperation.Copy:
+					target = (Uri)arg;
+					spath = GetPath(uri);
+					tpath = GetPath(target);
+					await CopyFile(spath, tpath, cancellationToken);
+					break;
+				case ResourceOperation.ChangeAttributes:
+					spath = GetPath(uri);
+					Kernel32.SetFileAttributes(spath, (int)(FileAttributes)arg);
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+			return null;
 		}
 		#endregion
+		
+		private async Task MoveFile(string source, string target, CancellationToken token)
+		{
+			Kernel32.CopyProgressRoutine progress = delegate{
+				return token.IsCancellationRequested ? 1 : 0;
+			};
+			token.ThrowIfCancellationRequested();
+			await Task.Run(
+				()=>{
+					bool ok = Kernel32.MoveFileWithProgress(source, target, progress, 0x2 | 0x8, false);
+					if(!ok) token.ThrowIfCancellationRequested();
+				}, token
+			);
+		}
+		
+		private async Task CopyFile(string source, string target, CancellationToken token)
+		{
+			Kernel32.CopyProgressRoutine progress = delegate{
+				return token.IsCancellationRequested ? 1 : 0;
+			};
+			token.ThrowIfCancellationRequested();
+			await Task.Run(
+				()=>{
+					bool ok = Kernel32.CopyFileEx(source, target, progress, 0x00000800 | 0x00000001, false);
+					if(!ok) token.ThrowIfCancellationRequested();
+				}, token
+			);
+		}
 	}
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.IO.FileSystems;
@@ -277,34 +278,39 @@ namespace IllidanS4.SharpUtils.IO
 			return HttpUtility.UrlDecode(AbsoluteUri);
 		}
 		
-		public Task<ResourceHandle> Rename(string newName)
+		public ResourceHandle Rename(string newName)
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Move, newName);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.Move, newName);
 		}
 		
-		public Task<ResourceHandle> Move(Uri newUri)
+		public ResourceHandle Move(Uri newUri)
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Move, newUri);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.Move, newUri);
 		}
 		
-		public Task<ResourceHandle> Copy(Uri newUri)
+		public ResourceHandle Copy(Uri newUri)
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Copy, newUri);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.Copy, newUri);
 		}
 		
-		public Task<ResourceHandle> Delete()
+		public ResourceHandle Delete()
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Delete, null);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.Delete, null);
 		}
 		
-		public Task<ResourceHandle> ChangeAttributes(FileAttributes newAttributes)
+		public ResourceHandle ChangeAttributes(FileAttributes newAttributes)
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.ChangeAttributes, newAttributes);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.ChangeAttributes, newAttributes);
 		}
 		
-		public Task<ResourceHandle> Create(FileAttributes attributes)
+		public ResourceHandle Create(FileAttributes attributes)
 		{
-			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Create, attributes);
+			return fileSystem.PerformOperation(Uri, ResourceOperation.Create, attributes);
+		}
+		
+		public Task<ResourceHandle> CopyAsync(Uri newUri, CancellationToken cancellationToken)
+		{
+			return fileSystem.PerformOperationAsync(Uri, ResourceOperation.Copy, newUri, cancellationToken);
 		}
 	}
 }

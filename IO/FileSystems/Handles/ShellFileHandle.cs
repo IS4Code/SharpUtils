@@ -234,6 +234,24 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}
 				}
 			}
+			
+			public override int GetHashCode()
+			{
+				byte[] data = SaveIdList();
+	            int hash = 17;
+	            foreach(byte b in data)
+	            {
+	            	hash = unchecked(hash * 31 + b.GetHashCode());
+	            }
+	            return hash;
+			}
+			
+			public override bool Equals(ResourceHandle other)
+			{
+				var handle = (ShellFileHandle)other;
+				if(handle != null) return Shell32.ILIsEqual(pidl, handle.pidl);
+				return false;
+			}
 		}
 	}
 }

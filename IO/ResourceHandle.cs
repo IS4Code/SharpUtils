@@ -15,7 +15,7 @@ namespace IllidanS4.SharpUtils.IO
 	/// As the handle may contain unmanaged resources, call Dispose
 	/// when you are finished with an instance of this class.
 	/// </remarks>
-	public abstract class ResourceHandle : ResourceInfo, IDisposable
+	public abstract class ResourceHandle : ResourceInfo, IDisposable, IEquatable<ResourceHandle>
 	{
 		public ResourceHandle(IHandleProvider fileSystem) : base(fileSystem)
 		{
@@ -81,6 +81,31 @@ namespace IllidanS4.SharpUtils.IO
 		}
 		
 		protected abstract void Dispose(bool disposing);
+		
+		public abstract bool Equals(ResourceHandle other);
+		
+		public sealed override bool Equals(object obj)
+		{
+			var handle = obj as ResourceHandle;
+			if(handle != null) return Equals(handle);
+			return false;
+		}
+		
+		public abstract override int GetHashCode();
+		
+		public static bool operator ==(ResourceHandle lhs, ResourceHandle rhs)
+		{
+			if(ReferenceEquals(lhs, rhs))
+				return true;
+			if(ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+				return false;
+			return lhs.Equals(rhs);
+		}
+		
+		public static bool operator !=(ResourceHandle lhs, ResourceHandle rhs)
+		{
+			return !(lhs == rhs);
+		}
 		
 		public void Dispose()
 		{

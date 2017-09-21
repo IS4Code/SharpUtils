@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -22,6 +23,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		string GetLocalPath(Uri uri);
 		string GetDisplayPath(Uri uri);
 		List<Uri> GetResources(Uri uri);
-		Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg);
+		ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg);
+		
+		Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken);
 	}
 }

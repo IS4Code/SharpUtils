@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -92,7 +93,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

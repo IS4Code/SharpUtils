@@ -116,6 +116,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DllImport("shell32.dll")]
 			public static extern IntPtr ILCombine(IntPtr pidl1, IntPtr pidl2);
 			
+			[DllImport("shell32.dll")]
+			public static extern bool ILIsEqual(IntPtr pidl1, IntPtr pidl2);
+			
 			[DebuggerStepThrough]
 			public static bool ILIsEmpty(IntPtr pidl)
 			{

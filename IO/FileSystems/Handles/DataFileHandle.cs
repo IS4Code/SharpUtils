@@ -113,6 +113,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					throw new NotImplementedException();
 				}
 			}
+			
+			public override int GetHashCode()
+			{
+				return data.Uri.GetHashCode();
+			}
+			
+			public override bool Equals(ResourceHandle other)
+			{
+				var handle = (DataFileHandle)other;
+				if(handle != null) return data.Uri.Equals(handle.data.Uri);
+				return false;
+			}
 		}
 	}
 }

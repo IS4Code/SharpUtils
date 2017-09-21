@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using IllidanS4.SharpUtils.Com;
@@ -424,7 +425,34 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return list;
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
+		{
+			var sink = new FileOperationProgressSink();
+			var op = InitOperation(uri, operation, arg, sink);
+			return FinishOperation(op, sink);
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			var sink = new FileOperationProgressSink(cancellationToken);
+			var op = InitOperation(uri, operation, arg, sink);
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.Run(
+				()=>{
+					try{
+						return FinishOperation(op, sink);
+					}catch(OperationCanceledException)
+					{
+						cancellationToken.ThrowIfCancellationRequested();
+						throw;
+					}
+				}, cancellationToken
+			);
+		}
+		#endregion
+		
+		private IFileOperation InitOperation(Uri uri, ResourceOperation operation, object arg, FileOperationProgressSink sink)
 		{
 			IShellItem source = null, target = null;
 			string name = null;
@@ -466,18 +494,17 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var propvar = Propsys.VariantToPropVariant((uint)attributes);
 					properties = Propsys.PSCreatePropertyChangeArray<IPropertyChangeArray>(new[]{Shell32.PKEY_FileAttributes}, new[]{Propsys.PKA_FLAGS.PKA_SET}, new[]{propvar});
 					break;
+				default:
+					throw new NotImplementedException();
 			}
 			
-			FileOperationProgressSink sink;
-			var op = CreateOperation(operation, source, target, name, attributes, properties, out sink);
-			return Task.Run((Func<Task<ResourceHandle>>)(async ()=>await FinishOperation(op, sink)));
+			return CreateOperation(operation, source, target, name, attributes, properties, sink);
 		}
-		#endregion
 		
-		private async Task<ResourceHandle> FinishOperation(IFileOperation operation, FileOperationProgressSink sink)
+		private ResourceHandle FinishOperation(IFileOperation operation, FileOperationProgressSink sink)
 		{
 			operation.PerformOperations();
-			await sink.WhenCompleted();
+			//await sink.WhenCompleted();
 			var item = sink.CreatedItems.LastOrDefault();
 			if(item != null)
 			{
@@ -487,10 +514,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		private IFileOperation CreateOperation(ResourceOperation operation, IShellItem source, IShellItem target, string name, FileAttributes attributes, IPropertyChangeArray properties, out FileOperationProgressSink sink)
+		private IFileOperation CreateOperation(ResourceOperation operation, IShellItem source, IShellItem target, string name, FileAttributes attributes, IPropertyChangeArray properties, FileOperationProgressSink sink)
 		{
 			var op = Shell32.CreateFileOperation();
-			sink = new FileOperationProgressSink();
 			op.Advise(sink);
 			op.SetOwnerWindow(OwnerHwnd);
 			op.SetOperationFlags(0x0400 | 0x0004 | 0x0200 | 0x00100000);
@@ -517,6 +543,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					op.SetProperties(properties);
 					op.ApplyPropertiesToItem(source);
 					break;
+				default:
+					throw new NotImplementedException();
 			}
 			return op;
 		}
@@ -561,6 +589,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		private class FileOperationProgressSink : IFileOperationProgressSink
 		{
 			readonly TaskCompletionSource<object> task;
+			readonly CancellationToken cancellationToken;
 			
 			public List<IShellItem> CreatedItems{get; private set;}
 			
@@ -570,6 +599,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				CreatedItems = new List<IShellItem>();
 			}
 			
+			public FileOperationProgressSink(CancellationToken cancellationToken) : this()
+			{
+				this.cancellationToken = cancellationToken;
+			}
+			
 			public Task WhenCompleted()
 			{
 				return task.Task;
@@ -577,7 +611,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			void IFileOperationProgressSink.StartOperations()
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.FinishOperations(HRESULT hrResult)
@@ -593,57 +627,62 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			void IFileOperationProgressSink.PreRenameItem(int dwFlags, IShellItem psiItem, string pszNewName)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PostRenameItem(int dwFlags, IShellItem psiItem, string pszNewName, HRESULT hrRename, IShellItem psiNewlyCreated)
 			{
 				CreatedItems.Add(psiNewlyCreated);
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PreMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PostMoveItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName, HRESULT hrMove, IShellItem psiNewlyCreated)
 			{
 				CreatedItems.Add(psiNewlyCreated);
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PreCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PostCopyItem(int dwFlags, IShellItem psiItem, IShellItem psiDestinationFolder, string pszNewName, HRESULT hrCopy, IShellItem psiNewlyCreated)
 			{
 				CreatedItems.Add(psiNewlyCreated);
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PreDeleteItem(int dwFlags, IShellItem psiItem)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PostDeleteItem(int dwFlags, IShellItem psiItem, HRESULT hrDelete, IShellItem psiNewlyCreated)
 			{
 				CreatedItems.Add(psiNewlyCreated);
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PreNewItem(int dwFlags, IShellItem psiDestinationFolder, string pszNewName)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.PostNewItem(int dwFlags, IShellItem psiDestinationFolder, string pszNewName, string pszTemplateName, int dwFileAttributes, HRESULT hrNew, IShellItem psiNewItem)
 			{
 				CreatedItems.Add(psiNewItem);
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.UpdateProgress(int iWorkTotal, int iWorkSoFar)
 			{
-				
+				cancellationToken.ThrowIfCancellationRequested();
 			}
 			
 			void IFileOperationProgressSink.ResetTimer()

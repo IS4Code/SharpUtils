@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.Com
 	{
 		//IShellItem
 		[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
-		object BindToHandler(IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid bhid, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+		object BindToHandler(IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)]Guid bhid, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
         IShellItem GetParent();
         string GetDisplayName(SIGDN sigdnName);
         SFGAOF GetAttributes(SFGAOF sfgaoMask);
@@ -22,15 +22,15 @@ namespace IllidanS4.SharpUtils.Com
 		
         //IShellItem2
 	    [return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
-        object GetPropertyStore(GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+        object GetPropertyStore(GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
         [return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
-        object GetPropertyStoreWithCreateObject(GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.IUnknown)]object punkCreateObject, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+        object GetPropertyStoreWithCreateObject(GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.IUnknown)]object punkCreateObject, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
         [return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=3)]
-        object GetPropertyStoreForKeys([MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)]PROPERTYKEY[] rgKeys, uint cKeys, GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+        object GetPropertyStoreForKeys([MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)]PROPERTYKEY[] rgKeys, uint cKeys, GETPROPERTYSTOREFLAGS flags, [MarshalAs(UnmanagedType.LPStruct)]Guid riid);
         [return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
         object GetPropertyDescriptionList([In]ref PROPERTYKEY keyType, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
         void Update(IBindCtx pbc);
-        IntPtr GetProperty([In]ref PROPERTYKEY key);
+        PROPVARIANT GetProperty([In]ref PROPERTYKEY key);
         Guid GetCLSID([In]ref PROPERTYKEY key);
         FILETIME GetFileTime([In]ref PROPERTYKEY key);
         int GetInt32([In]ref PROPERTYKEY key);

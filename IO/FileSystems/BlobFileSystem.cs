@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -46,7 +47,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			private long length;
 			private bool locked;
 			
-			private PipeServer pipe;
+			//private PipeServer pipe;
 			
 			public BlobInfo(string name)
 			{
@@ -238,7 +239,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}

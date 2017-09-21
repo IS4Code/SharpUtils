@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -143,9 +144,61 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return request.GetResponse();
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
 		{
-			throw new NotImplementedException();
+			var request = CreateOperation(uri, operation, arg);
+			var resp = request.GetResponse();
+			return null;
+		}
+		
+		public async Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			var request = CreateOperation(uri, operation, arg);
+			cancellationToken.ThrowIfCancellationRequested();
+			var resp = await request.GetResponseAsync();
+			return null;
+		}
+		
+		private WebRequest CreateOperation(Uri uri, ResourceOperation operation, object arg)
+		{
+			var request = WebRequest.Create(uri);
+			
+			var ftp = request as FtpWebRequest;
+			if(ftp == null)
+			{
+				throw new NotImplementedException();
+			}
+			
+			string path = arg as string;
+			if(path == null)
+			{
+				var target = arg as Uri;
+				if(target != null)
+				{
+					path = target.AbsolutePath;
+				}
+			}
+			switch(operation)
+			{
+				case ResourceOperation.Create:
+					throw new NotImplementedException();
+				case ResourceOperation.Delete:
+					request.Method = WebRequestMethods.Ftp.DeleteFile;
+					break;
+				case ResourceOperation.Move:
+					request.Method = WebRequestMethods.Ftp.Rename;
+					ftp.RenameTo = path;
+					break;
+				case ResourceOperation.Copy:
+					throw new NotImplementedException();
+				case ResourceOperation.ChangeAttributes:
+					throw new NotImplementedException();
+				default:
+					throw new NotImplementedException();
+			}
+			
+			return request;
 		}
 	}
 }

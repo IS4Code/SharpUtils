@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -137,13 +138,22 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return GetResourcesInternal(uri);
 		}
 		
-		protected abstract Task<ResourceHandle> PerformOperationAsyncInternal(Uri uri, ResourceOperation operation, object arg);
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg)
+		protected abstract ResourceHandle PerformOperationInternal(Uri uri, ResourceOperation operation, object arg);
+		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
 		{
 			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.PerformOperationAsync(uri, operation, arg);
+			if(sub != null) return sub.PerformOperation(uri, operation, arg);
 			
-			return PerformOperationAsyncInternal(uri, operation, arg);
+			return PerformOperationInternal(uri, operation, arg);
+		}
+		
+		protected abstract Task<ResourceHandle> PerformOperationAsyncInternal(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken);
+		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		{
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.PerformOperationAsync(uri, operation, arg, cancellationToken);
+			
+			return PerformOperationAsyncInternal(uri, operation, arg, cancellationToken);
 		}
 	}
 }
