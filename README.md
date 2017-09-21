@@ -17,12 +17,6 @@ Various types of collections, async collections, and immutable collection wrappe
 ### COM
 Some interfaces and marshallers that make working with COM easier. The types in this namespace include mainly Shell32 COM types, *IDispatch* and *IStream* wrappers.
 
-### Coroutines
-Concept of Lua-like coroutines.
-
-### Globalization
-Methods to work with application languages.
-
 ### Interop
 Lots of tools to help with C interop and P/Invoke. Worth seeing. Many of the classes in this namespace work with varargs method, raw pointers and typed references.
 The most interesting types in this namespace is *FarPtr* - a struct generalizing the concept of pointers, but between processes or even computers (based on remoting).
@@ -38,7 +32,7 @@ Mostly attributes used for various purposes, like representing a method that nev
 Bit arithmetics on float. An interesting (but not too pratical) concept is the FloatPtr struct, with size varying between 32-bit and 64-bit based on the system native integer size.
 
 ### ObjectModel
-Basic implementation of the types specified ECMA TR/89 standard, but missing from .NET.
+Basic implementation of the types specified in the ECMA TR/89 standard, but missing from .NET.
 
 ### Patterns
 A concept porting interfaces to static classes. A common pattern is the *TryParse* pattern, for example, which is also present in this namespace (as *PParseable*).
