@@ -28,7 +28,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override FileAttributes Attributes{
+			protected override FileAttributes Attributes{
 				get{
 					var info = Kernel32.GetFileInformationByHandle(handle);
 					return (FileAttributes)info.dwFileAttributes;
@@ -48,28 +48,28 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime CreationTimeUtc{
+			protected override DateTime CreationTimeUtc{
 				get{
 					var info = Kernel32.GetFileInformationByHandle(handle);
 					return Win32FileSystem.GetDateTime(info.ftCreationTime);
 				}
 			}
 			
-			public override DateTime LastAccessTimeUtc{
+			protected override DateTime LastAccessTimeUtc{
 				get{
 					var info = Kernel32.GetFileInformationByHandle(handle);
 					return Win32FileSystem.GetDateTime(info.ftLastAccessTime);
 				}
 			}
 			
-			public override DateTime LastWriteTimeUtc{
+			protected override DateTime LastWriteTimeUtc{
 				get{
 					var info = Kernel32.GetFileInformationByHandle(handle);
 					return Win32FileSystem.GetDateTime(info.ftLastWriteTime);
 				}
 			}
 			
-			public override long Length{
+			protected override long Length{
 				get{
 					var info = Kernel32.GetFileInformationByHandle(handle);
 					unchecked{
@@ -97,19 +97,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override string ContentType{
+			protected override string ContentType{
 				get{
 					throw new NotImplementedException();
 				}
 			}
 			
-			public override string LocalPath{
+			protected override string LocalPath{
 				get{
 					return fs.GetProperty<string>(uri, ResourceProperty.LocalPath);
 				}
 			}
 			
-			public override string DisplayPath{
+			protected override string DisplayPath{
 				get{
 					return fs.GetProperty<string>(uri, ResourceProperty.DisplayPath);
 				}

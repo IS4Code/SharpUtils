@@ -10,9 +10,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// <summary>
 	/// Represents a file system in the universal file system.
 	/// </summary>
-	public interface IFileSystem
+	public interface IFileSystem : IPropertyProvider<ResourceProperty>
 	{
-		T GetProperty<T>(Uri uri, ResourceProperty property);
+		//T GetProperty<T>(Uri uri, ResourceProperty property);
 		Stream GetStream(Uri uri, FileMode mode, FileAccess access);
 		List<Uri> GetResources(Uri uri);
 		

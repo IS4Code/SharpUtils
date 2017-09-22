@@ -36,23 +36,23 @@ namespace IllidanS4.SharpUtils.IO
 			get;
 		} 
 		
-		public abstract override FileAttributes Attributes{
+		protected new abstract FileAttributes Attributes{
 			get;
 		}
 		
-		public abstract override DateTime CreationTimeUtc{
+		protected new abstract DateTime CreationTimeUtc{
 			get;
 		}
 		
-		public abstract override DateTime LastAccessTimeUtc{
+		protected new abstract DateTime LastAccessTimeUtc{
 			get;
 		}
 		
-		public abstract override DateTime LastWriteTimeUtc{
+		protected new abstract DateTime LastWriteTimeUtc{
 			get;
 		}
 		
-		public abstract override long Length{
+		protected new abstract long Length{
 			get;
 		}
 		
@@ -62,16 +62,57 @@ namespace IllidanS4.SharpUtils.IO
 			get;
 		}
 		
-		public abstract override string ContentType{
+		protected new abstract string ContentType{
 			get;
 		}
 		
-		public abstract override string LocalPath{
+		protected new abstract string LocalPath{
 			get;
 		}
 		
-		public abstract override string DisplayPath{
+		protected new abstract string DisplayPath{
 			get;
+		}
+		
+		protected virtual TValue GetPropertyInternal<TValue>(ResourceProperty property)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public sealed override TValue GetProperty<TValue>(ResourceProperty property)
+		{
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					return To<TValue>.Cast(Attributes);
+				case ResourceProperty.CreationTimeUtc:
+					return To<TValue>.Cast(CreationTimeUtc);
+				case ResourceProperty.LastAccessTimeUtc:
+					return To<TValue>.Cast(LastAccessTimeUtc);
+				case ResourceProperty.LastWriteTimeUtc:
+					return To<TValue>.Cast(LastWriteTimeUtc);
+				case ResourceProperty.LongLength:
+					return To<TValue>.Cast(Length);
+				case ResourceProperty.ContentType:
+					return To<TValue>.Cast(ContentType);
+				case ResourceProperty.LocalPath:
+					return To<TValue>.Cast(LocalPath);
+				case ResourceProperty.DisplayPath:
+					return To<TValue>.Cast(DisplayPath);
+				default:
+					return GetPropertyInternal<TValue>(property);
+			}
+		}
+		
+		public sealed override TValue GetCustomProperty<TValue, TProperty>(TProperty property)
+		{
+			var provider = this as IPropertyProviderResource<TProperty>;
+			if(provider != null)
+			{
+				return provider.GetProperty<TValue>(property);
+			}else{
+				throw new NotSupportedException();
+			}
 		}
 		
 		public abstract override List<ResourceInfo> GetResources();

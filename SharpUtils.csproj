@@ -160,6 +160,8 @@
     <Compile Include="IO\FileSystems\IExtensionHost.cs" />
     <Compile Include="IO\FileSystems\IHandleProvider.cs" />
     <Compile Include="IO\FileSystems\IMountHost.cs" />
+    <Compile Include="IO\FileSystems\IPropertyProvider.cs" />
+    <Compile Include="IO\FileSystems\IPropertyProviderResource.cs" />
     <Compile Include="IO\FileSystems\MountFileSystem.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Kernel32.cs" />
     <Compile Include="IO\FileSystems\NativeFunctions\Ntdll.cs" />

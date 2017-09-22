@@ -18,7 +18,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		/// using a pointer to its ITEMLIST (PIDL). The structure is copied
 		/// on construction and is owned solely by the instance of this class.
 		/// </summary>
-		class ShellFileHandle : ResourceHandle
+		class ShellFileHandle : ResourceHandle, IPropertyProviderResource<PROPERTYKEY>
 		{
 			IntPtr pidl;
 			ShellFileSystem fs;
@@ -106,7 +106,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime CreationTimeUtc{
+			protected override DateTime CreationTimeUtc{
 				get{
 					var item = (IShellItem2)GetItem();
 					try{
@@ -118,7 +118,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime LastAccessTimeUtc{
+			protected override DateTime LastAccessTimeUtc{
 				get{
 					var item = (IShellItem2)GetItem();
 					try{
@@ -130,7 +130,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime LastWriteTimeUtc{
+			protected override DateTime LastWriteTimeUtc{
 				get{
 					var item = (IShellItem2)GetItem();
 					try{
@@ -142,7 +142,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override long Length{
+			protected override long Length{
 				get{
 					var item = (IShellItem2)GetItem();
 					try{
@@ -206,25 +206,25 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override string ContentType{
+			protected override string ContentType{
 				get{
 					throw new NotImplementedException();
 				}
 			}
 			
-			public override string LocalPath{
+			protected override string LocalPath{
 				get{
 					return Shell32.SHGetNameFromIDList(pidl, SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
 				}
 			}
 			
-			public override string DisplayPath{
+			protected override string DisplayPath{
 				get{
 					return Shell32.SHGetNameFromIDList(pidl, SIGDN.SIGDN_DESKTOPABSOLUTEEDITING);
 				}
 			}
 			
-			public override FileAttributes Attributes{
+			protected override FileAttributes Attributes{
 				get{
 					var item = (IShellItem2)GetItem();
 					try{
@@ -232,6 +232,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					}finally{
 						Marshal.FinalReleaseComObject(item);
 					}
+				}
+			}
+		
+			public T GetProperty<T>(PROPERTYKEY property)
+			{
+				var item = (IShellItem2)GetItem();
+				try{
+					return (T)Propsys.PropVariantToVariant(item.GetProperty(ref property));
+				}finally{
+					Marshal.FinalReleaseComObject(item);
 				}
 			}
 			

@@ -24,7 +24,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override FileAttributes Attributes{
+			protected override FileAttributes Attributes{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<FileAttributes>(data, ResourceProperty.FileAttributes);
@@ -48,7 +48,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime CreationTimeUtc{
+			protected override DateTime CreationTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.CreationTimeUtc);
@@ -57,7 +57,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime LastAccessTimeUtc{
+			protected override DateTime LastAccessTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastAccessTimeUtc);
@@ -66,7 +66,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override DateTime LastWriteTimeUtc{
+			protected override DateTime LastWriteTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastWriteTimeUtc);
@@ -75,7 +75,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override long Length{
+			protected override long Length{
 				get{
 					return data.Data.LongLength;
 				}
@@ -96,13 +96,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				
 			}
 			
-			public override string ContentType{
+			protected override string ContentType{
 				get{
 					return data.ContentType;
 				}
 			}
 			
-			public override string LocalPath{
+			protected override string LocalPath{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.LocalPath);
@@ -111,7 +111,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override string DisplayPath{
+			protected override string DisplayPath{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.DisplayPath);

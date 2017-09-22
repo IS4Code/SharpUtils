@@ -82,11 +82,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			{
 				case ResourceProperty.FileAttributes:
 					return To<T>.Cast(FileAttributes.ReadOnly);
-				/*case ResourceProperty.CreationTime:
+				/*case ResourceProperty.CreationTimeUtc:
 					break;
-				case ResourceProperty.LastAccessTime:
+				case ResourceProperty.LastAccessTimeUtc:
 					break;
-				case ResourceProperty.LastWriteTime:
+				case ResourceProperty.LastWriteTimeUtc:
 					break;*/
 				case ResourceProperty.LongLength:
 					return To<T>.Cast(dataUri.Data.LongLength);

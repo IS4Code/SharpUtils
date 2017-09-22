@@ -18,7 +18,7 @@ namespace IllidanS4.SharpUtils.IO
 	/// each instance of this type.
 	/// </remarks>
 	[Serializable]
-	public partial class ResourceInfo
+	public partial class ResourceInfo : IPropertyProviderResource<ResourceProperty>
 	{
 		readonly Uri _uri;
 		readonly IFileSystem fileSystem;
@@ -126,9 +126,9 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the attribute flags of this resource.
 		/// </summary>
-		public virtual FileAttributes Attributes{
+		public FileAttributes Attributes{
 			get{
-				return fileSystem.GetProperty<FileAttributes>(Uri, ResourceProperty.FileAttributes);
+				return GetProperty<FileAttributes>(ResourceProperty.FileAttributes);
 			}
 		}
 		
@@ -144,9 +144,9 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the creation time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public virtual DateTime CreationTimeUtc{
+		public DateTime CreationTimeUtc{
 			get{
-				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.CreationTimeUtc);
+				return GetProperty<DateTime>(ResourceProperty.CreationTimeUtc);
 			}
 		}
 		
@@ -162,9 +162,9 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the last access time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public virtual DateTime LastAccessTimeUtc{
+		public DateTime LastAccessTimeUtc{
 			get{
-				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.LastAccessTimeUtc);
+				return GetProperty<DateTime>(ResourceProperty.LastAccessTimeUtc);
 			}
 		}
 		
@@ -180,18 +180,18 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the last write time of the resource, in coordinated universal time (UTC).
 		/// </summary>
-		public virtual DateTime LastWriteTimeUtc{
+		public DateTime LastWriteTimeUtc{
 			get{
-				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.LastWriteTimeUtc);
+				return GetProperty<DateTime>(ResourceProperty.LastWriteTimeUtc);
 			}
 		}
 		
 		/// <summary>
 		/// Obtains the length of the resource's data.
 		/// </summary>
-		public virtual long Length{
+		public long Length{
 			get{
-				return fileSystem.GetProperty<long>(Uri, ResourceProperty.LongLength);
+				return GetProperty<long>(ResourceProperty.LongLength);
 			}
 		}
 		
@@ -214,7 +214,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual ResourceInfo Target{
 			get{
-				Uri target = fileSystem.GetProperty<Uri>(Uri, ResourceProperty.TargetUri);
+				Uri target = GetProperty<Uri>(ResourceProperty.TargetUri);
 				if(target == null) return null;
 				return new ResourceInfo(target);
 			}
@@ -223,27 +223,43 @@ namespace IllidanS4.SharpUtils.IO
 		/// <summary>
 		/// Obtains the content type of the resource, in MIME format.
 		/// </summary>
-		public virtual string ContentType{
+		public string ContentType{
 			get{
-				return fileSystem.GetProperty<string>(Uri, ResourceProperty.ContentType);
+				return GetProperty<string>(ResourceProperty.ContentType);
 			}
 		}
 		
 		/// <summary>
 		/// Gets the path of the resource in its files system.
 		/// </summary>
-		public virtual string LocalPath{
+		public string LocalPath{
 			get{
-				return fileSystem.GetProperty<string>(Uri, ResourceProperty.LocalPath);
+				return GetProperty<string>(ResourceProperty.LocalPath);
 			}
 		}
 		
 		/// <summary>
 		/// Gets the path of the resource, suitable for display.
 		/// </summary>
-		public virtual string DisplayPath{
+		public string DisplayPath{
 			get{
-				return fileSystem.GetProperty<string>(Uri, ResourceProperty.DisplayPath);
+				return GetProperty<string>(ResourceProperty.DisplayPath);
+			}
+		}
+		
+		public virtual TValue GetProperty<TValue>(ResourceProperty property)
+		{
+			return fileSystem.GetProperty<TValue>(Uri, property);
+		}
+		
+		public virtual TValue GetCustomProperty<TValue, TProperty>(TProperty property)
+		{
+			var provider = fileSystem as IPropertyProvider<TProperty>;
+			if(provider != null)
+			{
+				return provider.GetProperty<TValue>(Uri, property);
+			}else{
+				throw new NotSupportedException();
 			}
 		}
 		
