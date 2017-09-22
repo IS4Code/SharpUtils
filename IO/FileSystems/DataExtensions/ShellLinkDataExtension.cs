@@ -16,29 +16,15 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 			
 		}
 		
-		protected override FileAttributes GetAttributesInternal(DataUri dataUri)
+		protected override T GetPropertyInternal<T>(DataUri dataUri, ResourceProperty property)
 		{
-			throw new NotImplementedException();
-		}
-		
-		protected override DateTime GetCreationTimeInternal(DataUri dataUri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		protected override DateTime GetLastAccessTimeInternal(DataUri dataUri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		protected override DateTime GetLastWriteTimeInternal(DataUri dataUri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		protected override Uri GetTargetInternal(DataUri dataUri)
-		{
-			return ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data);
+			switch(property)
+			{
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast(ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data));
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
 		protected override ResourceInfo GetTargetResourceInternal(DataUri dataUri)

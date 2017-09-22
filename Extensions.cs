@@ -296,6 +296,7 @@ namespace IllidanS4.SharpUtils
 		{
 			return __refvalue(__makeref(arg), TTo);
 		}
+		
 		static ResourceManager clr_resources;
 		
 		static Extensions()

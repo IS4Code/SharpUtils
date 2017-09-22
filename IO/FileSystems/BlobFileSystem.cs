@@ -164,33 +164,36 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public FileAttributes GetAttributes(Uri uri)
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
-			return FileAttributes.Normal;
-		}
-		
-		public DateTime GetCreationTime(Uri uri)
-		{
-			var blob = GetBlob(uri.AbsolutePath);
-			return blob.CreationTime;
-		}
-		
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			var blob = GetBlob(uri.AbsolutePath);
-			return blob.LastAccessTime;
-		}
-		
-		public DateTime GetLastWriteTime(Uri uri)
-		{
-			var blob = GetBlob(uri.AbsolutePath);
-			return blob.LastWriteTime;
-		}
-		
-		public long GetLength(Uri uri)
-		{
-			var blob = GetBlob(uri.AbsolutePath);
-			return blob.Length;
+			BlobInfo blob;
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					return To<T>.Cast(FileAttributes.Normal);
+				case ResourceProperty.CreationTimeUtc:
+					blob = GetBlob(uri.AbsolutePath);
+					return To<T>.Cast(blob.CreationTime);
+				case ResourceProperty.LastAccessTimeUtc:
+					blob = GetBlob(uri.AbsolutePath);
+					return To<T>.Cast(blob.LastAccessTime);
+				case ResourceProperty.LastWriteTimeUtc:
+					blob = GetBlob(uri.AbsolutePath);
+					return To<T>.Cast(blob.LastWriteTime);
+				case ResourceProperty.LongLength:
+					blob = GetBlob(uri.AbsolutePath);
+					return To<T>.Cast(blob.Length);
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast((Uri)null);
+				/*case ResourceProperty.ContentType:
+					break;
+				case ResourceProperty.LocalPath:
+					break;
+				case ResourceProperty.DisplayPath:
+					break;*/
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
@@ -212,26 +215,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}else{
 				return blob.ObtainStream(true);
 			}
-		}
-		
-		public Uri GetTarget(Uri uri)
-		{
-			return null;
-		}
-		
-		public string GetContentType(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public string GetLocalPath(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public string GetDisplayPath(Uri uri)
-		{
-			throw new NotImplementedException();
 		}
 		
 		public List<Uri> GetResources(Uri uri)

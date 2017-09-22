@@ -14,29 +14,27 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		public static readonly PipeFileSystem Instance = new PipeFileSystem();
 		
-		public FileAttributes GetAttributes(Uri uri)
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
-			return FileAttributes.Normal;
-		}
-		
-		public DateTime GetCreationTime(Uri uri)
-		{
-			throw new NotSupportedException();
-		}
-		
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			throw new NotSupportedException();
-		}
-		
-		public DateTime GetLastWriteTime(Uri uri)
-		{
-			throw new NotSupportedException();
-		}
-		
-		public long GetLength(Uri uri)
-		{
-			throw new NotSupportedException();
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					return To<T>.Cast(FileAttributes.Normal);
+				case ResourceProperty.CreationTimeUtc:
+				case ResourceProperty.LastAccessTimeUtc:
+				case ResourceProperty.LastWriteTimeUtc:
+				case ResourceProperty.LongLength:
+				case ResourceProperty.ContentType:
+					throw new NotSupportedException();
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast(GetTarget(uri));
+				case ResourceProperty.LocalPath:
+					return To<T>.Cast(GetLocalPath(uri));
+				case ResourceProperty.DisplayPath:
+					return To<T>.Cast(GetDisplayPath(uri));
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
@@ -65,17 +63,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return pipe;
 		}
 		
-		public Uri GetTarget(Uri uri)
+		private Uri GetTarget(Uri uri)
 		{
 			return new UriBuilder("file", uri.Host, uri.Port, @"\pipe\"+uri.AbsolutePath).Uri;
 		}
 		
-		public string GetContentType(Uri uri)
-		{
-			throw new NotSupportedException();
-		}
-		
-		public string GetLocalPath(Uri uri)
+		private string GetLocalPath(Uri uri)
 		{
 			string server = uri.Host;
 			if(String.IsNullOrEmpty(server)) server = ".";
@@ -83,7 +76,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return String.Format(@"\\{0}\{1}", server, path);
 		}
 		
-		public string GetDisplayPath(Uri uri)
+		private string GetDisplayPath(Uri uri)
 		{
 			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}

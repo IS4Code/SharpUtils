@@ -105,13 +105,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override string LocalPath{
 				get{
-					return fs.GetLocalPath(uri);
+					return fs.GetProperty<string>(uri, ResourceProperty.LocalPath);
 				}
 			}
 			
 			public override string DisplayPath{
 				get{
-					return fs.GetDisplayPath(uri);
+					return fs.GetProperty<string>(uri, ResourceProperty.DisplayPath);
 				}
 			}
 			

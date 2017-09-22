@@ -17,22 +17,34 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		public static readonly WebFileSystem Instance = new WebFileSystem();
 		
-		public FileAttributes GetAttributes(Uri uri)
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
-			throw new NotImplementedException();
+			switch(property)
+			{
+				/*case ResourceProperty.FileAttributes:
+					break;
+				case ResourceProperty.CreationTime:
+					break;
+				case ResourceProperty.LastAccessTime:
+					break;*/
+				case ResourceProperty.LastWriteTimeUtc:
+					return To<T>.Cast(GetLastWriteTime(uri));
+				case ResourceProperty.LongLength:
+					return To<T>.Cast(GetLength(uri));
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast(GetTarget(uri));
+				case ResourceProperty.ContentType:
+					return To<T>.Cast(GetContentType(uri));
+				case ResourceProperty.LocalPath:
+					return To<T>.Cast(GetLocalPath(uri));
+				case ResourceProperty.DisplayPath:
+					return To<T>.Cast(GetDisplayPath(uri));
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
-		public DateTime GetCreationTime(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public DateTime GetLastWriteTime(Uri uri)
+		private DateTime GetLastWriteTime(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
 			var http = resp as HttpWebResponse;
@@ -49,7 +61,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			throw new NotImplementedException();
 		}
 		
-		public long GetLength(Uri uri)
+		private long GetLength(Uri uri)
 		{
 			return GetResponse(uri, "HEAD").ContentLength;
 		}
@@ -59,7 +71,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return GetResponse(uri, "GET").GetResponseStream();
 		}
 		
-		public Uri GetTarget(Uri uri)
+		private Uri GetTarget(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
 			var http = resp as HttpWebResponse;
@@ -78,19 +90,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		public string GetContentType(Uri uri)
+		private string GetContentType(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
 			return resp.ContentType;
 		}
 		
-		public string GetLocalPath(Uri uri)
+		private string GetLocalPath(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
 			return HttpUtility.UrlDecode(resp.ResponseUri.AbsolutePath);
 		}
 		
-		public string GetDisplayPath(Uri uri)
+		private string GetDisplayPath(Uri uri)
 		{
 			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}

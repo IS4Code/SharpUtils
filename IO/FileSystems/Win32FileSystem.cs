@@ -141,31 +141,37 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		protected override FileAttributes GetAttributesInternal(Uri uri)
+		protected override T GetPropertyInternal<T>(Uri uri, ResourceProperty property)
 		{
-			int attr = Kernel32.GetFileAttributes(GetPath(uri));
-			if(attr == -1) throw new Win32Exception();
-			return (FileAttributes)attr;
+			string path = GetPath(uri);
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					return To<T>.Cast((FileAttributes)Kernel32.GetFileAttributes(path));
+				case ResourceProperty.CreationTimeUtc:
+					return To<T>.Cast(GetDateTime(GetAttributeData(path).ftCreationTime));
+				case ResourceProperty.LastAccessTimeUtc:
+					return To<T>.Cast(GetDateTime(GetAttributeData(path).ftLastAccessTime));
+				case ResourceProperty.LastWriteTimeUtc:
+					return To<T>.Cast(GetDateTime(GetAttributeData(path).ftLastWriteTime));
+				case ResourceProperty.LongLength:
+					return To<T>.Cast(GetLengthInternal(path));
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast(GetTargetInternal(path));
+				case ResourceProperty.ContentType:
+					return To<T>.Cast(GetContentTypeInternal(path));
+				case ResourceProperty.LocalPath:
+					return To<T>.Cast(path);
+				case ResourceProperty.DisplayPath:
+					return To<T>.Cast(PathFromFileUri(uri));
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
-		protected override DateTime GetCreationTimeInternal(Uri uri)
+		private long GetLengthInternal(string path)
 		{
-			return GetDateTime(GetAttributeData(GetPath(uri)).ftCreationTime);
-		}
-		
-		protected override DateTime GetLastAccessTimeInternal(Uri uri)
-		{
-			return GetDateTime(GetAttributeData(GetPath(uri)).ftLastAccessTime);
-		}
-		
-		protected override DateTime GetLastWriteTimeInternal(Uri uri)
-		{
-			return GetDateTime(GetAttributeData(GetPath(uri)).ftLastWriteTime);
-		}
-		
-		protected override long GetLengthInternal(Uri uri)
-		{
-			var data = GetAttributeData(GetPath(uri));
+			var data = GetAttributeData(path);
 			unchecked{
 				return ((long)((ulong)(uint)data.nFileSizeHigh << 32) | (long)(uint)data.nFileSizeLow);
 			}
@@ -200,9 +206,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		protected override Uri GetTargetInternal(Uri uri)
+		private Uri GetTargetInternal(string fpath)
 		{
-			string fpath = GetPath(uri);
 			IntPtr handle = Kernel32.CreateFile(fpath, (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
 			try{
 				string path = Kernel32.GetFinalPathNameByHandle(handle, 0);
@@ -213,21 +218,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		protected override string GetContentTypeInternal(Uri uri)
+		private string GetContentTypeInternal(string path)
 		{
-			string mime = Urlmon.FindMimeFromData(null, GetPath(uri), IntPtr.Zero, 0, null, 0x23);
+			string mime = Urlmon.FindMimeFromData(null, path, IntPtr.Zero, 0, null, 0x23);
 			if(mime == "application/x-msdownload") return "application/octet-stream";
 			return mime;
-		}
-		
-		protected override string GetLocalPathInternal(Uri uri)
-		{
-			return GetPath(uri);
-		}
-		
-		protected override string GetDisplayPathInternal(Uri uri)
-		{
-			return PathFromFileUri(uri);
 		}
 		
 		private static readonly Regex backslashRegex2 = new Regex(@"[^\\]$", RegexOptions.Compiled);

@@ -61,74 +61,51 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return new DataFileHandle(new DataUri(uri, true, true), this);
 		}
 		
-		public FileAttributes GetAttributes(Uri uri)
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
 			DataUri dataUri;
 			var extension = ParseUri(uri, out dataUri);
-			if(extension != null) return extension.GetAttributes(dataUri);
+			if(extension != null)
+			{
+				try{
+					return extension.GetProperty<T>(dataUri, property);
+				}catch(NotSupportedException)
+				{
+					
+				}catch(NotImplementedException)
+				{
+					
+				}
+			}
 			
-			return FileAttributes.ReadOnly;
-		}
-		
-		public DateTime GetCreationTime(Uri uri)
-		{
-			DataUri dataUri;
-			var extension = ParseUri(uri, out dataUri);
-			if(extension != null) return extension.GetCreationTime(dataUri);
-			
-			throw new NotImplementedException();
-		}
-		
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			DataUri dataUri;
-			var extension = ParseUri(uri, out dataUri);
-			if(extension != null) return extension.GetLastAccessTime(dataUri);
-			
-			throw new NotImplementedException();
-		}
-		
-		public DateTime GetLastWriteTime(Uri uri)
-		{
-			DataUri dataUri;
-			var extension = ParseUri(uri, out dataUri);
-			if(extension != null) return extension.GetLastWriteTime(dataUri);
-			
-			throw new NotImplementedException();
-		}
-		
-		public long GetLength(Uri uri)
-		{
-			return new DataUri(uri, false, true).Data.LongLength;
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					return To<T>.Cast(FileAttributes.ReadOnly);
+				/*case ResourceProperty.CreationTime:
+					break;
+				case ResourceProperty.LastAccessTime:
+					break;
+				case ResourceProperty.LastWriteTime:
+					break;*/
+				case ResourceProperty.LongLength:
+					return To<T>.Cast(dataUri.Data.LongLength);
+				case ResourceProperty.TargetUri:
+					return To<T>.Cast((Uri)null);
+				case ResourceProperty.ContentType:
+					return To<T>.Cast(dataUri.ContentType);
+				/*case ResourceProperty.LocalPath:
+					break;
+				case ResourceProperty.DisplayPath:
+					break;*/
+				default:
+					throw new NotImplementedException();
+			}
 		}
 		
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
 			return new MemoryStream(new DataUri(uri, false, true).Data, false);
-		}
-		
-		public Uri GetTarget(Uri uri)
-		{
-			DataUri dataUri;
-			var extension = ParseUri(uri, out dataUri);
-			if(extension != null) return extension.GetTarget(dataUri);
-			
-			return null;
-		}
-		
-		public string GetContentType(Uri uri)
-		{
-			return new DataUri(uri, false, false).ContentType;
-		}
-		
-		public string GetLocalPath(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public string GetDisplayPath(Uri uri)
-		{
-			throw new NotImplementedException();
 		}
 		
 		public List<Uri> GetResources(Uri uri)

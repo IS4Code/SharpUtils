@@ -39,49 +39,13 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		protected abstract FileAttributes GetAttributesInternal(Uri uri);
-		public FileAttributes GetAttributes(Uri uri)
+		protected abstract T GetPropertyInternal<T>(Uri uri, ResourceProperty property);
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
 			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetAttributes(uri);
+			if(sub != null) return sub.GetProperty<T>(uri, property);
 			
-			return GetAttributesInternal(uri);
-		}
-		
-		protected abstract DateTime GetCreationTimeInternal(Uri uri);
-		public DateTime GetCreationTime(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetCreationTime(uri);
-			
-			return GetCreationTimeInternal(uri);
-		}
-		
-		protected abstract DateTime GetLastAccessTimeInternal(Uri uri);
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetLastAccessTime(uri);
-			
-			return GetLastAccessTimeInternal(uri);
-		}
-		
-		protected abstract DateTime GetLastWriteTimeInternal(Uri uri);
-		public DateTime GetLastWriteTime(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetLastWriteTime(uri);
-			
-			return GetLastWriteTimeInternal(uri);
-		}
-		
-		protected abstract long GetLengthInternal(Uri uri);
-		public long GetLength(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetLength(uri);
-			
-			return GetLengthInternal(uri);
+			return GetPropertyInternal<T>(uri, property);
 		}
 		
 		protected abstract Stream GetStreamInternal(Uri uri, FileMode mode, FileAccess access);
@@ -91,42 +55,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			if(sub != null) return sub.GetStream(uri, mode, access);
 			
 			return GetStreamInternal(uri, mode, access);
-		}
-		
-		protected abstract Uri GetTargetInternal(Uri uri);
-		public Uri GetTarget(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetTarget(uri);
-			
-			return GetTargetInternal(uri);
-		}
-		
-		protected abstract string GetContentTypeInternal(Uri uri);
-		public string GetContentType(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetContentType(uri);
-			
-			return GetContentTypeInternal(uri);
-		}
-		
-		protected abstract string GetLocalPathInternal(Uri uri);
-		public string GetLocalPath(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetLocalPath(uri);
-			
-			return GetLocalPathInternal(uri);
-		}
-		
-		protected abstract string GetDisplayPathInternal(Uri uri);
-		public string GetDisplayPath(Uri uri)
-		{
-			IFileSystem sub = GetSubSystem(uri);
-			if(sub != null) return sub.GetDisplayPath(uri);
-			
-			return GetDisplayPathInternal(uri);
 		}
 		
 		protected abstract List<Uri> GetResourcesInternal(Uri uri);

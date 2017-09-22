@@ -27,7 +27,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public override FileAttributes Attributes{
 				get{
 					var ext = fs.GetExtension(ContentType);
-					if(ext != null) return ext.GetAttributes(data);
+					if(ext != null) return ext.GetProperty<FileAttributes>(data, ResourceProperty.FileAttributes);
 					
 					throw new NotImplementedException();
 				}
@@ -38,7 +38,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetTargetResource(data);
 					
-					return this;
+					return null;
 				}
 			}
 			
@@ -51,7 +51,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public override DateTime CreationTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
-					if(ext != null) return ext.GetCreationTime(data);
+					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.CreationTimeUtc);
 					
 					throw new NotImplementedException();
 				}
@@ -60,7 +60,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public override DateTime LastAccessTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
-					if(ext != null) return ext.GetLastAccessTime(data);
+					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastAccessTimeUtc);
 					
 					throw new NotImplementedException();
 				}
@@ -69,7 +69,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public override DateTime LastWriteTimeUtc{
 				get{
 					var ext = fs.GetExtension(ContentType);
-					if(ext != null) return ext.GetLastWriteTime(data);
+					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastWriteTimeUtc);
 					
 					throw new NotImplementedException();
 				}
@@ -104,12 +104,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override string LocalPath{
 				get{
+					var ext = fs.GetExtension(ContentType);
+					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.LocalPath);
+					
 					throw new NotImplementedException();
 				}
 			}
 			
 			public override string DisplayPath{
 				get{
+					var ext = fs.GetExtension(ContentType);
+					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.DisplayPath);
+					
 					throw new NotImplementedException();
 				}
 			}

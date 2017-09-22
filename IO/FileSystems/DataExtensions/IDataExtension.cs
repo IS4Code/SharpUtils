@@ -13,11 +13,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 	{
 		bool SupportsType(string contentType);
 		
-		FileAttributes GetAttributes(DataUri dataUri);
-		DateTime GetCreationTime(DataUri dataUri);
-		DateTime GetLastAccessTime(DataUri dataUri);
-		DateTime GetLastWriteTime(DataUri dataUri);
-		Uri GetTarget(DataUri dataUri);
+		T GetProperty<T>(DataUri dataUri, ResourceProperty property);
 		ResourceInfo GetTargetResource(DataUri dataUri);
 	}
 }

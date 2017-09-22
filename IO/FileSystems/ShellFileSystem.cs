@@ -277,57 +277,42 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public FileAttributes GetAttributes(Uri uri)
+		public T GetProperty<T>(Uri uri, ResourceProperty property)
 		{
 			var item = (IShellItem2)GetItem(uri);
 			try{
-				return (FileAttributes)item.GetUInt32(Shell32.PKEY_FileAttributes);
+				switch(property)
+				{
+					case ResourceProperty.FileAttributes:
+						return To<T>.Cast((FileAttributes)item.GetUInt32(Shell32.PKEY_FileAttributes));
+					case ResourceProperty.CreationTimeUtc:
+						return To<T>.Cast(GetDateTime(item, Shell32.PKEY_DateCreated));
+					case ResourceProperty.LastAccessTimeUtc:
+						return To<T>.Cast(GetDateTime(item, Shell32.PKEY_DateAccessed));
+					case ResourceProperty.LastWriteTimeUtc:
+						return To<T>.Cast(GetDateTime(item, Shell32.PKEY_DateModified));
+					case ResourceProperty.LongLength:
+						return To<T>.Cast(unchecked((long)item.GetUInt64(Shell32.PKEY_Size)));
+					case ResourceProperty.TargetUri:
+						return To<T>.Cast(GetTarget((IShellItem)item));
+					/*case ResourceProperty.ContentType:
+						break;*/
+					case ResourceProperty.LocalPath:
+						return To<T>.Cast(item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING));
+					case ResourceProperty.DisplayPath:
+						return To<T>.Cast(item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING));
+					default:
+						throw new NotImplementedException();
+				}
 			}finally{
 				Marshal.FinalReleaseComObject(item);
 			}
 		}
 		
-		public DateTime GetCreationTime(Uri uri)
+		private DateTime GetDateTime(IShellItem2 item, PROPERTYKEY property)
 		{
-			var item = (IShellItem2)GetItem(uri);
-			try{
-				FILETIME ft = item.GetFileTime(Shell32.PKEY_DateCreated);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public DateTime GetLastAccessTime(Uri uri)
-		{
-			var item = (IShellItem2)GetItem(uri);
-			try{
-				FILETIME ft = item.GetFileTime(Shell32.PKEY_DateAccessed);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public DateTime GetLastWriteTime(Uri uri)
-		{
-			var item = (IShellItem2)GetItem(uri);
-			try{
-				FILETIME ft = item.GetFileTime(Shell32.PKEY_DateModified);
-				return Win32FileSystem.GetDateTime(ft);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public long GetLength(Uri uri)
-		{
-			var item = (IShellItem2)GetItem(uri);
-			try{
-				return (long)item.GetUInt64(Shell32.PKEY_Size);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
+			FILETIME ft = item.GetFileTime(property);
+			return Win32FileSystem.GetDateTime(ft);
 		}
 		
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
@@ -341,48 +326,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		public Uri GetTarget(Uri uri)
+		private Uri GetTarget(IShellItem item)
 		{
-			var item = GetItem(uri);
-			try{
-				object targ = GetTargetItem(item);
-				if(targ == null) return null;
-				string url = targ as string;
-				if(url != null)
-				{
-					return new Uri(url);
-				}
-				var target = (IShellItem)targ;
-				var pidl = Shell32.SHGetIDListFromObject(target);
-				return GetShellUri(pidl, true);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
+			object targ = GetTargetItem(item);
+			if(targ == null) return null;
+			string url = targ as string;
+			if(url != null)
+			{
+				return new Uri(url);
 			}
-		}
-		
-		public string GetContentType(Uri uri)
-		{
-			throw new NotImplementedException();
-		}
-		
-		public string GetLocalPath(Uri uri)
-		{
-			var item = GetItem(uri);
-			try{
-				return item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
-		}
-		
-		public string GetDisplayPath(Uri uri)
-		{
-			var item = GetItem(uri);
-			try{
-				return item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING);
-			}finally{
-				Marshal.FinalReleaseComObject(item);
-			}
+			var target = (IShellItem)targ;
+			var pidl = Shell32.SHGetIDListFromObject(target);
+			return GetShellUri(pidl, true);
 		}
 		
 		public List<Uri> GetResources(Uri uri)

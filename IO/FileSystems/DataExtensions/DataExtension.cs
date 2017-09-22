@@ -28,39 +28,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 			if(!SupportsType(dataUri.ContentType)) throw new ArgumentException("This content type is not supported.", "dataUri");
 		}
 		
-		protected abstract FileAttributes GetAttributesInternal(DataUri dataUri);
-		public FileAttributes GetAttributes(DataUri dataUri)
+		protected abstract T GetPropertyInternal<T>(DataUri dataUri, ResourceProperty property);
+		public T GetProperty<T>(DataUri dataUri, ResourceProperty property)
 		{
 			CheckSupported(dataUri);
-			return GetAttributesInternal(dataUri);
-		}
-		
-		protected abstract DateTime GetCreationTimeInternal(DataUri dataUri);
-		public DateTime GetCreationTime(DataUri dataUri)
-		{
-			CheckSupported(dataUri);
-			return GetCreationTimeInternal(dataUri);
-		}
-		
-		protected abstract DateTime GetLastAccessTimeInternal(DataUri dataUri);
-		public DateTime GetLastAccessTime(DataUri dataUri)
-		{
-			CheckSupported(dataUri);
-			return GetLastAccessTimeInternal(dataUri);
-		}
-		
-		protected abstract DateTime GetLastWriteTimeInternal(DataUri dataUri);
-		public DateTime GetLastWriteTime(DataUri dataUri)
-		{
-			CheckSupported(dataUri);
-			return GetLastWriteTimeInternal(dataUri);
-		}
-		
-		protected abstract Uri GetTargetInternal(DataUri dataUri);
-		public Uri GetTarget(DataUri dataUri)
-		{
-			CheckSupported(dataUri);
-			return GetTargetInternal(dataUri);
+			return GetPropertyInternal<T>(dataUri, property);
 		}
 		
 		protected abstract ResourceInfo GetTargetResourceInternal(DataUri dataUri);

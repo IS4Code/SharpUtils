@@ -12,19 +12,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// </summary>
 	public interface IFileSystem
 	{
-		FileAttributes GetAttributes(Uri uri);
-		DateTime GetCreationTime(Uri uri);
-		DateTime GetLastAccessTime(Uri uri);
-		DateTime GetLastWriteTime(Uri uri);
-		long GetLength(Uri uri);
+		T GetProperty<T>(Uri uri, ResourceProperty property);
 		Stream GetStream(Uri uri, FileMode mode, FileAccess access);
-		Uri GetTarget(Uri uri);
-		string GetContentType(Uri uri);
-		string GetLocalPath(Uri uri);
-		string GetDisplayPath(Uri uri);
 		List<Uri> GetResources(Uri uri);
-		ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg);
 		
+		ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg);
 		Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken);
 	}
 }

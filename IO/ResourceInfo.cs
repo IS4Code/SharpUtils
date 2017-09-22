@@ -128,7 +128,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual FileAttributes Attributes{
 			get{
-				return fileSystem.GetAttributes(Uri);
+				return fileSystem.GetProperty<FileAttributes>(Uri, ResourceProperty.FileAttributes);
 			}
 		}
 		
@@ -146,7 +146,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime CreationTimeUtc{
 			get{
-				return fileSystem.GetCreationTime(Uri);
+				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.CreationTimeUtc);
 			}
 		}
 		
@@ -164,7 +164,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime LastAccessTimeUtc{
 			get{
-				return fileSystem.GetLastAccessTime(Uri);
+				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.LastAccessTimeUtc);
 			}
 		}
 		
@@ -182,7 +182,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual DateTime LastWriteTimeUtc{
 			get{
-				return fileSystem.GetLastWriteTime(Uri);
+				return fileSystem.GetProperty<DateTime>(Uri, ResourceProperty.LastWriteTimeUtc);
 			}
 		}
 		
@@ -191,7 +191,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual long Length{
 			get{
-				return fileSystem.GetLength(Uri);
+				return fileSystem.GetProperty<long>(Uri, ResourceProperty.LongLength);
 			}
 		}
 		
@@ -214,7 +214,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual ResourceInfo Target{
 			get{
-				Uri target = fileSystem.GetTarget(Uri);
+				Uri target = fileSystem.GetProperty<Uri>(Uri, ResourceProperty.TargetUri);
 				if(target == null) return null;
 				return new ResourceInfo(target);
 			}
@@ -225,7 +225,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual string ContentType{
 			get{
-				return fileSystem.GetContentType(Uri);
+				return fileSystem.GetProperty<string>(Uri, ResourceProperty.ContentType);
 			}
 		}
 		
@@ -234,7 +234,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual string LocalPath{
 			get{
-				return fileSystem.GetLocalPath(Uri);
+				return fileSystem.GetProperty<string>(Uri, ResourceProperty.LocalPath);
 			}
 		}
 		
@@ -243,7 +243,7 @@ namespace IllidanS4.SharpUtils.IO
 		/// </summary>
 		public virtual string DisplayPath{
 			get{
-				return fileSystem.GetDisplayPath(Uri);
+				return fileSystem.GetProperty<string>(Uri, ResourceProperty.DisplayPath);
 			}
 		}
 		
