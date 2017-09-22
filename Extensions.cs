@@ -287,6 +287,26 @@ namespace IllidanS4.SharpUtils
 		}
 		
 		/// <summary>
+		/// Constructs an enumerable object from a lazily initialized collection.
+		/// </summary>
+		/// <param name="lazyCollection">The lazy collection.</param>
+		/// <returns>The enumerable object. The collection will not be initialized until the enumeration begins.</returns>
+		public static IEnumerable ToIEnumerable(this Lazy<ICollection> lazyCollection)
+		{
+			foreach(var obj in lazyCollection.Value) yield return obj;
+		}
+		
+		/// <summary>
+		/// Constructs an enumerable object from a lazily initialized collection.
+		/// </summary>
+		/// <param name="lazyCollection">The lazy collection.</param>
+		/// <returns>The enumerable object. The collection will not be initialized until the enumeration begins.</returns>
+		public static IEnumerable<T> ToIEnumerable<T>(this Lazy<ICollection<T>> lazyCollection)
+		{
+			foreach(var obj in lazyCollection.Value) yield return obj;
+		}
+		
+		/// <summary>
 		/// Performs a direct cast on the <typeparamref name="TFrom"/> argument to the same type, represented by <typeparamref name="TTo"/>.
 		/// </summary>
 		/// <param name="arg">The argument to cast.</param>

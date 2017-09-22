@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace IllidanS4.SharpUtils.Interop.WinApi
 {
+	/// <summary>
+	/// Provides tools for WinApi interop.
+	/// </summary>
 	public static class Native
 	{
 		/// <summary>
