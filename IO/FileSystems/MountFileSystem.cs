@@ -48,6 +48,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return GetPropertyInternal<T>(uri, property);
 		}
 		
+		protected abstract void SetPropertyInternal<T>(Uri uri, ResourceProperty property, T value);
+		public void SetProperty<T>(Uri uri, ResourceProperty property, T value)
+		{
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null)
+			{
+				sub.SetProperty<T>(uri, property, value);
+			}else{
+				SetPropertyInternal<T>(uri, property, value);
+			}
+		}
+		
 		protected abstract Stream GetStreamInternal(Uri uri, FileMode mode, FileAccess access);
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{

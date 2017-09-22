@@ -169,6 +169,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		protected override void SetPropertyInternal<T>(Uri uri, ResourceProperty property, T value)
+		{
+			string path = GetPath(uri);
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					Kernel32.SetFileAttributes(path, (int)To<FileAttributes>.Cast(value));
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+		
 		private long GetLengthInternal(string path)
 		{
 			var data = GetAttributeData(path);
@@ -307,10 +320,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					tpath = GetPath(target);
 					Kernel32.CopyFileEx(spath, tpath, null, 0x00000800 | 0x00000001, true);
 					break;
-				case ResourceOperation.ChangeAttributes:
-					spath = GetPath(uri);
-					Kernel32.SetFileAttributes(spath, (int)(FileAttributes)arg);
-					break;
 				default:
 					throw new NotImplementedException();
 			}
@@ -356,10 +365,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					spath = GetPath(uri);
 					tpath = GetPath(target);
 					await CopyFile(spath, tpath, cancellationToken);
-					break;
-				case ResourceOperation.ChangeAttributes:
-					spath = GetPath(uri);
-					Kernel32.SetFileAttributes(spath, (int)(FileAttributes)arg);
 					break;
 				default:
 					throw new NotImplementedException();

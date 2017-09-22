@@ -263,6 +263,22 @@ namespace IllidanS4.SharpUtils.IO
 			}
 		}
 		
+		public virtual void SetProperty<TValue>(ResourceProperty property, TValue value)
+		{
+			fileSystem.SetProperty<TValue>(Uri, property, value);
+		}
+		
+		public virtual void SetCustomProperty<TValue, TProperty>(TProperty property, TValue value)
+		{
+			var provider = fileSystem as IPropertyProvider<TProperty>;
+			if(provider != null)
+			{
+				provider.SetProperty<TValue>(Uri, property, value);
+			}else{
+				throw new NotSupportedException();
+			}
+		}
+		
 		public virtual List<ResourceInfo> GetResources()
 		{
 			return fileSystem.GetResources(Uri).Select(u => new ResourceInfo(u)).ToList();
@@ -312,11 +328,6 @@ namespace IllidanS4.SharpUtils.IO
 		public ResourceHandle Delete()
 		{
 			return fileSystem.PerformOperation(Uri, ResourceOperation.Delete, null);
-		}
-		
-		public ResourceHandle ChangeAttributes(FileAttributes newAttributes)
-		{
-			return fileSystem.PerformOperation(Uri, ResourceOperation.ChangeAttributes, newAttributes);
 		}
 		
 		public ResourceHandle Create(FileAttributes attributes)

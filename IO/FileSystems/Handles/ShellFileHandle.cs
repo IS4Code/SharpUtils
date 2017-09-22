@@ -245,6 +245,24 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
+			public void SetProperty<T>(PROPERTYKEY property, T value)
+			{
+				var item = GetItem();
+				try{
+					var propvar = Propsys.VariantToPropVariant(value);
+					var properties = Propsys.PSCreatePropertyChangeArray<IPropertyChangeArray>(new[]{Shell32.PKEY_FileAttributes}, new[]{Propsys.PKA_FLAGS.PKA_SET}, new[]{propvar});
+					
+					var op = Shell32.CreateFileOperation();
+					op.SetOwnerWindow(fs.OwnerHwnd);
+					op.SetOperationFlags(0x0400 | 0x0004 | 0x0200 | 0x00100000);
+					op.SetProperties(properties);
+					op.ApplyPropertiesToItem(item);
+					op.PerformOperations();
+				}finally{
+					Marshal.FinalReleaseComObject(item);
+				}
+			}
+			
 			public override int GetHashCode()
 			{
 				byte[] data = SaveIdList();

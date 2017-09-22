@@ -37,6 +37,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		public void SetProperty<T>(Uri uri, ResourceProperty property, T value)
+		{
+			throw new NotImplementedException();
+		}
+		
 		public Stream GetStream(Uri uri, FileMode mode, FileAccess access)
 		{
 			string server = uri.Host;

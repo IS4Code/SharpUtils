@@ -6,5 +6,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	public interface IPropertyProvider<TProperty>
 	{
 		T GetProperty<T>(Uri uri, TProperty property);
+		void SetProperty<T>(Uri uri, TProperty property, T value);
 	}
 }

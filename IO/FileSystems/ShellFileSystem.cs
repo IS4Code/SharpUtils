@@ -20,7 +20,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// This file system contains locations accessible using the Win32 shell model.
 	/// The resources in this system may be real files, but also virtual shell items.
 	/// </summary>
-	public partial class ShellFileSystem : IHandleProvider
+	public partial class ShellFileSystem : IHandleProvider, IPropertyProvider<PROPERTYKEY>
 	{
 		public static readonly ShellFileSystem Instance = new ShellFileSystem(new Uri("shell:"));
 		
@@ -309,6 +309,46 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		public void SetProperty<T>(Uri uri, ResourceProperty property, T value)
+		{
+			switch(property)
+			{
+				case ResourceProperty.FileAttributes:
+					SetProperty<T>(uri, Shell32.PKEY_FileAttributes, value);
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+		
+		public T GetProperty<T>(Uri uri, PROPERTYKEY property)
+		{
+			var item = (IShellItem2)GetItem(uri);
+			try{
+				return (T)Propsys.PropVariantToVariant(item.GetProperty(ref property));
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
+		public void SetProperty<T>(Uri uri, PROPERTYKEY property, T value)
+		{
+			var item = GetItem(uri);
+			try{
+				var propvar = Propsys.VariantToPropVariant(value);
+				var properties = Propsys.PSCreatePropertyChangeArray<IPropertyChangeArray>(new[]{Shell32.PKEY_FileAttributes}, new[]{Propsys.PKA_FLAGS.PKA_SET}, new[]{propvar});
+				
+				var op = Shell32.CreateFileOperation();
+				op.SetOwnerWindow(OwnerHwnd);
+				op.SetOperationFlags(0x0400 | 0x0004 | 0x0200 | 0x00100000);
+				op.SetProperties(properties);
+				op.ApplyPropertiesToItem(item);
+				op.PerformOperations();
+			}finally{
+				Marshal.FinalReleaseComObject(item);
+			}
+		}
+		
 		private DateTime GetDateTime(IShellItem2 item, PROPERTYKEY property)
 		{
 			FILETIME ft = item.GetFileTime(property);
@@ -443,12 +483,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					uri = new Uri(uri, ".");
 					target = GetItem(uri);
 					break;
-				case ResourceOperation.ChangeAttributes:
-					source = GetItem(uri);
-					attributes = (FileAttributes)arg;
-					var propvar = Propsys.VariantToPropVariant((uint)attributes);
-					properties = Propsys.PSCreatePropertyChangeArray<IPropertyChangeArray>(new[]{Shell32.PKEY_FileAttributes}, new[]{Propsys.PKA_FLAGS.PKA_SET}, new[]{propvar});
-					break;
 				default:
 					throw new NotImplementedException();
 			}
@@ -494,12 +528,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				case ResourceOperation.Copy:
 					op.CopyItem(source, target, name, null);
 					break;
-				case ResourceOperation.ChangeAttributes:
-					op.SetProperties(properties);
-					op.ApplyPropertiesToItem(source);
-					break;
-				default:
-					throw new NotImplementedException();
 			}
 			return op;
 		}

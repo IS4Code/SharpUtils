@@ -5,10 +5,9 @@ namespace IllidanS4.SharpUtils.IO
 {
 	public enum ResourceOperation
 	{
-		Create,
-		Delete,
-		Move,
-		Copy,
-		ChangeAttributes,
+		Create = 1,
+		Delete = 2,
+		Move = 3,
+		Copy = 4,
 	}
 }

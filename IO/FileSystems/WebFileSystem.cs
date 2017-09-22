@@ -44,6 +44,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		public void SetProperty<T>(Uri uri, ResourceProperty property, T value)
+		{
+			throw new NotImplementedException();
+		}
+		
 		private DateTime GetLastWriteTime(Uri uri)
 		{
 			var resp = GetResponse(uri, "HEAD");
@@ -203,8 +208,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					ftp.RenameTo = path;
 					break;
 				case ResourceOperation.Copy:
-					throw new NotImplementedException();
-				case ResourceOperation.ChangeAttributes:
 					throw new NotImplementedException();
 				default:
 					throw new NotImplementedException();
