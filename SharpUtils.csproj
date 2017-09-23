@@ -149,6 +149,7 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Win32Control.cs" />
+    <Compile Include="IO\FileFlags.cs" />
     <Compile Include="IO\FileSystems\BlobFileSystem.cs" />
     <Compile Include="IO\FileSystems\DataExtensions\DataExtension.cs" />
     <Compile Include="IO\FileSystems\DataExtensions\IDataExtension.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="IO\FileSystems\WebFileSystem.cs" />
     <Compile Include="IO\FileSystems\Win32FileSystem.cs" />
     <Compile Include="IO\ResourceOperation.cs" />
+    <Compile Include="IO\Win32FileProperty.cs" />
     <Compile Include="ObjectModel\Either.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />

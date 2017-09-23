@@ -58,7 +58,17 @@ namespace IllidanS4.SharpUtils.IO
 		
 		public abstract override Stream GetStream(FileMode mode, FileAccess access);
 		
-		protected new abstract ResourceInfo Target{
+		public sealed override ResourceInfo Target{
+			get{
+				return GetProperty<ResourceInfo>(ResourceProperty.TargetInfo);
+			}
+		}
+		
+		protected abstract Uri TargetUri{
+			get;
+		}
+		
+		protected abstract ResourceInfo TargetInfo{
 			get;
 		}
 		
@@ -76,7 +86,7 @@ namespace IllidanS4.SharpUtils.IO
 		
 		protected virtual TValue GetPropertyInternal<TValue>(ResourceProperty property)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 		
 		public sealed override TValue GetProperty<TValue>(ResourceProperty property)
@@ -100,7 +110,7 @@ namespace IllidanS4.SharpUtils.IO
 				case ResourceProperty.DisplayPath:
 					return To<TValue>.Cast(DisplayPath);
 				case ResourceProperty.TargetInfo:
-					return To<TValue>.Cast(Target);
+					return To<TValue>.Cast(TargetInfo);
 				default:
 					return GetPropertyInternal<TValue>(property);
 			}

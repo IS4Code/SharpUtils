@@ -72,7 +72,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			protected override ResourceInfo Target{
+			protected override Uri TargetUri{
+				get{
+					var target = TargetInfo;
+					try{
+						return target.Uri;
+					}finally{
+						var dispose = target as IDisposable;
+						if(dispose != null) dispose.Dispose();
+					}
+				}
+			}
+			
+			protected override ResourceInfo TargetInfo{
 				get{
 					var item = GetItem();
 					try{

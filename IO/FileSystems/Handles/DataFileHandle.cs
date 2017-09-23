@@ -33,7 +33,16 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			protected override ResourceInfo Target{
+			protected override Uri TargetUri{
+				get{
+					var ext = fs.GetExtension(ContentType);
+					if(ext != null) return ext.GetProperty<Uri>(data, ResourceProperty.TargetUri);
+					
+					return null;
+				}
+			}
+			
+			protected override ResourceInfo TargetInfo{
 				get{
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<ResourceInfo>(data, ResourceProperty.TargetInfo);

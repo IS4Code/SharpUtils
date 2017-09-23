@@ -18,8 +18,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// This file system contains files in the Win32 path scheme, also
 	/// supporting NTFS file system extensions and UNC paths.
 	/// </summary>
-	public partial class Win32FileSystem : MountFileSystem, IHandleProvider
+	public partial class Win32FileSystem : MountFileSystem, IHandleProvider, IPropertyProvider<Win32FileProperty>
 	{
+		private const FileAccess DefaultFileAccess = (FileAccess)8;
+		private const FileShare DefaultFileShare = FileShare.ReadWrite | FileShare.Delete;
+		private const FileFlags DefaultFileFlags = FileFlags.OpenNoRecall | FileFlags.BackupSemantics | FileFlags.OpenReparsePoint;
+		
 		public static readonly Win32FileSystem Instance = new Win32FileSystem();
 		
 		public Win32FileSystem()
@@ -133,12 +137,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		#region Implementation
 		public ResourceHandle ObtainHandle(Uri uri)
 		{
-			IntPtr handle = Kernel32.CreateFile(GetPath(uri), (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
-			try{
-				return new Win32FileHandle(uri, handle, this);
-			}finally{
-				Kernel32.CloseHandle(handle);
-			}
+			string path = GetPath(uri);
+			return CreateHandle(path);
 		}
 		
 		protected override T GetPropertyInternal<T>(Uri uri, ResourceProperty property)
@@ -147,7 +147,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			switch(property)
 			{
 				case ResourceProperty.FileAttributes:
-					return To<T>.Cast((FileAttributes)Kernel32.GetFileAttributes(path));
+					return To<T>.Cast(GetFileAttributes(path));
 				case ResourceProperty.CreationTimeUtc:
 					return To<T>.Cast(GetDateTime(GetAttributeData(path).ftCreationTime));
 				case ResourceProperty.LastAccessTimeUtc:
@@ -169,6 +169,19 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
+		public T GetProperty<T>(Uri uri, Win32FileProperty property)
+		{
+			using(var handle = CreateHandle(GetPath(uri)))
+			{
+				return handle.GetProperty<T>(property);
+			}
+		}
+			
+		public void SetProperty<T>(Uri uri, Win32FileProperty property, T value)
+		{
+			throw new NotImplementedException();
+		}
+		
 		protected override void SetPropertyInternal<T>(Uri uri, ResourceProperty property, T value)
 		{
 			string path = GetPath(uri);
@@ -179,14 +192,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					break;
 				default:
 					throw new NotImplementedException();
-			}
-		}
-		
-		private long GetLengthInternal(string path)
-		{
-			var data = GetAttributeData(path);
-			unchecked{
-				return ((long)((ulong)(uint)data.nFileSizeHigh << 32) | (long)(uint)data.nFileSizeLow);
 			}
 		}
 		
@@ -219,25 +224,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 		}
 		
-		private Uri GetTargetInternal(string fpath)
-		{
-			IntPtr handle = Kernel32.CreateFile(fpath, (FileAccess)8, FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
-			try{
-				string path = Kernel32.GetFinalPathNameByHandle(handle, 0);
-				if(fpath == path) return null;
-				return FileUriFromPath(path);
-			}finally{
-				Kernel32.CloseHandle(handle);
-			}
-		}
-		
-		private string GetContentTypeInternal(string path)
-		{
-			string mime = Urlmon.FindMimeFromData(null, path, IntPtr.Zero, 0, null, 0x23);
-			if(mime == "application/x-msdownload") return "application/octet-stream";
-			return mime;
-		}
-		
 		private static readonly Regex backslashRegex2 = new Regex(@"[^\\]$", RegexOptions.Compiled);
 		protected override List<Uri> GetResourcesInternal(Uri uri)
 		{
@@ -256,7 +242,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			IntPtr handle = Kernel32.CreateFile(path, (FileAccess)(1 | 8 | 32), FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, FileMode.Open, (FileAttributes)0x2000000, IntPtr.Zero);
+			IntPtr handle = Kernel32.CreateFile(path, (FileAccess)(1 | 8 | 32), DefaultFileShare, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, FileFlags.BackupSemantics, IntPtr.Zero);
 			try{
 				IntPtr buffer = Marshal.AllocHGlobal(32768);
 				try{
@@ -292,9 +278,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			{
 				case ResourceOperation.Create:
 					spath = GetPath(uri);
-					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, IntPtr.Zero);
+					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, FileFlags.None, IntPtr.Zero);
 					try{
-						return new Win32FileHandle(uri, handle, this);
+						return new Win32FileHandle(handle, this);
 					}finally{
 						Kernel32.CloseHandle(handle);
 					}
@@ -337,9 +323,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				case ResourceOperation.Create:
 					spath = GetPath(uri);
 					cancellationToken.ThrowIfCancellationRequested();
-					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, IntPtr.Zero);
+					IntPtr handle = Kernel32.CreateFile(spath, FileAccess.ReadWrite, FileShare.None, IntPtr.Zero, FileMode.CreateNew, (FileAttributes)arg, FileFlags.None, IntPtr.Zero);
 					try{
-						return new Win32FileHandle(uri, handle, this);
+						return new Win32FileHandle( handle, this);
 					}finally{
 						Kernel32.CloseHandle(handle);
 					}
@@ -372,6 +358,50 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		#endregion
+		
+		private FileAttributes GetFileAttributes(string path)
+		{
+			try{
+				return (FileAttributes)Kernel32.GetFileAttributes(path);
+			}catch(Win32Exception e)
+			{
+				if(e.ErrorCode != 2) return FileAttributes.Device;
+				throw;
+			}
+		}
+		
+		private long GetLengthInternal(string path)
+		{
+			var data = GetAttributeData(path);
+			unchecked{
+				return ((long)((ulong)(uint)data.nFileSizeHigh << 32) | (long)(uint)data.nFileSizeLow);
+			}
+		}
+		
+		private Uri GetTargetInternal(string path)
+		{
+			using(var handle = CreateHandle(path))
+			{
+				return handle.GetProperty<Uri>(ResourceProperty.TargetUri);
+			}
+		}
+		
+		private string GetContentTypeInternal(string path)
+		{
+			string mime = Urlmon.FindMimeFromData(null, path, IntPtr.Zero, 0, null, 0x23);
+			if(mime == "application/x-msdownload") return "application/octet-stream";
+			return mime;
+		}
+		
+		private Win32FileHandle CreateHandle(string path)
+		{
+			IntPtr handle = Kernel32.CreateFile(path, DefaultFileAccess, DefaultFileShare, IntPtr.Zero, FileMode.Open, FileAttributes.Normal, DefaultFileFlags, IntPtr.Zero);
+			try{
+				return new Win32FileHandle(handle, this);
+			}finally{
+				Kernel32.CloseHandle(handle);
+			}
+		}
 		
 		private async Task MoveFile(string source, string target, CancellationToken token)
 		{

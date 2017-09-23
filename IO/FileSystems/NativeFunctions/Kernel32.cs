@@ -15,6 +15,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	{
 		static class Kernel32
 		{
+			private static readonly IntPtr InvalidHandle = new IntPtr(-1);
+			
 			public enum FILE_INFO_BY_HANDLE_CLASS
 			{
 				FileBasicInfo = 0,
@@ -157,8 +159,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DebuggerStepThrough]
 			public static bool GetFileInformationByHandleEx(IntPtr hFile, out FILE_ID_BOTH_DIR_INFO lpFileInformation)
 			{
-				bool result = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileIdBothDirectoryInfo, out lpFileInformation, FILE_ID_BOTH_DIR_INFO.Size);
-				if(!result)
+				bool ok = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileIdBothDirectoryInfo, out lpFileInformation, FILE_ID_BOTH_DIR_INFO.Size);
+				if(!ok)
 				{
 					int error = Marshal.GetLastWin32Error();
 					if(error != 18) throw new Win32Exception(error);
@@ -170,8 +172,8 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			[DebuggerStepThrough]
 			public static void GetFileInformationByHandleEx(IntPtr hFile, out FILE_NAME_INFO lpFileInformation)
 			{
-				bool result = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileNameInfo, out lpFileInformation, FILE_NAME_INFO.Size);
-				if(!result)
+				bool o = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileNameInfo, out lpFileInformation, FILE_NAME_INFO.Size);
+				if(!o)
 				{
 					throw new Win32Exception();
 				}
@@ -226,9 +228,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				public int nFileSizeLow;
 			}
 			
-			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="CreateFile")]
-			static extern IntPtr _CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, FileAttributes dwFlagsAndAttributes, IntPtr templateFile);
-			
 			[DllImport("kernel32.dll")]
 			public static extern IntPtr GetCurrentProcess();
 			
@@ -259,25 +258,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    		var exception = new Win32Exception();
 		    		if(throwOnCancel || unchecked((uint)exception.NativeErrorCode != 1235)) throw exception;
 		    		return false;
-		    	}
-		    	return true;
-		    }
-		    
-			[DebuggerStepThrough]
-		    public static bool CopyFileEx(string lpExistingFileName, string lpNewFileName, CopyProgressRoutine lpProgressRoutine, int dwCopyFlags, CancellationToken cancellationToken)
-		    {
-		    	IntPtr pbCancel = Marshal.AllocHGlobal(4);
-		    	try{
-			    	cancellationToken.Register(()=>Marshal.WriteInt32(pbCancel, 1));
-			    	bool ok = CopyFileEx(lpExistingFileName, lpNewFileName, lpProgressRoutine, IntPtr.Zero, pbCancel, dwCopyFlags);
-			    	if(!ok)
-			    	{
-			    		var exception = new Win32Exception();
-			    		if(unchecked((uint)exception.NativeErrorCode != 1235)) throw exception;
-			    		return false;
-			    	}
-		    	}finally{
-		    		Marshal.FreeHGlobal(pbCancel);
 		    	}
 		    	return true;
 		    }
@@ -318,6 +298,17 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    	}
 		    	return true;
 		    }
+		    
+			[DllImport("kernel32.dll", SetLastError=true, EntryPoint="ReOpenFile")]
+			static extern IntPtr _ReOpenFile(IntPtr hOriginalFile, FileAccess dwDesiredAccess, FileShare dwShareMode, FileFlags dwFlags);
+			
+			[DebuggerStepThrough]
+			public static IntPtr ReOpenFile(IntPtr hOriginalFile, FileAccess dwDesiredAccess, FileShare dwShareMode, FileFlags dwFlags)
+			{
+		    	IntPtr handle = _ReOpenFile(hOriginalFile, dwDesiredAccess, dwShareMode, dwFlags);
+		    	if(handle == InvalidHandle) throw new Win32Exception();
+		    	return handle;
+			}
 			
 			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
 			public struct WIN32_FIND_DATA
@@ -395,11 +386,103 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				return data;
 		    }
 		    
+			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+			static extern IntPtr CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, int dwFlagsAndAttributes, IntPtr templateFile);
+			
 			[DebuggerStepThrough]
-		    public static IntPtr CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, FileAttributes dwFlagsAndAttributes, IntPtr templateFile)
+		    public static IntPtr CreateFile(string lpFileName, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileMode dwCreationDisposition, FileAttributes dwAttributes, FileFlags dwFlags, IntPtr templateFile)
 		    {
-		    	IntPtr handle = _CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, templateFile);
-		    	if(handle == new IntPtr(-1)) throw new Win32Exception();
+		    	IntPtr handle = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, (int)dwAttributes | (int)dwFlags, templateFile);
+		    	if(handle == InvalidHandle) throw new Win32Exception();
+		    	return handle;
+		    }
+		    
+			[DllImport("kernel32.dll", SetLastError=true)]
+			static extern bool DeviceIoControl(IntPtr hDevice, int dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize, out int lpBytesReturned, IntPtr lpOverlapped);
+			
+			[DebuggerStepThrough]
+			public static int DeviceIoControl(IntPtr hDevice, int dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize)
+			{
+				int lpBytesReturned;
+				bool ok = DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer, nOutBufferSize, out lpBytesReturned, IntPtr.Zero);
+				if(!ok) throw new Win32Exception();
+				return lpBytesReturned;
+			}
+			
+			[StructLayout(LayoutKind.Explicit)]
+			public struct REPARSE_DATA_BUFFER
+			{
+				[FieldOffset(0)]
+				public int ReparseTag;
+				[FieldOffset(4)]
+				public ushort ReparseDataLength;
+				[FieldOffset(6)]
+				public ushort Reserved;
+				
+				[FieldOffset(8)]
+				public SymbolicLinkReparseBuffer SymbolicLink;
+				[FieldOffset(8)]
+				public MountPointReparseBuffer MountPoint;
+				[FieldOffset(8)]
+				public GenericReparseBuffer Generic;
+				
+				[StructLayout(LayoutKind.Sequential)]
+				public struct SymbolicLinkReparseBuffer
+				{
+					public ushort SubstituteNameOffset;
+					public ushort SubstituteNameLength;
+					public ushort PrintNameOffset;
+					public ushort PrintNameLength;
+					public int Flags;
+					public char PathBuffer;
+				}
+				
+				[StructLayout(LayoutKind.Sequential)]
+				public struct MountPointReparseBuffer
+				{
+					public ushort SubstituteNameOffset;
+					public ushort SubstituteNameLength;
+					public ushort PrintNameOffset;
+					public ushort PrintNameLength;
+					public char PathBuffer;
+				}
+				
+				[StructLayout(LayoutKind.Sequential)]
+				public struct GenericReparseBuffer
+				{
+					public byte DataBuffer;
+				}
+			}
+		    
+		    [StructLayout(LayoutKind.Explicit)]
+		    public struct FILE_ID_DESCRIPTOR
+		    {
+		    	public static readonly int Size = Marshal.SizeOf<FILE_ID_DESCRIPTOR>();
+		    	
+		    	[FieldOffset(0)]
+				public int dwSize;
+		    	[FieldOffset(4)]
+				public FILE_ID_TYPE Type;
+		    	[FieldOffset(8)]
+				public long FileId;
+		    	[FieldOffset(8)]
+				public Guid ObjectId;
+				
+				public enum FILE_ID_TYPE
+				{
+					FileIdType = 0,
+					ObjectIdType = 1,
+				}
+			}
+		    
+		    [DllImport("kernel32.dll", SetLastError=true)]
+		    static extern IntPtr OpenFileById(IntPtr hFile, ref FILE_ID_DESCRIPTOR lpFileID, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileFlags dwFlags);
+		    
+			[DebuggerStepThrough]
+		    public static IntPtr OpenFileById(IntPtr hFile, FILE_ID_DESCRIPTOR lpFileID, FileAccess dwDesiredAccess, FileShare dwShareMode, FileFlags dwFlags)
+		    {
+		    	IntPtr handle = OpenFileById(hFile, ref lpFileID, dwDesiredAccess, dwShareMode, IntPtr.Zero, dwFlags);
+		    	if(handle == InvalidHandle) throw new Win32Exception();
 		    	return handle;
 		    }
 		    
@@ -415,6 +498,18 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    	IntPtr targetHandle;
 		    	if(!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out targetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) throw new Win32Exception();
 		    	return targetHandle;
+		    }
+		    
+		    [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+		    static extern bool GetVolumeInformationByHandle(IntPtr hFile, StringBuilder lpVolumeNameBuffer, int nVolumeNameSize, IntPtr lpVolumeSerialNumber, IntPtr lpMaximumComponentLength, IntPtr lpFileSystemFlags, StringBuilder lpFileSystemNameBuffer, int nFileSystemNameSize);
+		    
+		    public static void GetVolumeInformationByHandle(IntPtr hFile, out string lpVolumeNameBuffer, out string lpFileSystemNameBuffer)
+		    {
+		    	var buffer1 = new StringBuilder(261);
+		    	var buffer2 = new StringBuilder(261);
+		    	bool ok = GetVolumeInformationByHandle(hFile, buffer1, 261, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, buffer2, 261);
+		    	lpVolumeNameBuffer = buffer1.ToString();
+		    	lpFileSystemNameBuffer = buffer2.ToString();
 		    }
 		}
 	}

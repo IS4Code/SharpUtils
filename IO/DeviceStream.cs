@@ -33,7 +33,7 @@ namespace IllidanS4.SharpUtils.IO
 			{
 				mode = FileMode.OpenOrCreate;
 			}
-			IntPtr handle = CreateFile(filename, access, share, IntPtr.Zero, mode, (FileAttributes)1048576, IntPtr.Zero);
+			IntPtr handle = CreateFile(filename, access, share, IntPtr.Zero, mode, (FileAttributes)FileFlags.OpenNoRecall, IntPtr.Zero);
 			var sfh = new SafeFileHandle(handle, true);
 			if(sfh.IsInvalid) throw new Win32Exception();
 			return sfh;

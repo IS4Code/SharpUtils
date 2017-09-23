@@ -27,6 +27,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public IFileSystem GetSubSystem(Uri uri)
 		{
+			if(uri == null) return null;
 			foreach(var pair in mountPoints)
 			{
 				var rel1 = pair.Key.MakeRelativeUri(uri);
