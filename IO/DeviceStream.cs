@@ -13,6 +13,8 @@ namespace IllidanS4.SharpUtils.IO
 	/// </summary>
 	public class DeviceStream : FileStream
 	{
+		private const int DefaultBufferSize = 4096;
+		
 		[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
 		static extern IntPtr CreateFile(
 			string filename,
@@ -37,17 +39,17 @@ namespace IllidanS4.SharpUtils.IO
 			return sfh;
 		}
 		
-		public DeviceStream(string path, FileMode mode) : this(path, mode, (mode == FileMode.Append) ? FileAccess.Write : FileAccess.ReadWrite, FileShare.Read, 4096)
+		public DeviceStream(string path, FileMode mode) : this(path, mode, (mode == FileMode.Append) ? FileAccess.Write : FileAccess.ReadWrite, FileShare.Read, DefaultBufferSize)
 		{
 			
 		}
 		
-		public DeviceStream(string path, FileMode mode, FileAccess access) : this(path, mode, access, FileShare.Read, 4096)
+		public DeviceStream(string path, FileMode mode, FileAccess access) : this(path, mode, access, FileShare.Read, DefaultBufferSize)
 		{
 			
 		}
 		
-		public DeviceStream(string path, FileMode mode, FileAccess access, FileShare share) : this(path, mode, access, share, 4096)
+		public DeviceStream(string path, FileMode mode, FileAccess access, FileShare share) : this(path, mode, access, share, DefaultBufferSize)
 		{
 			
 		}
@@ -58,6 +60,16 @@ namespace IllidanS4.SharpUtils.IO
 			{
 				this.Position = this.Length;
 			}
+		}
+		
+		public DeviceStream(IntPtr handle, FileAccess access) : this(handle, access, DefaultBufferSize)
+		{
+			
+		}
+		
+		public DeviceStream(IntPtr handle, FileAccess access, int bufferSize) : base(new SafeFileHandle(handle, true), access, bufferSize)
+		{
+			
 		}
 	}
 }

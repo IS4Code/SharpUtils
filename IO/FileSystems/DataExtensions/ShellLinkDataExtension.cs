@@ -22,14 +22,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 			{
 				case ResourceProperty.TargetUri:
 					return To<T>.Cast(ShellFileSystem.Instance.LoadLinkTargetUri(dataUri.Data));
+				case ResourceProperty.TargetInfo:
+					return To<T>.Cast<ResourceInfo>(ShellFileSystem.Instance.LoadLinkTargetResource(dataUri.Data));
 				default:
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 			}
-		}
-		
-		protected override ResourceInfo GetTargetResourceInternal(DataUri dataUri)
-		{
-			return ShellFileSystem.Instance.LoadLinkTargetResource(dataUri.Data);
 		}
 	}
 }

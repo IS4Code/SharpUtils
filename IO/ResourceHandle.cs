@@ -58,7 +58,7 @@ namespace IllidanS4.SharpUtils.IO
 		
 		public abstract override Stream GetStream(FileMode mode, FileAccess access);
 		
-		public abstract override ResourceInfo Target{
+		protected new abstract ResourceInfo Target{
 			get;
 		}
 		
@@ -99,6 +99,8 @@ namespace IllidanS4.SharpUtils.IO
 					return To<TValue>.Cast(LocalPath);
 				case ResourceProperty.DisplayPath:
 					return To<TValue>.Cast(DisplayPath);
+				case ResourceProperty.TargetInfo:
+					return To<TValue>.Cast(Target);
 				default:
 					return GetPropertyInternal<TValue>(property);
 			}

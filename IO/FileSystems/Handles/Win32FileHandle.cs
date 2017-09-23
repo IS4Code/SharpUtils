@@ -22,6 +22,12 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				this.fs = fs;
 			}
 			
+			private IntPtr CloneHandle()
+			{
+				IntPtr proc = Kernel32.GetCurrentProcess();
+				return Kernel32.DuplicateHandle(proc, handle, proc, 0, true, 2);
+			}
+			
 			public override Uri Uri{
 				get{
 					return uri;
@@ -35,7 +41,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override ResourceInfo Target{
+			protected override ResourceInfo Target{
 				get{
 					string path = Kernel32.GetFinalPathNameByHandle(handle, 0);
 					return new ResourceInfo(fs.FileUriFromPath(path));
@@ -80,7 +86,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override Stream GetStream(FileMode mode, FileAccess access)
 			{
-				throw new NotImplementedException();
+				return new DeviceStream(CloneHandle(), access);
 			}
 			
 			public override List<ResourceInfo> GetResources()

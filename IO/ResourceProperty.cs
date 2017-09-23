@@ -11,6 +11,7 @@ namespace IllidanS4.SharpUtils.IO
 		LastWriteTimeUtc,
 		LongLength,
 		TargetUri,
+		TargetInfo,
 		ContentType,
 		LocalPath,
 		DisplayPath,

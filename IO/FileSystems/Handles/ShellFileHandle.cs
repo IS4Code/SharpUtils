@@ -72,7 +72,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 			
-			public override ResourceInfo Target{
+			protected override ResourceInfo Target{
 				get{
 					var item = GetItem();
 					try{

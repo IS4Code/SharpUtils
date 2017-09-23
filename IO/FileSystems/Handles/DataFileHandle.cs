@@ -29,14 +29,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<FileAttributes>(data, ResourceProperty.FileAttributes);
 					
-					throw new NotImplementedException();
+					return FileAttributes.ReadOnly;
 				}
 			}
 			
-			public override ResourceInfo Target{
+			protected override ResourceInfo Target{
 				get{
 					var ext = fs.GetExtension(ContentType);
-					if(ext != null) return ext.GetTargetResource(data);
+					if(ext != null) return ext.GetProperty<ResourceInfo>(data, ResourceProperty.TargetInfo);
 					
 					return null;
 				}
@@ -44,7 +44,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public override ResourceInfo Parent{
 				get{
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			
@@ -53,7 +53,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.CreationTimeUtc);
 					
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			
@@ -62,7 +62,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastAccessTimeUtc);
 					
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			
@@ -71,7 +71,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<DateTime>(data, ResourceProperty.LastWriteTimeUtc);
 					
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			
@@ -107,7 +107,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.LocalPath);
 					
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			
@@ -116,7 +116,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					var ext = fs.GetExtension(ContentType);
 					if(ext != null) return ext.GetProperty<string>(data, ResourceProperty.DisplayPath);
 					
-					throw new NotImplementedException();
+					throw new NotSupportedException();
 				}
 			}
 			

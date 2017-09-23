@@ -34,12 +34,5 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 			CheckSupported(dataUri);
 			return GetPropertyInternal<T>(dataUri, property);
 		}
-		
-		protected abstract ResourceInfo GetTargetResourceInternal(DataUri dataUri);
-		public ResourceInfo GetTargetResource(DataUri dataUri)
-		{
-			CheckSupported(dataUri);
-			return GetTargetResourceInternal(dataUri);
-		}
 	}
 }

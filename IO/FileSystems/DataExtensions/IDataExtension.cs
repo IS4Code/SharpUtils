@@ -14,6 +14,5 @@ namespace IllidanS4.SharpUtils.IO.FileSystems.DataExtensions
 		bool SupportsType(string contentType);
 		
 		T GetProperty<T>(DataUri dataUri, ResourceProperty property);
-		ResourceInfo GetTargetResource(DataUri dataUri);
 	}
 }

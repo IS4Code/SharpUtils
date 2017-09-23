@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using STATSTG=System.Runtime.InteropServices.ComTypes.STATSTG;
 
 namespace IllidanS4.SharpUtils.Com
 {
@@ -51,27 +52,42 @@ namespace IllidanS4.SharpUtils.Com
 	    
 	    public void Revert()
 	    {
-	    	throw new NotImplementedException();
+	    	throw new NotSupportedException();
 	    }
 	    
 	    public void LockRegion(long libOffset, long cb, int dwLockType)
 	    {
-	    	throw new NotImplementedException();
+	    	var fileStream = baseStream as FileStream;
+	    	if(fileStream != null)
+	    	{
+	    		fileStream.Lock(libOffset, cb);
+	    	}
+	    	throw new NotSupportedException();
 	    }
 	    
 	    public void UnlockRegion(long libOffset, long cb, int dwLockType)
 	    {
-	    	throw new NotImplementedException();
+	    	var fileStream = baseStream as FileStream;
+	    	if(fileStream != null)
+	    	{
+	    		fileStream.Unlock(libOffset, cb);
+	    	}
+	    	throw new NotSupportedException();
 	    }
 	    
-	    public void Stat(out System.Runtime.InteropServices.ComTypes.STATSTG pstatstg, int grfStatFlag)
+	    public void Stat(out STATSTG pstatstg, int grfStatFlag)
 	    {
 	    	throw new NotImplementedException();
 	    }
 	    
 	    public void Clone(out IStream ppstm)
 	    {
-	    	throw new NotImplementedException();
+	    	var cloneable = baseStream as ICloneable;
+	    	if(cloneable != null)
+	    	{
+	    		ppstm = new StreamWrapper((Stream)cloneable.Clone());
+	    	}
+	    	throw new NotSupportedException();
 	    }
 	}
 }

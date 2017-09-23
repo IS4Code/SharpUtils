@@ -40,12 +40,22 @@ namespace IllidanS4.SharpUtils.Interop.Unmanaged
 		
 		public override void Unlock(long address, int size)
 		{
-			throw new NotImplementedException();
+			var fileStream = stream as FileStream;
+			if(fileStream != null)
+			{
+				fileStream.Unlock(address, size);
+			}
+			throw new NotSupportedException();
 		}
 		
 		public override void Lock(long address, int size)
 		{
-			throw new NotImplementedException();
+			var fileStream = stream as FileStream;
+			if(fileStream != null)
+			{
+				fileStream.Lock(address, size);
+			}
+			throw new NotSupportedException();
 		}
 		
 		public override void Free(long address)
