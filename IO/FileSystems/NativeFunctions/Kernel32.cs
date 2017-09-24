@@ -44,48 +44,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
-			public struct FILE_FULL_DIR_INFO
-			{
-				public int NextEntryOffset;
-				public int FileIndex;
-				public long CreationTime;
-				public long LastAccessTime;
-				public long LastWriteTime;
-				public long ChangeTime;
-				public long EndOfFile;
-				public long AllocationSize;
-				public int FileAttributes;
-				public int FileNameLength;
-				public int EaSize;
-				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
-				public string FileName;
-			}
-			
-			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
-			public struct FILE_ID_BOTH_DIR_INFO
-			{
-				public static readonly int Size = Marshal.SizeOf(typeof(FILE_ID_BOTH_DIR_INFO));
-				
-				public int NextEntryOffset;
-				public int FileIndex;
-				public long CreationTime;
-				public long LastAccessTime;
-				public long LastWriteTime;
-				public long ChangeTime;
-				public long EndOfFile;
-				public long AllocationSize;
-				public int FileAttributes;
-				public int FileNameLength;
-				public int EaSize;
-				public int ShortNameLength;
-				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=12)]
-				public string ShortName;
-				public long FileId;
-				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
-				public string FileName;
-			}
-			
-			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
 			public struct FILE_STREAM_INFO
 			{
 				public static readonly int Size = Marshal.SizeOf(typeof(FILE_STREAM_INFO));
@@ -100,23 +58,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				public string StreamName{
 					get{
 						return StreamNameInternal.Substring(0, StreamNameLength/2);
-					}
-				}
-			}
-			
-			[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
-			public struct FILE_NAME_INFO
-			{
-				public static readonly int Size = Marshal.SizeOf(typeof(FILE_NAME_INFO));
-				
-				public int FileNameLength;
-				
-				[MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
-				private string FileNameInternal;
-				
-				public string FileName{
-					get{
-						return FileNameInternal.Substring(0, FileNameLength/2);
 					}
 				}
 			}
@@ -148,36 +89,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			}
 			
 			[DllImport("kernel32.dll", SetLastError=true)]
-			static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_ID_BOTH_DIR_INFO lpFileInformation, int dwBufferSize);
-			
-			[DllImport("kernel32.dll", SetLastError=true)]
-			static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, out FILE_NAME_INFO lpFileInformation, int dwBufferSize);
-			
-			[DllImport("kernel32.dll", SetLastError=true)]
 			public static extern bool GetFileInformationByHandleEx(IntPtr hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, IntPtr lpFileInformation, int dwBufferSize);
-			
-			[DebuggerStepThrough]
-			public static bool GetFileInformationByHandleEx(IntPtr hFile, out FILE_ID_BOTH_DIR_INFO lpFileInformation)
-			{
-				bool ok = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileIdBothDirectoryInfo, out lpFileInformation, FILE_ID_BOTH_DIR_INFO.Size);
-				if(!ok)
-				{
-					int error = Marshal.GetLastWin32Error();
-					if(error != 18) throw new Win32Exception(error);
-					return false;
-				}
-				return true;
-			}
-			
-			[DebuggerStepThrough]
-			public static void GetFileInformationByHandleEx(IntPtr hFile, out FILE_NAME_INFO lpFileInformation)
-			{
-				bool o = GetFileInformationByHandleEx(hFile, FILE_INFO_BY_HANDLE_CLASS.FileNameInfo, out lpFileInformation, FILE_NAME_INFO.Size);
-				if(!o)
-				{
-					throw new Win32Exception();
-				}
-			}
 			
 			[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="GetFileAttributes")]
 			static extern int _GetFileAttributes(string lpFileName);
@@ -230,12 +142,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			[DllImport("kernel32.dll")]
 			public static extern IntPtr GetCurrentProcess();
-			
-		    private const int FILE_READ_EA = 0x0008;
-		    private const int FILE_FLAG_BACKUP_SEMANTICS = 0x2000000;
-			
-		    [DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
-		    static extern int GetFinalPathNameByHandle(IntPtr hFile, StringBuilder lpszFilePath, int cchFilePath, int dwFlags);
 			
 		    [DllImport("kernel32.dll")]
 		    public static extern bool CompareObjectHandles(IntPtr hFirstObjectHandle, IntPtr hSecondObjectHandle);
@@ -366,6 +272,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    	}
 		    }
 		    
+		    [DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+		    static extern int GetFinalPathNameByHandle(IntPtr hFile, StringBuilder lpszFilePath, int cchFilePath, int dwFlags);
+			
 			[DebuggerStepThrough]
 		    public static string GetFinalPathNameByHandle(IntPtr hFile, int dwFlags)
 		    {
@@ -454,38 +363,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}
 			}
 		    
-		    [StructLayout(LayoutKind.Explicit)]
-		    public struct FILE_ID_DESCRIPTOR
-		    {
-		    	public static readonly int Size = Marshal.SizeOf<FILE_ID_DESCRIPTOR>();
-		    	
-		    	[FieldOffset(0)]
-				public int dwSize;
-		    	[FieldOffset(4)]
-				public FILE_ID_TYPE Type;
-		    	[FieldOffset(8)]
-				public long FileId;
-		    	[FieldOffset(8)]
-				public Guid ObjectId;
-				
-				public enum FILE_ID_TYPE
-				{
-					FileIdType = 0,
-					ObjectIdType = 1,
-				}
-			}
-		    
-		    [DllImport("kernel32.dll", SetLastError=true)]
-		    static extern IntPtr OpenFileById(IntPtr hFile, ref FILE_ID_DESCRIPTOR lpFileID, FileAccess dwDesiredAccess, FileShare dwShareMode, IntPtr lpSecurityAttributes, FileFlags dwFlags);
-		    
-			[DebuggerStepThrough]
-		    public static IntPtr OpenFileById(IntPtr hFile, FILE_ID_DESCRIPTOR lpFileID, FileAccess dwDesiredAccess, FileShare dwShareMode, FileFlags dwFlags)
-		    {
-		    	IntPtr handle = OpenFileById(hFile, ref lpFileID, dwDesiredAccess, dwShareMode, IntPtr.Zero, dwFlags);
-		    	if(handle == InvalidHandle) throw new Win32Exception();
-		    	return handle;
-		    }
-		    
 			[DebuggerStepThrough]
 		    public static void CloseHandle(IntPtr hObject)
 		    {
@@ -498,32 +375,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    	IntPtr targetHandle;
 		    	if(!DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out targetHandle, dwDesiredAccess, bInheritHandle, dwOptions)) throw new Win32Exception();
 		    	return targetHandle;
-		    }
-		    
-		    [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
-		    static extern bool GetVolumeInformationByHandle(IntPtr hFile, StringBuilder lpVolumeNameBuffer, int nVolumeNameSize, IntPtr lpVolumeSerialNumber, IntPtr lpMaximumComponentLength, IntPtr lpFileSystemFlags, StringBuilder lpFileSystemNameBuffer, int nFileSystemNameSize);
-		    
-		    public static void GetVolumeInformationByHandle(IntPtr hFile, out string lpVolumeNameBuffer, out string lpFileSystemNameBuffer)
-		    {
-		    	var buffer1 = new StringBuilder(261);
-		    	var buffer2 = new StringBuilder(261);
-		    	bool ok = GetVolumeInformationByHandle(hFile, buffer1, 261, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, buffer2, 261);
-		    	lpVolumeNameBuffer = buffer1.ToString();
-		    	lpFileSystemNameBuffer = buffer2.ToString();
-		    }
-		    
-		    [DllImport("kernel32.dll", SetLastError=true, EntryPoint="GetFileType")]
-		    static extern int _GetFileType(IntPtr hFile);
-		    
-		    public static int GetFileType(IntPtr hFile)
-		    {
-		    	int res = _GetFileType(hFile);
-		    	if(res == 0)
-		    	{
-		    		var error = new Win32Exception();
-		    		if(error.ErrorCode != 0) throw error;
-		    	}
-		    	return res;
 		    }
 		}
 	}
