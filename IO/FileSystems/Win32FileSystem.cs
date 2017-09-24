@@ -20,7 +20,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// </summary>
 	public partial class Win32FileSystem : MountFileSystem, IHandleProvider, IPropertyProvider<Win32FileProperty>
 	{
-		private const FileAccess DefaultFileAccess = (FileAccess)8;
+		private const FileAccess DefaultFileAccess = (FileAccess)(128 | 8 | 1);
 		private const FileShare DefaultFileShare = FileShare.ReadWrite | FileShare.Delete;
 		private const FileFlags DefaultFileFlags = FileFlags.OpenNoRecall | FileFlags.BackupSemantics | FileFlags.OpenReparsePoint;
 		
@@ -46,12 +46,34 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		
 		public Uri FileUriFromPath(string path)
 		{
+			if(path.StartsWith(@"\\?\", StringComparison.Ordinal) || path.StartsWith(@"\??\", StringComparison.Ordinal))
+			{
+				return ConstructUri(path.Substring(4));
+			}
+			
 			if(!extendedRegex.IsMatch(path))
 			{
 				path = Kernel32.GetFullPathName(path);
 			}
 			RemoveBackslash(ref path);
 			return FileUriFromPathInternal(path);
+		}
+		
+		private Uri ConstructUri(string globalPath)
+		{
+			string host;
+			if(globalPath.StartsWith(@"UNC\", StringComparison.OrdinalIgnoreCase))
+			{
+				var split = globalPath.Split(new[]{'\\'}, 2);
+				host = split[0];
+				globalPath = split[1];
+			}else{
+				host = null;
+			}
+			var segments = globalPath.Split('\\');
+			var builder = new UriBuilder("file", host);
+			builder.Path = "/"+String.Join("/", segments.Select(s => Uri.EscapeDataString(s)));
+			return builder.Uri;
 		}
 	
 		public static DateTime GetDateTime(FILETIME ft)

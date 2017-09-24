@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
 {
@@ -205,13 +206,25 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			protected override string LocalPath{
 				get{
-					return Kernel32.GetFinalPathNameByHandle(handle, 0);
+					try{
+						return Kernel32.GetFinalPathNameByHandle(handle, 0);
+					}catch(Win32Exception)
+					{
+						Ntdll.OBJECT_NAME_INFORMATION nameInfo;
+						Ntdll.NtQueryObject(handle, out nameInfo);
+						return @"\\?\GlobalRoot"+nameInfo.Buffer;
+					}
 				}
 			}
 			
 			protected override string DisplayPath{
 				get{
-					return Kernel32.GetFinalPathNameByHandle(handle, 4);
+					try{
+						return Kernel32.GetFinalPathNameByHandle(handle, 4);
+					}catch(Win32Exception)
+					{
+						return Path.GetFileName(LocalPath);
+					}
 				}
 			}
 			

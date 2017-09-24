@@ -511,6 +511,20 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		    	lpVolumeNameBuffer = buffer1.ToString();
 		    	lpFileSystemNameBuffer = buffer2.ToString();
 		    }
+		    
+		    [DllImport("kernel32.dll", SetLastError=true, EntryPoint="GetFileType")]
+		    static extern int _GetFileType(IntPtr hFile);
+		    
+		    public static int GetFileType(IntPtr hFile)
+		    {
+		    	int res = _GetFileType(hFile);
+		    	if(res == 0)
+		    	{
+		    		var error = new Win32Exception();
+		    		if(error.ErrorCode != 0) throw error;
+		    	}
+		    	return res;
+		    }
 		}
 	}
 }
