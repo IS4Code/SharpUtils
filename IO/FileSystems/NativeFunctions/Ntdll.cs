@@ -1,6 +1,7 @@
 ﻿/* Date: 13.9.2017, Time: 18:53 */
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -35,6 +36,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				public string Buffer;
 			}
 			
+			[DebuggerStepThrough]
 			public static void NtQueryObject(IntPtr Handle, out OBJECT_NAME_INFORMATION ObjectNameInformation)
 			{
 				IntPtr buffer = Marshal.AllocHGlobal(1024);
