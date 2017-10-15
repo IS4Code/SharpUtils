@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <PropertyGroup>
     <ProjectGuid>{3527963D-1EF3-45A9-A303-33264EE426DE}</ProjectGuid>
@@ -189,7 +189,9 @@
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
     <Compile Include="Proxies\Replacers\ControlBase.cs" />
+    <Compile Include="Proxies\Replacers\GraphicsBase.cs" />
     <Compile Include="Proxies\Replacers\IControl.cs" />
+    <Compile Include="Proxies\Replacers\IGraphics.cs" />
     <Compile Include="Reflection\Emit\ParameterDefinition.cs" />
     <Compile Include="Reflection\Emit\StackValueType.cs" />
     <Compile Include="Reflection\Event.cs" />
