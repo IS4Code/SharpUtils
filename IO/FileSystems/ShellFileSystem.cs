@@ -180,7 +180,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		#endregion
 		
-		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
 		private IShellItem GetItem(Uri uri, ResourceFlags flags=0)
 		{
 			var rel = baseUri.MakeRelativeUri(uri);
