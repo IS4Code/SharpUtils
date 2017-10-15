@@ -157,7 +157,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		#region Implementation
-		public ResourceHandle ObtainHandle(Uri uri)
+		public ResourceHandle ObtainHandle(Uri uri, ResourceFlags flags)
 		{
 			string path = GetPath(uri);
 			return CreateHandle(path);

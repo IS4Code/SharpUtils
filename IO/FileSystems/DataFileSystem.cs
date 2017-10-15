@@ -56,7 +56,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return null;
 		}
 		
-		public ResourceHandle ObtainHandle(Uri uri)
+		public ResourceHandle ObtainHandle(Uri uri, ResourceFlags flags)
 		{
 			return new DataFileHandle(new DataUri(uri, true, true), this);
 		}

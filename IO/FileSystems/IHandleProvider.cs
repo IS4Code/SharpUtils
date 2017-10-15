@@ -9,6 +9,6 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 	/// </summary>
 	public interface IHandleProvider : IFileSystem
 	{
-		ResourceHandle ObtainHandle(Uri uri);
+		ResourceHandle ObtainHandle(Uri uri, ResourceFlags flags);
 	}
 }

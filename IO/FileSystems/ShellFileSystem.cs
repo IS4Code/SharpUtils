@@ -181,7 +181,7 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		#endregion
 		
 		static readonly Regex pathNameRegex = new Regex(@"^(shell:.*?\\?)([^\\]*)$", RegexOptions.Compiled);
-		private IShellItem GetItem(Uri uri)
+		private IShellItem GetItem(Uri uri, ResourceFlags flags=0)
 		{
 			var rel = baseUri.MakeRelativeUri(uri);
 			if(rel.IsAbsoluteUri) throw new ArgumentException("URI is not within this subsystem.", "uri");
@@ -207,6 +207,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 						{
 							item = GetDesktop();
 						}
+					}
+				}
+				if((flags & ResourceFlags.FollowLinks) != 0)
+				{
+					var target = GetTargetItem(item) as IShellItem;
+					if(target != null)
+					{
+						item = target;
 					}
 				}
 				var psf = item.BindToHandler<IShellFolder>(null, Shell32.BHID_SFObject);
@@ -262,9 +270,9 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 		}
 		
 		#region Implementation
-		public ResourceHandle ObtainHandle(Uri uri)
+		public ResourceHandle ObtainHandle(Uri uri, ResourceFlags flags)
 		{
-			var item = GetItem(uri);
+			var item = GetItem(uri, flags);
 			try{
 				IntPtr pidl = Shell32.SHGetIDListFromObject(item);
 				try{
