@@ -173,6 +173,7 @@
     <Compile Include="IO\FileSystems\NativeFunctions\Urlmon.cs" />
     <Compile Include="IO\FileSystems\PipeFileSystem.cs" />
     <Compile Include="IO\FileSystems\ShellFileSystem.cs" />
+    <Compile Include="IO\IStreamSource.cs" />
     <Compile Include="IO\PipeListener.cs" />
     <Compile Include="IO\PipeServer.cs" />
     <Compile Include="IO\ResourceFlags.cs" />

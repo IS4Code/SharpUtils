@@ -6,17 +6,44 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using IllidanS4.SharpUtils.Interop;
+using IllidanS4.SharpUtils.IO;
 
 namespace IllidanS4.SharpUtils.Collections.Sequences
 {
 	public static class StreamEnumerable
 	{
+		[Obsolete("IEnumerable is not a good representation of a stream. Use the other overload or ToIEnumerator.")]
 		public static IEnumerable<byte> ToIEnumerable(this Stream input)
 		{
 			return ToIEnumerableInner(input, input.Position);
 		}
 		
 		private static IEnumerable<byte> ToIEnumerableInner(Stream input, long pos)
+		{
+			int c;
+			while((c = input.ReadByte()) != -1)
+			{
+				yield return (byte)c;
+				input.Position = ++pos;
+			}
+		}
+		
+		public static IEnumerable<byte> ToIEnumerable(this IStreamSource input)
+		{
+			var stream = input.OpenStream();
+			var ienum = ToIEnumerator(stream);
+			while(ienum.MoveNext())
+			{
+				yield return ienum.Current;
+			}
+		}
+		
+		public static IEnumerator<byte> ToIEnumerator(this Stream input)
+		{
+			return ToIEnumeratorInner(input, input.Position);
+		}
+		
+		private static IEnumerator<byte> ToIEnumeratorInner(Stream input, long pos)
 		{
 			int c;
 			while((c = input.ReadByte()) != -1)
@@ -114,28 +141,41 @@ namespace IllidanS4.SharpUtils.Collections.Sequences
 			}
 		}
 		
-		/*static class GenericTypedRefMarshalHelper where T : struct
+		public static IEnumerator<T> ToIEnumerator<T>(this Stream input) where T : struct
 		{
-			static readonly Type valht = typeof(ValueHolder<>);
-			
-			public static IntPtr Marshal(TypedReference tr, out int size)
-			{
-				Type t = __reftype(tr);
-				Type valh = valht.MakeGenericType(t);
-				valh.GetField("val", BindingFlags.Public | BindingFlags.Static).SetValueDirect(
-			}
-			
-			static class ValueHolder<T> where T : struct
-			{
-				public static T val;
-				
-				public static IntPtr Marshal(out int size)
-				{
-					
-				}
-			}
-		}*/
+			if(TypeOf<T>.TypeID == TypeOf<byte>.TypeID) return (IEnumerator<T>)ToIEnumerator(input);
+			return EnumeratorStructures<T>(input);
+		}
 		
+		private static IEnumerator<T> EnumeratorStructures<T>(Stream input) where T : struct
+		{
+			Type t = TypeOf<T>.TypeID;
+			int size = Marshal.SizeOf(t);
+			byte[] buffer = new byte[size];
+			IntPtr ptr = Marshal.AllocHGlobal(size);
+			try{
+				while(input.Read(buffer, 0, size) == size)
+				{
+					Marshal.Copy(buffer, 0, ptr, size);
+					yield return InteropTools.PtrToStructure<T>(ptr);
+				}
+				throw new EndOfStreamException();
+			}finally{
+				Marshal.FreeHGlobal(ptr);
+			}
+		}
+		
+		public static IEnumerable<T> ToIEnumerable<T>(this IStreamSource input) where T : struct
+		{
+			var stream = input.OpenStream();
+			var ienum = ToIEnumerator<T>(stream);
+			while(ienum.MoveNext())
+			{
+				yield return ienum.Current;
+			}
+		}
+		
+		[Obsolete("IEnumerable is not a good representation of a stream. Use the other overload or ToIEnumerator.")]
 		public static IEnumerable<T> ToIEnumerable<T>(this Stream input) where T : struct
 		{
 			if(TypeOf<T>.TypeID == TypeOf<byte>.TypeID) return (IEnumerable<T>)ToIEnumerable(input);

@@ -24,9 +24,10 @@ namespace IllidanS4.SharpUtils.Collections.Sequences
 		
 		public IEnumerator<bool> GetEnumerator()
 		{
-			foreach(byte _b in InnerStream.ToIEnumerable())
+			var ienum = InnerStream.ToIEnumerator();
+			while(ienum.MoveNext())
 			{
-				byte b = _b;
+				byte b = ienum.Current;
 				for(int i = 0; i < 8; i++)
 				{
 					if(LittleEndian)
