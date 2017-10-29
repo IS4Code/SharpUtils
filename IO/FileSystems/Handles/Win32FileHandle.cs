@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace IllidanS4.SharpUtils.IO.FileSystems
@@ -181,6 +182,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			public override Stream GetStream(FileMode mode, FileAccess access)
 			{
 				return new DeviceStream(Kernel32.ReOpenFile(handle, access, DefaultFileShare, DefaultFileFlags), access);
+			}
+			
+			public override Process Execute()
+			{
+				throw new NotImplementedException();
 			}
 			
 			public override List<ResourceInfo> GetResources()

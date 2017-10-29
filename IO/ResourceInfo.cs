@@ -1,6 +1,7 @@
 ﻿/* Date: 3.9.2017, Time: 4:03 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -308,6 +309,11 @@ namespace IllidanS4.SharpUtils.IO
 		public override string ToString()
 		{
 			return HttpUtility.UrlDecode(AbsoluteUri);
+		}
+		
+		public virtual Process Execute()
+		{
+			return fileSystem.Execute(Uri);
 		}
 		
 		public ResourceHandle Rename(string newName)

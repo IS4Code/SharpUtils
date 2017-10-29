@@ -32,7 +32,43 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			public static readonly Guid FOLDERID_Desktop = new Guid("B4BFCC3A-DB2C-424C-B029-7FE99A87C641");
 			
-			[DllImportAttribute("shell32.dll", CharSet=CharSet.Unicode, PreserveSig=false)]
+			[DllImport("shell32.dll", CharSet=CharSet.Auto, SetLastError=true, EntryPoint="ShellExecuteEx")]
+			static extern bool _ShellExecuteEx(ref SHELLEXECUTEINFO lpExecInfo);
+			
+			public static void ShellExecuteEx(ref SHELLEXECUTEINFO lpExecInfo)
+			{
+				bool ok = _ShellExecuteEx(ref lpExecInfo);
+				if(!ok) throw new Win32Exception();
+			}
+			
+			[StructLayout(LayoutKind.Sequential)]
+			public struct SHELLEXECUTEINFO
+			{
+				public static readonly int Size = Marshal.SizeOf(typeof(SHELLEXECUTEINFO));
+				
+				public int cbSize;
+				public int fMask;
+				public IntPtr hwnd;
+				[MarshalAs(UnmanagedType.LPTStr)]
+				public string lpVerb;
+				[MarshalAs(UnmanagedType.LPTStr)]
+				public string lpFile;
+				[MarshalAs(UnmanagedType.LPTStr)]
+				public string lpParameters;
+				[MarshalAs(UnmanagedType.LPTStr)]
+				public string lpDirectory;
+				public int nShow;
+				public IntPtr hInstApp;
+				public IntPtr lpIDList;
+				[MarshalAs(UnmanagedType.LPTStr)]
+				public string lpClass;
+				public IntPtr hkeyClass;
+				public int dwHotKey;
+				public IntPtr hIcon;
+				public IntPtr hProcess;
+			}
+			
+			[DllImport("shell32.dll", CharSet=CharSet.Unicode, PreserveSig=false)]
 			[return: MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=2)]
 			static extern object SHCreateItemFromParsingName(string pszPath, IBindCtx pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid riid);
 			

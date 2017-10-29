@@ -86,17 +86,22 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			return HttpUtility.UrlDecode(uri.AbsolutePath);
 		}
 		
-		public List<Uri> GetResources(Uri uri)
+		List<Uri> IFileSystem.GetResources(Uri uri)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public ResourceHandle PerformOperation(Uri uri, ResourceOperation operation, object arg)
+		ResourceHandle IFileSystem.PerformOperation(Uri uri, ResourceOperation operation, object arg)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public Task<ResourceHandle> PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		Task<ResourceHandle> IFileSystem.PerformOperationAsync(Uri uri, ResourceOperation operation, object arg, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+		
+		System.Diagnostics.Process IFileSystem.Execute(Uri uri)
 		{
 			throw new NotImplementedException();
 		}

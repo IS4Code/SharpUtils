@@ -452,6 +452,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}, cancellationToken
 			);
 		}
+		
+		public Process Execute(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 		#endregion
 		
 		private IFileOperation InitOperation(Uri uri, ResourceOperation operation, object arg, FileOperationProgressSink sink)

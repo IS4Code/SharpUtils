@@ -1,6 +1,7 @@
 ﻿/* Date: 11.9.2017, Time: 2:09 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using IllidanS4.SharpUtils.IO.FileSystems;
 
@@ -83,6 +84,8 @@ namespace IllidanS4.SharpUtils.IO
 		protected new abstract string DisplayPath{
 			get;
 		}
+		
+		public abstract override Process Execute();
 		
 		protected virtual TValue GetPropertyInternal<TValue>(ResourceProperty property)
 		{

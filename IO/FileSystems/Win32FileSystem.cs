@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -378,6 +379,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 					throw new NotImplementedException();
 			}
 			return null;
+		}
+		
+		protected override Process ExecuteInternal(Uri uri)
+		{
+			throw new NotImplementedException();
 		}
 		#endregion
 		

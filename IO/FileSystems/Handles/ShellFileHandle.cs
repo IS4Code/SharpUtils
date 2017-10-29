@@ -1,6 +1,7 @@
 ﻿/* Date: 11.9.2017, Time: 10:33 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -174,6 +175,11 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				}finally{
 					Marshal.FinalReleaseComObject(item);
 				}
+			}
+			
+			public override Process Execute()
+			{
+				throw new NotImplementedException();
 			}
 			
 			public override List<ResourceInfo> GetResources()

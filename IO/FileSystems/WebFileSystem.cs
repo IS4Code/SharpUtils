@@ -215,5 +215,10 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			
 			return request;
 		}
+		
+		System.Diagnostics.Process IFileSystem.Execute(Uri uri)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

@@ -9,5 +9,6 @@ namespace IllidanS4.SharpUtils.IO
 		Delete = 2,
 		Move = 3,
 		Copy = 4,
+		Execute = 5,
 	}
 }

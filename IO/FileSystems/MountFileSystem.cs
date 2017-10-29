@@ -1,6 +1,7 @@
 ﻿/* Date: 5.9.2017, Time: 1:34 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -95,6 +96,15 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 			if(sub != null) return sub.PerformOperationAsync(uri, operation, arg, cancellationToken);
 			
 			return PerformOperationAsyncInternal(uri, operation, arg, cancellationToken);
+		}
+		
+		protected abstract Process ExecuteInternal(Uri uri);
+		public Process Execute(Uri uri)
+		{
+			IFileSystem sub = GetSubSystem(uri);
+			if(sub != null) return sub.Execute(uri);
+			
+			return ExecuteInternal(uri);
 		}
 	}
 }

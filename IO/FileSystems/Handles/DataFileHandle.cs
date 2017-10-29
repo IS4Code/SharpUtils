@@ -95,9 +95,14 @@ namespace IllidanS4.SharpUtils.IO.FileSystems
 				return new MemoryStream(data.Data, false);
 			}
 			
+			public override System.Diagnostics.Process Execute()
+			{
+				throw new NotSupportedException();
+			}
+			
 			public override List<ResourceInfo> GetResources()
 			{
-				throw new NotImplementedException();
+				throw new NotSupportedException();
 			}
 			
 			protected override void Dispose(bool disposing)
