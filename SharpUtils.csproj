@@ -139,6 +139,7 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Native.cs" />
+    <Compile Include="Interop\WinApi\ProcEnumerable.cs" />
     <Compile Include="Interop\WinApi\PsApi.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
@@ -215,6 +216,7 @@
     <Compile Include="SomeException.cs" />
     <Compile Include="Text\StringChunk.cs" />
     <Compile Include="Text\StringReference.cs" />
+    <Compile Include="Threads\Fiber.cs" />
     <Compile Include="Threads\ThreadingTools.cs" />
     <Compile Include="To.cs" />
     <Compile Include="Unit.cs" />
