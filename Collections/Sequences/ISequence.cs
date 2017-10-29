@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using IllidanS4.SharpUtils.Metadata;
 
-namespace IllidanS4.SharpUtils.Sequences
+namespace IllidanS4.SharpUtils.Collections.Sequences
 {
 	/// <summary>
 	/// Represents a sequence that guarantees to be finite or not.

@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace IllidanS4.SharpUtils.Sequences
+namespace IllidanS4.SharpUtils.Collections.Sequences
 {
 	public static class StreamExtensions
 	{

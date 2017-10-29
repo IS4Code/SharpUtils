@@ -101,6 +101,7 @@
     <Compile Include="Collections\MutableArray.cs" />
     <Compile Include="Collections\MutableCollection.cs" />
     <Compile Include="Collections\MutableList.cs" />
+    <Compile Include="Collections\Sequences\ProcEnumerable.cs" />
     <Compile Include="Collections\ValueTypeEnumerator.cs" />
     <Compile Include="Com\ComExtensions.cs" />
     <Compile Include="Com\HRESULT.cs" />
@@ -139,7 +140,6 @@
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\WinApi\Native.cs" />
-    <Compile Include="Interop\WinApi\ProcEnumerable.cs" />
     <Compile Include="Interop\WinApi\PsApi.cs">
       <DependentUpon>Win32Control.cs</DependentUpon>
     </Compile>
@@ -199,16 +199,16 @@
     <Compile Include="Reflection\TypedContainer.cs" />
     <Compile Include="Reflection\TypeSystem.cs" />
     <Compile Include="SafeReference.cs" />
-    <Compile Include="Sequences\BitStream.cs" />
-    <Compile Include="Sequences\ISequence.cs" />
-    <Compile Include="Sequences\IObjectReader.cs" />
-    <Compile Include="Sequences\IObjectWriter.cs" />
-    <Compile Include="Sequences\NumberSequences.cs" />
-    <Compile Include="Sequences\SequenceTools.cs" />
-    <Compile Include="Sequences\StreamEnumerable.cs" />
-    <Compile Include="Sequences\StreamExtensions.cs" />
-    <Compile Include="Sequences\TerminalWriter.cs" />
-    <Compile Include="Sequences\TextToStreamWrapper.cs" />
+    <Compile Include="Collections\Sequences\BitStream.cs" />
+    <Compile Include="Collections\Sequences\ISequence.cs" />
+    <Compile Include="Collections\Sequences\IObjectReader.cs" />
+    <Compile Include="Collections\Sequences\IObjectWriter.cs" />
+    <Compile Include="Collections\Sequences\NumberSequences.cs" />
+    <Compile Include="Collections\Sequences\SequenceTools.cs" />
+    <Compile Include="Collections\Sequences\StreamEnumerable.cs" />
+    <Compile Include="Collections\Sequences\StreamExtensions.cs" />
+    <Compile Include="Collections\Sequences\TerminalWriter.cs" />
+    <Compile Include="Collections\Sequences\TextToStreamWrapper.cs" />
     <Compile Include="Serialization\Copier.cs" />
     <Compile Include="Serialization\ICloner.cs" />
     <Compile Include="Serialization\MemoryCloner.cs" />
@@ -441,7 +441,7 @@
     <Folder Include="Interop" />
     <Folder Include="Collections" />
     <Folder Include="IO" />
-    <Folder Include="Sequences" />
+    <Folder Include="Collections\Sequences" />
     <Folder Include="Text" />
     <Folder Include="ObjectModel" />
     <Folder Include="Numerics" />

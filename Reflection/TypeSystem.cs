@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using IllidanS4.SharpUtils.Sequences;
+using IllidanS4.SharpUtils.Collections.Sequences;
 
 namespace IllidanS4.SharpUtils.Reflection
 {

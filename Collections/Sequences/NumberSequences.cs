@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace IllidanS4.SharpUtils.Sequences
+namespace IllidanS4.SharpUtils.Collections.Sequences
 {
 	public static class NumberSequences
 	{

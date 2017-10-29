@@ -12,7 +12,7 @@ Types generalizing the concept of accessors - objects that work as generic refer
 The basic interface is *IStorageAccessor*, from which all other types derive.
 
 ### Collections
-Various types of collections, async collections, and immutable collection wrappers.
+Various types of collections, async collections, and immutable collection wrappers, as well as infinite collections and special enumerables.
 
 ### COM
 Some interfaces and marshallers that make working with COM easier. The types in this namespace include mainly Shell32 COM types, *IDispatch* and *IStream* wrappers.
@@ -45,9 +45,6 @@ The other half of this namespace is *Replacers*. Certain types in .NET inherit f
 ### Reflection
 The most extensive and diverse part of this library. There are types to emit extended type and method signatures, using required and optional type modifiers, and a whole new type system using the *TypeSupport.TypeConstruct* base class. There are also models representing the type system in C# and C++.
 There is also a class representing the *whole* .NET type system, and by that I really mean *all types* in .NET (well all types usable in the actual app-domain). The *TypeSystem* class can be used to enumerate a portion of types in the type system, including all arrays, pointers, by-refs and generic type instantiations.
-
-### Sequences
-A sequence is an enumerable specifying its finiteness. This assumes that the finiteness of a sequence is known before its creation and is deterministic and consistent. There are many LINQ-like methods, working mostly with infinite sequences.
 
 ### Serialization
 Mostly memory-based serialization, using raw values.
