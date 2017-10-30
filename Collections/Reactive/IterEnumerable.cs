@@ -93,7 +93,11 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			
 			public void Dispose()
 			{
-				if(state != -1)
+				if(state == 0)
+				{
+					state = -1;
+					enumFiber.Dispose();
+				}else if(state != -1)
 				{
 					state = -1;
 					mainFiber = Fiber.CurrentFiber;
@@ -102,6 +106,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 					}finally{
 						mainFiber = null;
 					}
+					enumFiber.Dispose();
 				}
 			}
 			
