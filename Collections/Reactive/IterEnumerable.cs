@@ -8,18 +8,23 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	/// <summary>
 	/// Provides a way to represent a push iterator as a pull iterator.
 	/// </summary>
-	public class ProcEnumerable<T> : IEnumerable<T>
+	public class IterEnumerable<T> : IEnumerable<T>
 	{
-		readonly Action<Func<T, bool>> enumProc;
+		readonly Action<Func<T, bool>> iterProc;
 		
-		public ProcEnumerable(Action<Func<T, bool>> enumProc)
+		public IterEnumerable(Action<Func<T, bool>> iterProc)
 		{
-			this.enumProc = enumProc;
+			this.iterProc = iterProc;
+		}
+		
+		public IterEnumerable(IIterable<T> iterable) : this(f => iterable.Iterate(Iterator.Create(f)))
+		{
+			
 		}
 		
 		public IEnumerator<T> GetEnumerator()
 		{
-			return new ProcEnumerator(enumProc);
+			return new Enumerator(iterProc);
 		}
 		
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -27,7 +32,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			return GetEnumerator();
 		}
 		
-		sealed class ProcEnumerator : IEnumerator<T>
+		sealed class Enumerator : IEnumerator<T>
 		{
 			readonly Fiber enumFiber;
 			
@@ -40,7 +45,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			
 			Fiber mainFiber;
 			
-			public ProcEnumerator(Action<Func<T, bool>> enumProc)
+			public Enumerator(Action<Func<T, bool>> enumProc)
 			{
 				enumFiber = new Fiber(
 					()=>{
@@ -104,6 +109,19 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			{
 				throw new NotSupportedException();
 			}
+		}
+	}
+	
+	public static class IterEnumerable
+	{
+		public static IterEnumerable<T> Create<T>(Action<Func<T, bool>> iterProc)
+		{
+			return new IterEnumerable<T>(iterProc);
+		}
+		
+		public static IterEnumerable<T> Create<T>(IIterable<T> iterable)
+		{
+			return new IterEnumerable<T>(iterable);
 		}
 	}
 }
