@@ -101,7 +101,7 @@
     <Compile Include="Collections\MutableArray.cs" />
     <Compile Include="Collections\MutableCollection.cs" />
     <Compile Include="Collections\MutableList.cs" />
-    <Compile Include="Collections\Sequences\ProcEnumerable.cs" />
+    <Compile Include="Collections\Reactive\ProcEnumerable.cs" />
     <Compile Include="Collections\ValueTypeEnumerator.cs" />
     <Compile Include="Com\ComExtensions.cs" />
     <Compile Include="Com\HRESULT.cs" />
@@ -431,6 +431,7 @@
   <ItemGroup>
     <Folder Include="Collections\Async" />
     <Folder Include="Accessing" />
+    <Folder Include="Collections\Reactive" />
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
     <Folder Include="IO\FileSystems" />

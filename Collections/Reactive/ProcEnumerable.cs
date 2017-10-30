@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using IllidanS4.SharpUtils.Threads;
 
-namespace IllidanS4.SharpUtils.Collections.Sequences
+namespace IllidanS4.SharpUtils.Collections.Reactive
 {
 	/// <summary>
 	/// Provides a way to represent a push iterator as a pull iterator.
