@@ -161,10 +161,15 @@ namespace IllidanS4.SharpUtils.Threads
 			[DllImport("kernel32.dll", SetLastError=true, EntryPoint="ConvertFiberToThread")]
 			private static extern bool _ConvertFiberToThread();
 			
-			public static void ConvertFiberToThread()
+			public static bool ConvertFiberToThread()
 			{
 				bool ok = _ConvertFiberToThread();
-				if(!ok) throw new Win32Exception();
+				if(!ok)
+				{
+		    		int error = Marshal.GetLastWin32Error();
+		    		if(error != 0x501) throw new Win32Exception(error);
+				}
+				return ok;
 			}
 			
 			[DllImport("kernel32.dll", SetLastError=true)]
