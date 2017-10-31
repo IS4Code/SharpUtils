@@ -104,6 +104,8 @@
     <Compile Include="Collections\Reactive\IIterable.cs" />
     <Compile Include="Collections\Reactive\IIterator.cs" />
     <Compile Include="Collections\Reactive\EnumIterable.cs" />
+    <Compile Include="Collections\Reactive\IIteratorLink.cs" />
+    <Compile Include="Collections\Reactive\Iterable.cs" />
     <Compile Include="Collections\Reactive\Iterator.cs" />
     <Compile Include="Collections\Reactive\IterEnumerable.cs" />
     <Compile Include="Collections\Reactive\ReactiveExtensions.cs" />
