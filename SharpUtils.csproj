@@ -101,6 +101,7 @@
     <Compile Include="Collections\MutableArray.cs" />
     <Compile Include="Collections\MutableCollection.cs" />
     <Compile Include="Collections\MutableList.cs" />
+    <Compile Include="Collections\Reactive\BasicIteratorLink.cs" />
     <Compile Include="Collections\Reactive\IIterable.cs" />
     <Compile Include="Collections\Reactive\IIterator.cs" />
     <Compile Include="Collections\Reactive\EnumIterable.cs" />

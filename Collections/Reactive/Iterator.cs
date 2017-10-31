@@ -1,6 +1,5 @@
 ﻿/* Date: 30.10.2017, Time: 1:38 */
 using System;
-using System.Collections.Generic;
 
 namespace IllidanS4.SharpUtils.Collections.Reactive
 {
@@ -8,15 +7,15 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	{
 		public static IIterator<T> Create<T>(Func<T, bool> onNext=null, Action onCompleted=null)
 		{
-			return new ProcIterator<T>(onNext, onCompleted);
+			return new FuncIterator<T>(onNext, onCompleted);
 		}
 		
-		private class ProcIterator<T> : IIterator<T>
+		private class FuncIterator<T> : IIterator<T>
 		{
 			readonly Func<T, bool> onNext;
 			readonly Action onCompleted;
 			
-			public ProcIterator(Func<T, bool> onNext, Action onCompleted)
+			public FuncIterator(Func<T, bool> onNext, Action onCompleted)
 			{
 				this.onNext = onNext;
 				this.onCompleted = onCompleted;
@@ -39,176 +38,23 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			return Select<TSource, TSource, TResult>(null, selector);
 		}
 		
-		public static IIteratorLink<TSource, TResult> Select<TSource, TArgument, TResult>(this IIteratorLink<TSource, TArgument> source, Func<TArgument, TResult> selector)
+		public static IIteratorLink<TSource, TResult> Select<TSource, TIntermediate, TResult>(this IIteratorLink<TSource, TIntermediate> source, Func<TIntermediate, TResult> selector)
 		{
-			return new SelectIterator<TSource, TArgument, TResult>(source, selector);
+			return new SelectIterator<TSource, TIntermediate, TResult>(source, selector);
 		}
 		
-		private class SelectIterator<TSource, TArgument, TResult> : IIteratorLink<TSource, TResult>
+		private class SelectIterator<TSource, TIntermediate, TResult> : BasicIteratorLink<TSource, TIntermediate, TResult>
 		{
-			readonly List<Handler> handlers = new List<Handler>();
-			readonly IIteratorLink<TSource, TArgument> source;
-			readonly Func<TArgument, TResult> selector;
-			readonly ArgumentIterator argIterator;
+			readonly Func<TIntermediate, TResult> selector;
 			
-			public SelectIterator(IIteratorLink<TSource, TArgument> source, Func<TArgument, TResult> selector)
+			public SelectIterator(IIteratorLink<TSource, TIntermediate> source, Func<TIntermediate, TResult> selector) : base(source)
 			{
 				this.selector = selector;
-				this.source = source;
-				argIterator = new ArgumentIterator(this);
 			}
 			
-			private class ArgumentIterator : IIterator<TArgument>
+			protected override bool OnNextInternal(TIntermediate value)
 			{
-				readonly SelectIterator<TSource, TArgument, TResult> parent;
-				
-				public ArgumentIterator(SelectIterator<TSource, TArgument, TResult> parent)
-				{
-					this.parent = parent;
-				}
-				
-				public bool OnNext(TArgument value)
-				{
-					return parent.OnNextInternal(value);
-				}
-				
-				public void OnCompleted()
-				{
-					parent.OnCompletedInternal();
-				}
-			}
-			
-			public bool OnNext(TSource value)
-			{
-				if(source == null)
-				{
-					return OnNextInternal(To<TArgument>.Cast(value));
-				}else using(var handle = source.Subscribe(argIterator))
-				{
-					return source.OnNext(value);
-				}
-			}
-			
-			private bool OnNextInternal(TArgument value)
-			{
-				bool next = false;
-				var obj = selector(value);
-				foreach(var handler in handlers)
-				{
-					if(handler.Handle)
-					{
-						if(handler.Iterator.OnNext(obj))
-						{
-							next = true;
-						}else{
-							handler.Iterator.OnCompleted();
-							handler.Close();
-						}
-					}
-				}
-				return next;
-			}
-			
-			public void OnCompleted()
-			{
-				if(source == null)
-				{
-					OnCompletedInternal();
-				}else using(var handle = source.Subscribe(argIterator))
-				{
-					source.OnCompleted();
-				}
-			}
-			
-			private void OnCompletedInternal()
-			{
-				foreach(var handler in handlers)
-				{
-					if(handler.Handle)
-					{
-						handler.Iterator.OnCompleted();
-					}else{
-						handler.Open();
-					}
-				}
-			}
-			
-			public IDisposable Subscribe(IIterator<TResult> iterator)
-			{
-				var handler = new Handler(iterator);
-				handlers.Add(handler);
-				return handler;
-			}
-			
-			public void Dispose()
-			{
-				Dispose(true);
-			}
-			
-			protected void Dispose(bool disposing)
-			{
-				if(disposing)
-				{
-					foreach(var handler in handlers)
-					{
-						handler.Dispose();
-					}
-					handlers.Clear();
-				}
-				GC.SuppressFinalize(this);
-			}
-			
-			~SelectIterator()
-			{
-				Dispose(false);
-			}
-			
-			private class Handler : IDisposable
-			{
-				public IIterator<TResult> Iterator{get; private set;}
-				public bool Handle{get; private set;}
-				
-				public Handler(IIterator<TResult> iterator)
-				{
-					Handle = true;
-					Iterator = iterator;
-				}
-				
-				public void Close()
-				{
-					if(Iterator != null)
-					{
-						Handle = false;
-					}
-				}
-				
-				public void Open()
-				{
-					if(Iterator != null)
-					{
-						Handle = true;
-					}
-				}
-				
-				public void Dispose()
-				{
-					Dispose(true);
-				}
-				
-				protected void Dispose(bool disposing)
-				{
-					Handle = false;
-					if(disposing)
-					{
-						Iterator = null;
-					}
-					GC.SuppressFinalize(this);
-				}
-				
-				~Handler()
-				{
-					Dispose(false);
-				}
+				return OnNextFinal(selector(value));
 			}
 		}
 		
@@ -217,202 +63,102 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			return new LinkIterator<TSource, TIntermediate, TResult>(left, right);
 		}
 		
-		private class LinkIterator<TSource, TIntermediate, TResult> : IIteratorLink<TSource, TResult>
+		private class LinkIterator<TSource, TIntermediate, TResult> : BasicIteratorLink<TSource, TIntermediate, TResult>
 		{
-			readonly List<Handler> handlers = new List<Handler>();
-			readonly IIteratorLink<TSource, TIntermediate> left;
-			readonly IIteratorLink<TIntermediate, TResult> right;
-			readonly IntermediateIterator inIterator;
+			readonly IIteratorLink<TIntermediate, TResult> target;
 			readonly FinalIterator finIterator;
 			
-			public LinkIterator(IIteratorLink<TSource, TIntermediate> left, IIteratorLink<TIntermediate, TResult> right)
+			public LinkIterator(IIteratorLink<TSource, TIntermediate> source, IIteratorLink<TIntermediate, TResult> target) : base(source)
 			{
-				this.left = left;
-				this.right = right;
-				inIterator = new IntermediateIterator(this);
+				this.target = target;
 				finIterator = new FinalIterator(this);
 			}
 			
-			private class IntermediateIterator : IIterator<TIntermediate>
+			protected override bool OnNextInternal(TIntermediate value)
 			{
-				readonly LinkIterator<TSource, TIntermediate, TResult> parent;
-				
-				public IntermediateIterator(LinkIterator<TSource, TIntermediate, TResult> parent)
+				using(var handle = target.Subscribe(finIterator))
 				{
-					this.parent = parent;
-				}
-				
-				public bool OnNext(TIntermediate value)
-				{
-					return parent.OnNextInternal(value);
-				}
-				
-				public void OnCompleted()
-				{
-					parent.OnCompletedInternal();
+					return target.OnNext(value);
 				}
 			}
 			
-			private class FinalIterator : IIterator<TResult>
+			protected override void OnCompletedInternal()
 			{
-				readonly LinkIterator<TSource, TIntermediate, TResult> parent;
+				using(var handle = target.Subscribe(finIterator))
+				{
+					target.OnCompleted();
+				}
+			}
+		}
+		
+		public static IIteratorLink<TSource, TSource> Where<TSource>(Func<TSource, bool> predicate)
+		{
+			return Where<TSource, TSource>(null, predicate);
+		}
+		
+		public static IIteratorLink<TSource, TResult> Where<TSource, TResult>(this IIteratorLink<TSource, TResult> source, Func<TResult, bool> predicate)
+		{
+			return new WhereIterator<TSource, TResult>(source, predicate);
+		}
+		
+		private class WhereIterator<TSource, TResult> : BasicIteratorLink<TSource, TResult, TResult>
+		{
+			readonly Func<TResult, bool> predicate;
+			
+			public WhereIterator(IIteratorLink<TSource, TResult> source, Func<TResult, bool> predicate) : base(source)
+			{
+				this.predicate = predicate;
+			}
+			
+			protected override bool OnNextInternal(TResult value)
+			{
+				if(predicate(value))
+				{
+					return OnNextFinal(value);
+				}else{
+					return true;
+				}
+			}
+		}
+		
+		public static IIteratorLink<TSource, TResult> Aggregate<TSource, TAccumulate, TResult>(TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
+		{
+			return Aggregate<TSource, TSource, TAccumulate, TResult>(null, seed, func, resultSelector);
+		}
+		
+		public static IIteratorLink<TSource, TResult> Aggregate<TSource, TIntermediate, TAccumulate, TResult>(this IIteratorLink<TSource, TIntermediate> source, TAccumulate seed, Func<TAccumulate, TIntermediate, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
+		{
+			return new AggregateIterator<TSource, TIntermediate, TAccumulate, TResult>(source, seed, func, resultSelector);
+		}
+		
+		private class AggregateIterator<TSource, TIntermediate, TAccumulate, TResult> : BasicIteratorLink<TSource, TIntermediate, TResult>
+		{
+			readonly TAccumulate seed;
+			readonly Func<TAccumulate, TIntermediate, TAccumulate> func;
+			readonly Func<TAccumulate, TResult> resultSelector;
+			
+			TAccumulate accumulate;
+			
+			public AggregateIterator(IIteratorLink<TSource, TIntermediate> source, TAccumulate seed, Func<TAccumulate, TIntermediate, TAccumulate> func, Func<TAccumulate, TResult> resultSelector) : base(source)
+			{
+				this.seed = seed;
+				this.func = func;
+				this.resultSelector = resultSelector;
 				
-				public FinalIterator(LinkIterator<TSource, TIntermediate, TResult> parent)
-				{
-					this.parent = parent;
-				}
-				
-				public bool OnNext(TResult value)
-				{
-					return parent.OnNextFinal(value);
-				}
-				
-				public void OnCompleted()
-				{
-					parent.OnCompletedFinal();
-				}
+				accumulate = seed;
 			}
 			
-			public bool OnNext(TSource value)
+			protected override bool OnNextInternal(TIntermediate value)
 			{
-				using(var handle = left.Subscribe(inIterator))
-				{
-					return left.OnNext(value);
-				}
+				accumulate = func(accumulate, value);
+				return true;
 			}
 			
-			private bool OnNextInternal(TIntermediate value)
+			protected override void OnCompletedInternal()
 			{
-				using(var handle = right.Subscribe(finIterator))
-				{
-					return right.OnNext(value);
-				}
-			}
-			
-			private bool OnNextFinal(TResult value)
-			{
-				bool next = false;
-				foreach(var handler in handlers)
-				{
-					if(handler.Handle)
-					{
-						if(handler.Iterator.OnNext(value))
-						{
-							next = true;
-						}else{
-							handler.Iterator.OnCompleted();
-							handler.Close();
-						}
-					}
-				}
-				return next;
-			}
-			
-			public void OnCompleted()
-			{
-				using(var handle = left.Subscribe(inIterator))
-				{
-					left.OnCompleted();
-				}
-			}
-			
-			private void OnCompletedInternal()
-			{
-				using(var handle = right.Subscribe(finIterator))
-				{
-					right.OnCompleted();
-				}
-			}
-			
-			private void OnCompletedFinal()
-			{
-				foreach(var handler in handlers)
-				{
-					if(handler.Handle)
-					{
-						handler.Iterator.OnCompleted();
-					}else{
-						handler.Open();
-					}
-				}
-			}
-			
-			public IDisposable Subscribe(IIterator<TResult> iterator)
-			{
-				var handler = new Handler(iterator);
-				handlers.Add(handler);
-				return handler;
-			}
-			
-			public void Dispose()
-			{
-				Dispose(true);
-			}
-			
-			protected void Dispose(bool disposing)
-			{
-				if(disposing)
-				{
-					foreach(var handler in handlers)
-					{
-						handler.Dispose();
-					}
-					handlers.Clear();
-				}
-				GC.SuppressFinalize(this);
-			}
-			
-			~LinkIterator()
-			{
-				Dispose(false);
-			}
-			
-			private class Handler : IDisposable
-			{
-				public IIterator<TResult> Iterator{get; private set;}
-				public bool Handle{get; private set;}
-				
-				public Handler(IIterator<TResult> iterator)
-				{
-					Handle = true;
-					Iterator = iterator;
-				}
-				
-				public void Close()
-				{
-					if(Iterator != null)
-					{
-						Handle = false;
-					}
-				}
-				
-				public void Open()
-				{
-					if(Iterator != null)
-					{
-						Handle = true;
-					}
-				}
-				
-				public void Dispose()
-				{
-					Dispose(true);
-				}
-				
-				protected void Dispose(bool disposing)
-				{
-					Handle = false;
-					if(disposing)
-					{
-						Iterator = null;
-					}
-					GC.SuppressFinalize(this);
-				}
-				
-				~Handler()
-				{
-					Dispose(false);
-				}
+				OnNextFinal(resultSelector(accumulate));
+				OnCompletedFinal();
+				accumulate = seed;
 			}
 		}
 	}
