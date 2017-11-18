@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace IllidanS4.SharpUtils.ObjectModel
 {
 	/// <summary>
-	/// Contains 
+	/// Contains basic implementation of the <see cref="ICompletable"/> interface.
 	/// </summary>
 	public abstract class Completable : ICompletable, IDisposable
 	{
@@ -62,6 +62,10 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			Dispose(false);
 		}
 		
+		/// <summary>
+		/// This method should contain the main property-yielding process.
+		/// </summary>
+		/// <returns>An iterator that completes properties of the instance.</returns>
 		protected abstract IEnumerable<Property> Completion();
 		
 		public abstract bool ContainsProperty<T>(Partial<T> property);
@@ -124,6 +128,9 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			return new ArgumentException("This object doesn't support the specified property.", paramName);
 		}
 		
+		/// <summary>
+		/// This class is used to construct property assignments for the completion of the object.
+		/// </summary>
 		protected class Property
 		{
 			public object PropertyObject{get; private set;}
