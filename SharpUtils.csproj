@@ -195,8 +195,12 @@
     <Compile Include="IO\FileSystems\Win32FileSystem.cs" />
     <Compile Include="IO\ResourceOperation.cs" />
     <Compile Include="IO\Win32FileProperty.cs" />
+    <Compile Include="ObjectModel\Completable.cs" />
     <Compile Include="ObjectModel\Either.cs" />
+    <Compile Include="ObjectModel\ICompletable.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
+    <Compile Include="ObjectModel\Partial.cs" />
+    <Compile Include="ObjectModel\PropertyIncompleteException.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
     <Compile Include="Proxies\Replacers\ControlBase.cs" />
     <Compile Include="Proxies\Replacers\GraphicsBase.cs" />
