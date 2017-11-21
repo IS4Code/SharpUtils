@@ -74,6 +74,8 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			
 			private void OnValueObtained(T value)
 			{
+				if(valueReceived) return;
+				
 				this.value = value;
 				valueReceived = true;
 				
