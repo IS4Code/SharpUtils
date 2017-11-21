@@ -26,7 +26,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		
 		public void Complete()
 		{
-			if(!completed) return;
+			if(completed) return;
 			
 			while(completion.MoveNext())
 			{
