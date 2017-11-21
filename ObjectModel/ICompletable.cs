@@ -32,7 +32,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		/// </summary>
 		/// <param name="property">The property whose value should be obtained.</param>
 		/// <returns></returns>
-		T WaitForValue<T>(Partial<T> property);
+		T WaitForProperty<T>(Partial<T> property);
 		
 		/// <summary>
 		/// Checks if this instance contains the specified completable property.

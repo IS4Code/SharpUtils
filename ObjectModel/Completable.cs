@@ -88,7 +88,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			PropertyReceivers.Add(property, valueReceiver);
 		}
 		
-		public T WaitForValue<T>(Partial<T> property)
+		public T WaitForProperty<T>(Partial<T> property)
 		{
 			if(!ContainsProperty(property)) throw InvalidProperty();
 			
@@ -113,7 +113,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 					Delegate receiver;
 					if(PropertyReceivers.TryGetValue(prop.PropertyObject, out receiver))
 					{
-						receiver.DynamicInvoke(prop.Value);
+						prop.InvokeReceiver(receiver);
 						PropertyReceivers.Remove(prop.PropertyObject);
 					}
 				}
@@ -131,12 +131,12 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		/// <summary>
 		/// This class is used to construct property assignments for the completion of the object.
 		/// </summary>
-		protected class Property
+		protected abstract class Property
 		{
 			public object PropertyObject{get; private set;}
 			public object Value{get; private set;}
 			
-			private Property(object property, object value)
+			protected Property(object property, object value)
 			{
 				PropertyObject = property;
 				Value = value;
@@ -144,7 +144,22 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			
 			public static Property Set<T>(Partial<T> property, T value)
 			{
-				return new Property(property, value);
+				return new Property<T>(property, value);
+			}
+			
+			public abstract void InvokeReceiver(Delegate receiver);
+		}
+		
+		private class Property<T> : Property
+		{
+			public Property(Partial<T> property, T value) : base(property, value)
+			{
+				
+			}
+			
+			public override void InvokeReceiver(Delegate receiver)
+			{
+				((Action<T>)receiver).Invoke((T)Value);
 			}
 		}
 	}

@@ -9,11 +9,13 @@ namespace IllidanS4.SharpUtils.ObjectModel
 	/// </summary>
 	public class Partial<T> : Lazy<T>, ICompletable
 	{
+		protected ICompletable Container{get; private set;}
+		
 		Notifier notifier;
 		
 		public Partial(ICompletable completable, out Partial<T> property) : this(new Notifier(completable), out property)
 		{
-			
+			Container = completable;
 		}
 		
 		private Partial(Notifier notifier, out Partial<T> property) : base(notifier.WaitForValue)
@@ -24,7 +26,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		
 		public Partial(ICompletable completable) : this(new Notifier(completable))
 		{
-			
+			Container = completable;
 		}
 		
 		private Partial(Notifier notifier) : base(notifier.WaitForValue)
@@ -32,7 +34,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			this.notifier = notifier;
 		}
 		
-		public void Created()
+		public void MarkCreated()
 		{
 			if(notifier == null) throw new InvalidOperationException("The property was already created.");
 			notifier.Parent = this;
@@ -66,7 +68,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			{
 				if(valueReceived) return value;
 				if(parent == null) throw new InvalidOperationException("The object hasn't been initialized yet.");
-				OnValueObtained(completable.WaitForValue(parent));
+				OnValueObtained(completable.WaitForProperty(parent));
 				return value;
 			}
 			
@@ -84,7 +86,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			private void OnValueReceived(T value)
 			{
 				OnValueObtained(value);
-				value = parent.Value;
+				//value = parent.Value; //causes recursion
 			}
 		}
 		
@@ -94,14 +96,19 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			}
 		}
 		
-		void ICompletable.Complete()
+		public void CreateValue()
 		{
 			var value = this.Value;
 		}
 		
+		void ICompletable.Complete()
+		{
+			CreateValue();
+		}
+		
 		readonly List<Action<T>> receivers = new List<Action<T>>();
 		
-		void ICompletable.RegisterReceiver<TArg>(Partial<TArg> property, Action<TArg> valueReceiver)
+		public virtual void RegisterReceiver<TArg>(Partial<TArg> property, Action<TArg> valueReceiver)
 		{
 			if(!Object.ReferenceEquals(property, this)) throw Completable.InvalidProperty();
 			if(IsValueCreated)
@@ -112,13 +119,13 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			}
 		}
 		
-		TArg ICompletable.WaitForValue<TArg>(Partial<TArg> property)
+		public virtual TArg WaitForProperty<TArg>(Partial<TArg> property)
 		{
 			if(!Object.ReferenceEquals(property, this)) throw Completable.InvalidProperty();
 			return To<TArg>.Cast(Value);
 		}
 		
-		bool ICompletable.ContainsProperty<TArg>(Partial<TArg> property)
+		public virtual bool ContainsProperty<TArg>(Partial<TArg> property)
 		{
 			return Object.ReferenceEquals(property, this);
 		}

@@ -200,6 +200,7 @@
     <Compile Include="ObjectModel\ICompletable.cs" />
     <Compile Include="ObjectModel\Optional.cs" />
     <Compile Include="ObjectModel\Partial.cs" />
+    <Compile Include="ObjectModel\PartialArray.cs" />
     <Compile Include="ObjectModel\PropertyIncompleteException.cs" />
     <Compile Include="Patterns\StaticTypeArg.cs" />
     <Compile Include="Proxies\Replacers\ControlBase.cs" />
