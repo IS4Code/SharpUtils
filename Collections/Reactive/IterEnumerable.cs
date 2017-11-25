@@ -6,25 +6,27 @@ using IllidanS4.SharpUtils.Threads;
 namespace IllidanS4.SharpUtils.Collections.Reactive
 {
 	/// <summary>
-	/// Provides a way to represent a push iterator as a pull iterator.
+	/// Provides a way to represent a push iterator as a pull iterator, using fibers.
 	/// </summary>
 	public class IterEnumerable<T> : IEnumerable<T>
 	{
 		readonly Action<Func<T, bool>> iterProc;
+		readonly IFiberFactory fiberFactory;
 		
-		public IterEnumerable(Action<Func<T, bool>> iterProc)
+		public IterEnumerable(Action<Func<T, bool>> iterProc, IFiberFactory fiberFactory)
 		{
 			this.iterProc = iterProc;
+			this.fiberFactory = fiberFactory;
 		}
 		
-		public IterEnumerable(IIterable<T> iterable) : this(f => iterable.Iterate(Iterator.Create(f)))
+		public IterEnumerable(IIterable<T> iterable, IFiberFactory fiberFactory) : this(f => iterable.Iterate(Iterator.Create(f)), fiberFactory)
 		{
 			
 		}
 		
 		public IEnumerator<T> GetEnumerator()
 		{
-			return new Enumerator(iterProc);
+			return new Enumerator(iterProc, fiberFactory);
 		}
 		
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -34,7 +36,8 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 		
 		sealed class Enumerator : IEnumerator<T>
 		{
-			readonly Fiber enumFiber;
+			readonly FiberBase enumFiber;
+			readonly IFiberFactory fiberFactory;
 			
 			
 			int state;
@@ -43,11 +46,12 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 				get; private set;
 			}
 			
-			Fiber mainFiber;
+			FiberBase mainFiber;
 			
-			public Enumerator(Action<Func<T, bool>> enumProc)
+			public Enumerator(Action<Func<T, bool>> enumProc, IFiberFactory fiberFactory)
 			{
-				enumFiber = new Fiber(
+				this.fiberFactory = fiberFactory;
+				enumFiber = fiberFactory.CreateNew(
 					()=>{
 						enumProc(FiberNext);
 						state = -1;
@@ -74,7 +78,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			{
 				if(state == 0 || state == 1)
 				{
-					mainFiber = Fiber.CurrentFiber;
+					mainFiber = fiberFactory.CurrentFiber;
 					try{
 						enumFiber.Switch();
 					}finally{
@@ -100,7 +104,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 				}else if(state != -1)
 				{
 					state = -1;
-					mainFiber = Fiber.CurrentFiber;
+					mainFiber = fiberFactory.CurrentFiber;
 					try{
 						enumFiber.Switch();
 					}finally{
@@ -119,14 +123,14 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	
 	public static class IterEnumerable
 	{
-		public static IterEnumerable<T> Create<T>(Action<Func<T, bool>> iterProc)
+		public static IterEnumerable<T> Create<T>(Action<Func<T, bool>> iterProc, IFiberFactory fiberFactory)
 		{
-			return new IterEnumerable<T>(iterProc);
+			return new IterEnumerable<T>(iterProc, fiberFactory);
 		}
 		
-		public static IterEnumerable<T> Create<T>(IIterable<T> iterable)
+		public static IterEnumerable<T> Create<T>(IIterable<T> iterable, IFiberFactory fiberFactory)
 		{
-			return new IterEnumerable<T>(iterable);
+			return new IterEnumerable<T>(iterable, fiberFactory);
 		}
 	}
 }
