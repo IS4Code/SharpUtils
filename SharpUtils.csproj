@@ -231,7 +231,11 @@
     <Compile Include="Text\StringChunk.cs" />
     <Compile Include="Text\StringReference.cs" />
     <Compile Include="Threads\Fiber.cs" />
+    <Compile Include="Threads\FiberBase.cs" />
+    <Compile Include="Threads\FiberState.cs" />
+    <Compile Include="Threads\IFiberFactory.cs" />
     <Compile Include="Threads\ThreadingTools.cs" />
+    <Compile Include="Threads\VirtualFiber.cs" />
     <Compile Include="To.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="EmptyManager.cs" />

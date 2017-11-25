@@ -14,8 +14,13 @@ namespace IllidanS4.SharpUtils.Threads
 	/// <remarks>
 	/// Fiber is a component of a thread with its own stack, whose execution is scheduled manually.
 	/// </remarks>
-	public class Fiber : IDisposable
+	public class Fiber : FiberBase
 	{
+		/// <summary>
+		/// The factory object that can be used to create new fibers.
+		/// </summary>
+		public static readonly IFiberFactory Factory = new FiberFactory();
+		
 		/// <summary>
 		/// Gets the currently executing fiber.
 		/// </summary>
@@ -47,7 +52,8 @@ namespace IllidanS4.SharpUtils.Threads
 		{
 			StartupFibers();
 			
-			m_fiber = Kernel32.CreateFiber(maxStackSize, _=>start(), Handle);
+			m_fiber = Kernel32.CreateFiber(maxStackSize, _=>{start(); state= FiberState.Terminated;}, Handle);
+			state = FiberState.Suspended;
 		}
 		
 		public Fiber(ParameterizedThreadStart start, object parameter) : this(start, 0, parameter)
@@ -65,18 +71,27 @@ namespace IllidanS4.SharpUtils.Threads
 			var handle = GCHandle.Alloc(this, GCHandleType.Weak);
 			Handle = GCHandle.ToIntPtr(handle);
 			Thread = Thread.CurrentThread;
-			
+			state = FiberState.Running;
 			ThreadFibers.Value.Add(this);
 		}
 		
-		public void Switch()
+		FiberState state;
+		
+		public override FiberState State{
+			get{
+				return state;
+			}
+		}
+		
+		public override void Switch()
 		{
 			if(m_fiber == IntPtr.Zero) throw new ObjectDisposedException(null);
-			
+			state = FiberState.Running;
+			CurrentFiber.state = FiberState.Suspended;
 			Kernel32.SwitchToFiber(m_fiber);
 		}
 		
-		public void Dispose()
+		public override void Dispose()
 		{
 			Dispose(true);
 		}
@@ -94,6 +109,8 @@ namespace IllidanS4.SharpUtils.Threads
 					Kernel32.DeleteFiber(m_fiber);
 					m_fiber = IntPtr.Zero;
 				}
+				
+				state = FiberState.Terminated;
 				
 				ThreadFibers.Value.Remove(this);
 				
@@ -243,6 +260,35 @@ namespace IllidanS4.SharpUtils.Threads
 				VirtualProtectEx(Process.GetCurrentProcess().Handle, addr, (UIntPtr)asm.Length, 0x40);
 				
 				_GetCurrentFiber = (GetCurrentFiberDelegate)Marshal.GetDelegateForFunctionPointer(addr, typeof(GetCurrentFiberDelegate));
+			}
+		}
+		
+		class FiberFactory : IFiberFactory
+		{
+			public FiberBase CurrentFiber{
+				get{
+					return Fiber.CurrentFiber;
+				}
+			}
+			
+			public FiberBase CreateNew(ThreadStart start)
+			{
+				return new Fiber(start);
+			}
+			
+			public FiberBase CreateNew(ThreadStart start, int maxStackSize)
+			{
+				return new Fiber(start, maxStackSize);
+			}
+			
+			public FiberBase CreateNew(ParameterizedThreadStart start, object parameter)
+			{
+				return new Fiber(start, parameter);
+			}
+			
+			public FiberBase CreateNew(ParameterizedThreadStart start, int maxStackSize, object parameter)
+			{
+				return new Fiber(start, maxStackSize, parameter);
 			}
 		}
 	}
