@@ -115,9 +115,13 @@ namespace IllidanS4.SharpUtils.Threads
 				
 				state = FiberState.Terminated;
 				
-				ThreadFibers.Value.Remove(this);
-				
-				CleanupFibers();
+				try{
+					ThreadFibers.Value.Remove(this);
+					CleanupFibers();
+				}catch(ObjectDisposedException)
+				{
+					
+				}
 			}
 		}
 		
