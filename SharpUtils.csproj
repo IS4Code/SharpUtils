@@ -134,6 +134,7 @@
       <DependentUpon>NativeLibrary.cs</DependentUpon>
     </Compile>
     <Compile Include="Interop\MarshalInfo.cs" />
+    <Compile Include="Interop\NativeFunction.cs" />
     <Compile Include="Interop\NativeLibrary.cs" />
     <Compile Include="Interop\Unmanaged\FarMarshal.cs" />
     <Compile Include="Interop\Unmanaged\FarPtr.cs" />
