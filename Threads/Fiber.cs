@@ -94,6 +94,7 @@ namespace IllidanS4.SharpUtils.Threads
 		public override void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 		
 		protected virtual void Dispose(bool disposing)
@@ -116,7 +117,6 @@ namespace IllidanS4.SharpUtils.Threads
 				
 				CleanupFibers();
 			}
-			GC.SuppressFinalize(this);
 		}
 		
 		~Fiber()

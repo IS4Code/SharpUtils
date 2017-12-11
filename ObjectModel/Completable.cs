@@ -46,6 +46,7 @@ namespace IllidanS4.SharpUtils.ObjectModel
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 		
 		protected virtual void Dispose(bool disposing)
@@ -54,7 +55,6 @@ namespace IllidanS4.SharpUtils.ObjectModel
 			{
 				completion.Dispose();
 			}
-			GC.SuppressFinalize(this);
 		}
 		
 		~Completable()

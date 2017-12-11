@@ -150,6 +150,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 		
 		protected void Dispose(bool disposing)
@@ -162,7 +163,6 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 				}
 				handlers.Clear();
 			}
-			GC.SuppressFinalize(this);
 		}
 		
 		~BasicIteratorLink()
@@ -200,6 +200,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			public void Dispose()
 			{
 				Dispose(true);
+				GC.SuppressFinalize(this);
 			}
 			
 			protected void Dispose(bool disposing)
@@ -209,7 +210,6 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 				{
 					Iterator = null;
 				}
-				GC.SuppressFinalize(this);
 			}
 			
 			~Handler()

@@ -124,11 +124,11 @@ namespace IllidanS4.SharpUtils.Interop
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 		
 		protected virtual void Dispose(bool disposing)
 		{
-			GC.SuppressFinalize(this);
 			if(hmod != IntPtr.Zero)
 			{
 				Native.FreeLibrary(hmod);
