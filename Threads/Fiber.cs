@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using IllidanS4.SharpUtils.Interop;
 
 namespace IllidanS4.SharpUtils.Threads
 {
@@ -223,7 +225,7 @@ namespace IllidanS4.SharpUtils.Threads
 			
 			public static IntPtr GetCurrentFiber()
 			{
-				return _GetCurrentFiber();
+				return _GetCurrentFiber.Delegate();
 			}
 			
 			public static IntPtr GetFiberData()
@@ -231,36 +233,16 @@ namespace IllidanS4.SharpUtils.Threads
 				return Marshal.ReadIntPtr(GetCurrentFiber());
 			}
 			
-			[DllImport("kernel32.dll", SetLastError=true, EntryPoint="VirtualProtectEx")]
-			private static extern bool _VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, int flNewProtect, out int lpflOldProtect);
-			
-			private static int VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, int flNewProtect)
-			{
-				int lpflOldProtect;
-				bool ok = _VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect, out lpflOldProtect);
-				if(!ok) throw new Win32Exception();
-				return lpflOldProtect;
-			}
-			
-			private static readonly GetCurrentFiberDelegate _GetCurrentFiber;
+			private static readonly NativeFunction<GetCurrentFiberDelegate> _GetCurrentFiber = new NativeFunction<GetCurrentFiberDelegate>(
+				m => {
+					if(m != ImageFileMachine.I386) throw new NotSupportedException();
+					return new byte[]{
+						0x64, 0xA1, 0x10, 0x00, 0x00, 0x00, //mov eax, fs:10h
+						0xC3 //ret
+					};
+				}
+			);
 			private delegate IntPtr GetCurrentFiberDelegate();
-			
-			private static readonly GCHandle AsmHandle;
-			
-			static Kernel32()
-			{
-				var asm = new byte[]{
-					0x64, 0xA1, 0x10, 0x00, 0x00, 0x00, //mov eax, fs:10h
-					0xC3 //ret
-				};
-				
-				AsmHandle = GCHandle.Alloc(asm, GCHandleType.Pinned);
-				IntPtr addr = AsmHandle.AddrOfPinnedObject();
-				
-				VirtualProtectEx(Process.GetCurrentProcess().Handle, addr, (UIntPtr)asm.Length, 0x40);
-				
-				_GetCurrentFiber = (GetCurrentFiberDelegate)Marshal.GetDelegateForFunctionPointer(addr, typeof(GetCurrentFiberDelegate));
-			}
 		}
 		
 		class FiberFactory : IFiberFactory
