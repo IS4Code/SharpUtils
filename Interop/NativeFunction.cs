@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using IllidanS4.SharpUtils.Interop;
 
 namespace IllidanS4.SharpUtils.Interop
 {
@@ -17,11 +18,25 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		/// <param name="codeProvider">
 		/// This function provides a platform-specific code based
-		/// on the platform type specified by its argument.
+		/// on the platform kind specified by its argument.
 		/// It is called lazily when the native function is to be called,
 		/// and its result is cached.
 		/// </param>
 		public NativeFunction(Func<ImageFileMachine, byte[]> codeProvider) : base(codeProvider, typeof(TDelegate))
+		{
+			
+		}
+		
+		/// <summary>
+		/// Constructs a new instance using a provider function.
+		/// </summary>
+		/// <param name="functionProvider">
+		/// This function provides a platform-specific function based
+		/// on the platform kind specified by its argument.
+		/// It is called lazily when the native function is to be called,
+		/// and its result is cached.
+		/// </param>
+		public NativeFunction(Func<ImageFileMachine, PlatformNativeFunction> functionProvider) : base(functionProvider)
 		{
 			
 		}
@@ -40,8 +55,7 @@ namespace IllidanS4.SharpUtils.Interop
 	public class NativeFunction : IDisposable
 	{
 		readonly Dictionary<ImageFileMachine, PlatformNativeFunction> cache = new Dictionary<ImageFileMachine, PlatformNativeFunction>();
-		readonly Func<ImageFileMachine, byte[]> codeProvider;
-		readonly Type delegateType;
+		readonly Func<ImageFileMachine, PlatformNativeFunction> functionProvider;
 		bool disposed;
 		
 		/// <summary>
@@ -49,15 +63,28 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		/// <param name="codeProvider">
 		/// This function provides a platform-specific code based
-		/// on the platform type specified by its argument.
+		/// on the platform kind specified by its argument.
 		/// It is called lazily when the native function is to be called,
 		/// and its result is cached.
 		/// </param>
 		/// <param name="delegateType">The type of the delegate that will be created.</param>
-		public NativeFunction(Func<ImageFileMachine, byte[]> codeProvider, Type delegateType)
+		public NativeFunction(Func<ImageFileMachine, byte[]> codeProvider, Type delegateType) : this(m => new ManagedMemoryPlatformNativeFunction(codeProvider(m), delegateType))
 		{
-			this.codeProvider = codeProvider;
-			this.delegateType = delegateType;
+			
+		}
+		
+		/// <summary>
+		/// Constructs a new instance using a provider function.
+		/// </summary>
+		/// <param name="functionProvider">
+		/// This function provides a platform-specific function based
+		/// on the platform type specified by its argument.
+		/// It is called lazily when the native function is to be called,
+		/// and its result is cached.
+		/// </param>
+		public NativeFunction(Func<ImageFileMachine, PlatformNativeFunction> functionProvider)
+		{
+			this.functionProvider = functionProvider;
 		}
 		
 		/// <summary>
@@ -66,25 +93,40 @@ namespace IllidanS4.SharpUtils.Interop
 		/// </summary>
 		public Delegate Delegate{
 			get{
-				PortableExecutableKinds pe;
-				ImageFileMachine im;
-				typeof(object).Module.GetPEKind(out pe, out im);
-				
-				PlatformNativeFunction pfunc;
-				if(!cache.TryGetValue(im, out pfunc))
-				{
-					byte[] code = codeProvider(im);
-					if(code == null) throw new NotSupportedException();
-					
-					cache[im] = pfunc = new ManagedMemoryPlatformNativeFunction(code, delegateType);
-				}
-				
+				var pfunc = CreateFunction();
+				if(pfunc == null) throw new NotSupportedException();
 				return pfunc.Delegate;
 			}
 		}
 		
 		/// <summary>
-		/// Releases all unmanaged resources held by this instace.
+		/// True if this native function is supported by this platform.
+		/// </summary>
+		public bool Supported{
+			get{
+				return CreateFunction() != null;
+			}
+		}
+		
+		private PlatformNativeFunction CreateFunction()
+		{
+			PortableExecutableKinds pe;
+			ImageFileMachine im;
+			typeof(object).Module.GetPEKind(out pe, out im);
+			
+			PlatformNativeFunction pfunc;
+			if(!cache.TryGetValue(im, out pfunc))
+			{
+				pfunc = functionProvider(im);
+				if(pfunc == null) return null;
+				cache[im] = pfunc;
+			}
+			
+			return pfunc;
+		}
+		
+		/// <summary>
+		/// Releases all unmanaged resources held by this instance.
 		/// </summary>
 		public void Dispose()
 		{
