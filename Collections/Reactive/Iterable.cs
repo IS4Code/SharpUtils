@@ -5,7 +5,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 {
 	public static class Iterable
 	{
-		private interface ILinkIterable<TResult> : IIterable<TResult>
+		private interface ILinkIterable<out TResult> : IIterable<TResult>
 		{
 			ILinkIterable<TNewResult> Link<TNewResult>(IIteratorLink<TResult, TNewResult> link);
 			

@@ -6,7 +6,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	/// <summary>
 	/// Provides a push-based imperative iterator for a collection.
 	/// </summary>
-	public interface IIterable<T>
+	public interface IIterable<out T>
 	{
 		/// <summary>
 		/// Iterates the collection using a <see cref="IIterator"/>.

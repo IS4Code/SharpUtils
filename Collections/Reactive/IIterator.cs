@@ -6,7 +6,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	/// <summary>
 	/// Provides an object for receiving notifications from a <see cref="IIterable"/>.
 	/// </summary>
-	public interface IIterator<T>
+	public interface IIterator<in T>
 	{
 		/// <summary>
 		/// Called when a new value is received.

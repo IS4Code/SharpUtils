@@ -6,7 +6,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	/// <summary>
 	/// Represents a link that filters and repeats values to other iterators.
 	/// </summary>
-	public interface IIteratorLink<TSource, TResult> : IIterator<TSource>, IIteratorLink<TResult>
+	public interface IIteratorLink<in TSource, out TResult> : IIterator<TSource>, IIteratorLink<TResult>
 	{
 		
 	}
@@ -14,7 +14,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 	/// <summary>
 	/// Represents a link that filters and repeats values to other iterators.
 	/// </summary>
-	public interface IIteratorLink<TResult>
+	public interface IIteratorLink<out TResult>
 	{
 		/// <summary>
 		/// Subscribes a new iterator to receive values from the iterator link.
