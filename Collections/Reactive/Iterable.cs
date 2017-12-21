@@ -16,6 +16,10 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			ILinkIterable<TNewResult> Aggregate<TAccumulate, TNewResult>(TAccumulate seed, Func<TAccumulate, TResult, TAccumulate> func, Func<TAccumulate, TNewResult> resultSelector);
 			
 			ILinkIterable<TResult> Sum();
+			
+			ILinkIterable<TNewResult> Process<TNewResult>(Iterator.ProcessingFunc<TResult, TNewResult> processingFunc);
+			
+			ILinkIterable<TNewResult> Process<TNewResult>(Iterator.ProcessingAction<TResult, TNewResult> processingAction);
 		}
 		
 		private class LinkIterable<TSource, TResult> : ILinkIterable<TResult>
@@ -90,12 +94,12 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 				}
 			}
 			
-			public ILinkIterable<TNewResult> Process<TNewResult>(Func<Func<TNewResult, bool>, Action, bool> processingFunc)
+			public ILinkIterable<TNewResult> Process<TNewResult>(Iterator.ProcessingFunc<TResult, TNewResult> processingFunc)
 			{
 				return new LinkIterable<TSource, TNewResult>(iterable, Iterator.Process(this.link, processingFunc));
 			}
 			
-			public ILinkIterable<TNewResult> Process<TNewResult>(Action<Func<TNewResult, bool>, Action> processingAction)
+			public ILinkIterable<TNewResult> Process<TNewResult>(Iterator.ProcessingAction<TResult, TNewResult> processingAction)
 			{
 				return new LinkIterable<TSource, TNewResult>(iterable, Iterator.Process(this.link, processingAction));
 			}
@@ -409,7 +413,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			return sum;
 		}
 		
-		public static IIterable<TResult> Process<TSource, TResult>(this IIterable<TSource> source, Func<Func<TResult, bool>, Action, bool> processingFunc)
+		public static IIterable<TResult> Process<TSource, TResult>(this IIterable<TSource> source, Iterator.ProcessingFunc<TSource, TResult> processingFunc)
 		{
 			if(source == null) throw new ArgumentNullException("source");
 			if(processingFunc == null) throw new ArgumentNullException("processingFunc");
@@ -422,7 +426,7 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			return new LinkIterable<TSource, TResult>(source, Iterator.Process<TSource, TResult>(processingFunc));
 		}
 		
-		public static IIterable<TResult> Process<TSource, TResult>(this IIterable<TSource> source, Action<Func<TResult, bool>, Action> processingAction)
+		public static IIterable<TResult> Process<TSource, TResult>(this IIterable<TSource> source, Iterator.ProcessingAction<TSource, TResult> processingAction)
 		{
 			if(source == null) throw new ArgumentNullException("source");
 			if(processingAction == null) throw new ArgumentNullException("processingFunc");

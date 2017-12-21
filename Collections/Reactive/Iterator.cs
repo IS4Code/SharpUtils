@@ -403,44 +403,47 @@ namespace IllidanS4.SharpUtils.Collections.Reactive
 			}
 		}
 		
+		public delegate bool ProcessingFunc<in TSource, out TResult>(TSource value, Func<TResult, bool> onNext, Action onCompleted);
+		public delegate void ProcessingAction<in TSource, out TResult>(TSource value, Func<TResult, bool> onNext, Action onCompleted);
+		
 		private class ProcessIterator<TSource, TIntermediate, TResult> : BasicIteratorLink<TSource, TIntermediate, TResult>
 		{
-			readonly Func<Func<TResult, bool>, Action, bool> processingFunc;
+			readonly ProcessingFunc<TIntermediate, TResult> processingFunc;
 			
-			public ProcessIterator(IIteratorLink<TSource, TIntermediate> source, Func<Func<TResult, bool>, Action, bool> processingFunc) : base(source)
+			public ProcessIterator(IIteratorLink<TSource, TIntermediate> source, ProcessingFunc<TIntermediate, TResult> processingFunc) : base(source)
 			{
 				if(processingFunc == null) throw new ArgumentNullException("processingFunc");
 				
 				this.processingFunc = processingFunc;
 			}
 			
-			public ProcessIterator(IIteratorLink<TSource, TIntermediate> source, Action<Func<TResult, bool>, Action> processingAction) : this(source, (n, c) => {processingAction(n, c); return true;})
+			public ProcessIterator(IIteratorLink<TSource, TIntermediate> source, ProcessingAction<TIntermediate, TResult> processingAction) : this(source, (v, n, c) => {processingAction(v, n, c); return true;})
 			{
 				if(processingAction == null) throw new ArgumentNullException("processingAction");
 			}
 			
 			protected override bool OnNextInternal(TIntermediate value)
 			{
-				return processingFunc(OnNextFinal, OnCompletedFinal);
+				return processingFunc(value, OnNextFinal, OnCompletedFinal);
 			}
 		}
 		
-		public static IIteratorLink<TSource, TResult> Process<TSource, TResult>(Func<Func<TResult, bool>, Action, bool> processingFunc)
+		public static IIteratorLink<TSource, TResult> Process<TSource, TResult>(ProcessingFunc<TSource, TResult> processingFunc)
 		{
 			return Process<TSource, TSource, TResult>(null, processingFunc);
 		}
 		
-		public static IIteratorLink<TSource, TResult> Process<TSource, TIntermediate, TResult>(this IIteratorLink<TSource, TIntermediate> source, Func<Func<TResult, bool>, Action, bool> processingFunc)
+		public static IIteratorLink<TSource, TResult> Process<TSource, TIntermediate, TResult>(this IIteratorLink<TSource, TIntermediate> source, ProcessingFunc<TIntermediate, TResult> processingFunc)
 		{
 			return new ProcessIterator<TSource, TIntermediate, TResult>(source, processingFunc);
 		}
 		
-		public static IIteratorLink<TSource, TResult> Process<TSource, TResult>(Action<Func<TResult, bool>, Action> processingAction)
+		public static IIteratorLink<TSource, TResult> Process<TSource, TResult>(ProcessingAction<TSource, TResult> processingAction)
 		{
 			return Process<TSource, TSource, TResult>(null, processingAction);
 		}
 		
-		public static IIteratorLink<TSource, TResult> Process<TSource, TIntermediate, TResult>(this IIteratorLink<TSource, TIntermediate> source, Action<Func<TResult, bool>, Action> processingAction)
+		public static IIteratorLink<TSource, TResult> Process<TSource, TIntermediate, TResult>(this IIteratorLink<TSource, TIntermediate> source, ProcessingAction<TIntermediate, TResult> processingAction)
 		{
 			return new ProcessIterator<TSource, TIntermediate, TResult>(source, processingAction);
 		}
