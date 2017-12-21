@@ -110,6 +110,7 @@
     <Compile Include="Collections\Reactive\Iterator.cs" />
     <Compile Include="Collections\Reactive\IterEnumerable.cs" />
     <Compile Include="Collections\Reactive\ReactiveExtensions.cs" />
+    <Compile Include="Collections\Streaming\Enumerator.cs" />
     <Compile Include="Collections\ValueTypeEnumerator.cs" />
     <Compile Include="Com\ComExtensions.cs" />
     <Compile Include="Com\HRESULT.cs" />
@@ -449,6 +450,7 @@
   <ItemGroup>
     <Folder Include="Collections\Async" />
     <Folder Include="Accessing" />
+    <Folder Include="Collections\Streaming" />
     <Folder Include="Collections\Reactive" />
     <Folder Include="Interop\WinApi" />
     <Folder Include="Interop\Unmanaged" />
